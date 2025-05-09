@@ -19,4 +19,12 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::redirect('categories', 'categories');
+
+    Volt::route('categories', 'categories.lista')->name('categories');
+    Volt::route('settings/password', 'settings.password')->name('settings.password');
+    Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+});
+
 require __DIR__.'/auth.php';

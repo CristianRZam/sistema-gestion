@@ -28,7 +28,7 @@
                     <flux:menu class="w-[220px]">
                         <flux:menu.radio.group>
                             <flux:menu.item icon="bars-2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Tipo de Producto') }}</flux:menu.item>
-                            <flux:menu.item icon="bars-2">{{ __('Categoría') }}</flux:menu.item>
+                            <flux:menu.item icon="bars-2" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Categoría') }}</flux:menu.item>
                         </flux:menu.radio.group>
                     </flux:menu>
                 </flux:dropdown>
