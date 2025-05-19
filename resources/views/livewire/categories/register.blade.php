@@ -1,4 +1,4 @@
-<flux:modal name="register-category" :show="$show" focusable class="max-w-lg">
+<flux:modal name="register-category" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
     <form wire:submit="guardarCategoria" class="space-y-6">
         <div>
             <flux:heading size="lg">
@@ -34,12 +34,20 @@
 
         <div class="flex justify-end space-x-2">
             <flux:modal.close>
-                <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                <flux:button class="cursor-pointer" variant="filled">{{ __('Cancelar') }}</flux:button>
             </flux:modal.close>
 
-            <flux:button type="submit" variant="primary">
+            <flux:button class="cursor-pointer" type="submit" variant="primary">
                 {{ __('Guardar') }}
             </flux:button>
         </div>
     </form>
 </flux:modal>
+
+
+<script>
+    window.addEventListener('cerrarModal', () => {
+        Flux.modal('register-category').close();
+    });
+</script>
+
