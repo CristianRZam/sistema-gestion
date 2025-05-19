@@ -4,12 +4,15 @@
 
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4 text-right">
-        <a href="#" class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">
+        <a href="{{ route('categories.exportar.pdf') }}"
+           class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">
             Exportar PDF
         </a>
-        <a href="#" class="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white mr-2">
+        <a href="{{ route('categories.exportar.excel') }}"
+           class="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white mr-2">
             Exportar Excel
         </a>
+
 
         <!-- Botón Agregar -->
         <flux:modal.trigger name="register-category">

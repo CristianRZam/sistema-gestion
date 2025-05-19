@@ -7,6 +7,10 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CategoriesExcelExport;
+
+
 class Lista extends Component
 {
     public $categorias;
@@ -65,4 +69,10 @@ class Lista extends Component
         $this->dispatch('cerrarModalDeteleCategory');
         $this->reset('categoryIdToDelete');
     }
+
+    public function exportarExcel()
+    {
+        return Excel::download(new CategoriesExcelExport, 'categorias.xlsx');
+    }
+
 }

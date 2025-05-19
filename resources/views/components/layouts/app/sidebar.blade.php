@@ -15,6 +15,23 @@
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Mantenedor')" class="grid">
+                    <flux:navlist.item icon="bars-2">{{ __('Producto') }}</flux:navlist.item>
+                </flux:navlist.group>
+
+                <flux:dropdown position="bottom" align="start">
+                    <flux:navlist.item icon="bars-3" icon-trailing="chevron-down">
+                        {{ __('Configuración') }}
+                    </flux:navlist.item>
+
+                    <flux:menu class="w-[220px]">
+                        <flux:menu.radio.group>
+                            <flux:menu.item icon="bars-2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Tipo de Producto') }}</flux:menu.item>
+                            <flux:menu.item icon="bars-2" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Categoría') }}</flux:menu.item>
+                        </flux:menu.radio.group>
+                    </flux:menu>
+                </flux:dropdown>
             </flux:navlist>
 
             <flux:spacer />
