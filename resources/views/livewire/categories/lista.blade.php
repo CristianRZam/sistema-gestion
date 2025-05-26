@@ -4,26 +4,28 @@
 
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4 text-right">
-        <a href="{{ route('categories.exportar.pdf') }}"
-           class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">
-            Exportar PDF
-        </a>
-        <a href="{{ route('categories.exportar.excel') }}"
-           class="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white mr-2">
-            Exportar Excel
-        </a>
-
+        @can('exportar categorias')
+            <a href="{{ route('categories.exportar.pdf') }}"
+               class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">
+                Exportar PDF
+            </a>
+            <a href="{{ route('categories.exportar.excel') }}"
+               class="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white mr-2">
+                Exportar Excel
+            </a>
+        @endcan
 
         <!-- Botón Agregar -->
-        <flux:modal.trigger name="register-category">
-            <button
-                class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer"
-                x-data=""
-                x-on:click.prevent="$dispatch('open-modal')">
-                {{ __('Agregar') }}
-            </button>
-        </flux:modal.trigger>
-
+        @can('crear categoria')
+            <flux:modal.trigger name="register-category">
+                <button
+                    class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer"
+                    x-data=""
+                    x-on:click.prevent="$dispatch('open-modal')">
+                    {{ __('Agregar') }}
+                </button>
+            </flux:modal.trigger>
+        @endcan
     </div>
 
 
@@ -49,24 +51,28 @@
                     <td class="border p-2">{{ $categoria->nombreCorto }}</td>
                     <td class="border p-2 text-center">{{ $categoria->orden }}</td>
                     <td class="border p-2 text-center">
-                        <flux:modal.trigger name="register-category">
-                            <button
-                                class="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-white mr-2 cursor-pointer"
-                                x-data=""
-                                x-on:click.prevent="$dispatch('open-modal', { id: {{ $categoria->id }} })"
-                            >
-                                {{ __('Editar') }}
-                            </button>
-                        </flux:modal.trigger>
-                        <flux:modal.trigger name="confirm-category-deletion">
-                            <button
-                                class="border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-500 hover:text-white cursor-pointer"
-                                x-data=""
-                                x-on:click.prevent="$dispatch('open-modal-delete-category', { id: {{ $categoria->id }} })"
-                            >
-                                {{ __('Eliminar') }}
-                            </button>
-                        </flux:modal.trigger>
+                        @can('editar categoria')
+                            <flux:modal.trigger name="register-category">
+                                <button
+                                    class="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-white mr-2 cursor-pointer"
+                                    x-data=""
+                                    x-on:click.prevent="$dispatch('open-modal', { id: {{ $categoria->id }} })"
+                                >
+                                    {{ __('Editar') }}
+                                </button>
+                            </flux:modal.trigger>
+                        @endcan
+                        @can('eliminar categoria')
+                            <flux:modal.trigger name="confirm-category-deletion">
+                                <button
+                                    class="border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-500 hover:text-white cursor-pointer"
+                                    x-data=""
+                                    x-on:click.prevent="$dispatch('open-modal-delete-category', { id: {{ $categoria->id }} })"
+                                >
+                                    {{ __('Eliminar') }}
+                                </button>
+                            </flux:modal.trigger>
+                        @endcan
                     </td>
                 </tr>
             @endforeach
