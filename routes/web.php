@@ -6,6 +6,8 @@ use App\Exports\CategoriesExcelExport;
 use App\Exports\CategoriesPdfExport;
 use App\Exports\RolesExcelExport;
 use App\Exports\RolesPdfExport;
+use App\Exports\UsersExcelExport;
+use App\Exports\UsersPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
@@ -43,6 +45,15 @@ Route::middleware(['auth', 'can:ver categorias'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    // Ruta para exportar Excel de usuarios
+    Route::get('/users/exportar-excel', function () {
+        return Excel::download(new UsersExcelExport, 'users.xlsx');
+    })->name('users.exportar.excel');
+
+    // Ruta para exportar PDF de usuarios
+    Route::get('/users/exportar-pdf', function () {
+        return (new UsersPdfExport)->download('users.pdf');
+    })->name('users.exportar.pdf');
 
     // Rutas existentes
     Volt::route('users', 'users.lista')->name('users');
@@ -51,12 +62,12 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Ruta para exportar Excel de categorías
+    // Ruta para exportar Excel de roles
     Route::get('/roles/exportar-excel', function () {
         return Excel::download(new RolesExcelExport, 'roles.xlsx');
     })->name('roles.exportar.excel');
 
-    // Ruta para exportar PDF de categorías
+    // Ruta para exportar PDF de roles
     Route::get('/roles/exportar-pdf', function () {
         return (new RolesPdfExport)->download('roles.pdf');
     })->name('roles.exportar.pdf');

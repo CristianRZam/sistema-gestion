@@ -9,11 +9,11 @@
 
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4 text-right">
-        <a href="{{ route('categories.exportar.pdf') }}"
+        <a href="{{ route('users.exportar.pdf') }}"
            class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">
             Exportar PDF
         </a>
-        <a href="{{ route('categories.exportar.excel') }}"
+        <a href="{{ route('users.exportar.excel') }}"
            class="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white mr-2">
             Exportar Excel
         </a>
@@ -43,11 +43,11 @@
                         {{ $usuario->getRoleNames()->first() ?? 'Sin rol' }}
                     </td>
                     <td class="border p-2 text-center">
-                        <flux:modal.trigger name="edit-user">
+                        <flux:modal.trigger name="register-user">
                             <button
                                 class="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-white mr-2 cursor-pointer"
                                 x-data=""
-                                x-on:click.prevent="$dispatch('open-modal', { id: {{ $usuario->id }} })"
+                                x-on:click.prevent="$dispatch('open-modal-user', { id: {{ $usuario->id }} })"
                             >
                                 {{ __('Editar') }}
                             </button>
@@ -59,19 +59,6 @@
         </table>
     @endif
 
-    <!-- Modal para editar usuario (puedes completarlo luego) -->
-    <flux:modal name="edit-user" class="max-w-lg">
-        <div class="p-4">
-            <flux:heading size="lg">{{ __('Editar usuario') }}</flux:heading>
-            <flux:subheading>
-                {{ __('Esta funcionalidad estará disponible próximamente.') }}
-            </flux:subheading>
+    @livewire('users.register')
 
-            <div class="flex justify-end mt-4">
-                <flux:modal.close>
-                    <flux:button variant="filled">{{ __('Cerrar') }}</flux:button>
-                </flux:modal.close>
-            </div>
-        </div>
-    </flux:modal>
 </section>
