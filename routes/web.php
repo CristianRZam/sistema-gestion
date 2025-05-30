@@ -10,6 +10,10 @@ use App\Exports\UsersExcelExport;
 use App\Exports\UsersPdfExport;
 use App\Exports\ProductsExcelExport;
 use App\Exports\ProductsPdfExport;
+use App\Exports\CustomersExcelExport;
+use App\Exports\CustomersPdfExport;
+use App\Exports\SuppliersExcelExport;
+use App\Exports\SuppliersPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
@@ -103,5 +107,36 @@ Route::middleware(['auth', 'can:ver productos'])->group(function () {
     //Volt::route('settings/password', 'settings.password')->name('settings.password');
     //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
+
+Route::middleware(['auth', 'can:ver clientes'])->group(function () {
+    // Exportar Excel de customers
+    Route::get('/customers/exportar-excel', function () {
+        return Excel::download(new CustomersExcelExport, 'clientes.xlsx');
+    })->name('customers.exportar.excel');
+
+    // Exportar PDF de customers
+    Route::get('/customers/exportar-pdf', function () {
+        return (new CustomersPdfExport)->download('clientes.pdf');
+    })->name('customers.exportar.pdf');
+
+    // Ruta lista customers (si la tienes)
+    Volt::route('customers', 'customers.lista')->name('customers');
+});
+
+Route::middleware(['auth', 'can:ver proveedores'])->group(function () {
+    // Exportar Excel de suppliers
+    Route::get('/suppliers/exportar-excel', function () {
+        return Excel::download(new SuppliersExcelExport, 'proveedores.xlsx');
+    })->name('suppliers.exportar.excel');
+
+    // Exportar PDF de suppliers
+    Route::get('/suppliers/exportar-pdf', function () {
+        return (new SuppliersPdfExport)->download('proveedores.pdf');
+    })->name('suppliers.exportar.pdf');
+
+    // Ruta lista suppliers (si la tienes)
+    Volt::route('suppliers', 'suppliers.lista')->name('suppliers');
+});
+
 
 require __DIR__.'/auth.php';

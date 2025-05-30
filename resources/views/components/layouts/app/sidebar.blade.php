@@ -35,6 +35,12 @@
                     @can('ver productos')
                         <flux:navlist.item icon="cube" :href="route('products')" :current="request()->routeIs('products')" wire:navigate>{{ __('Producto') }}</flux:navlist.item>
                     @endcan
+                    @can('ver clientes')
+                        <flux:navlist.item icon="user" :href="route('customers')" :current="request()->routeIs('customers')" wire:navigate>{{ __('Cliente') }}</flux:navlist.item>
+                    @endcan
+                    @can('ver proveedores')
+                        <flux:navlist.item icon="truck" :href="route('suppliers')" :current="request()->routeIs('suppliers')" wire:navigate>{{ __('Proveedor') }}</flux:navlist.item>
+                    @endcan
                     <flux:dropdown position="bottom" align="start">
                         <flux:navlist.item icon="bars-3" icon-trailing="chevron-down">
                             {{ __('Configuración') }}
