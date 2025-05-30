@@ -12,40 +12,49 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
+                <flux:navlist.group :heading="__('Plataforma')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 </flux:navlist.group>
 
-                <flux:navlist.group :heading="__('Usuarios')" class="grid">
-                    <flux:navlist.item icon="user-group" :href="route('users')" :current="request()->routeIs('users')" wire:navigate>
-                        {{ __('Gestión de usuarios') }}
-                    </flux:navlist.item>
-                    <flux:navlist.item icon="key" :href="route('roles')" :current="request()->routeIs('roles')" wire:navigate>
-                        {{ __('Permisos por perfil') }}
-                    </flux:navlist.item>
-                </flux:navlist.group>
+                @canany(['ver usuarios', 'ver roles'])
+                    <flux:navlist.group :heading="__('Usuarios')" class="grid">
+                        @can('ver usuarios')
+                            <flux:navlist.item icon="user-group" :href="route('users')" :current="request()->routeIs('users')" wire:navigate>
+                                {{ __('Gestión de usuarios') }}
+                            </flux:navlist.item>
+                        @endcan
+                        @can('ver roles')
+                            <flux:navlist.item icon="key" :href="route('roles')" :current="request()->routeIs('roles')" wire:navigate>
+                                {{ __('Permisos por perfil') }}
+                            </flux:navlist.item>
+                        @endcan
+                    </flux:navlist.group>
+                @endcanany
 
                 <flux:navlist.group :heading="__('Mantenedor')" class="grid">
-                    <flux:navlist.item icon="bars-2">{{ __('Producto') }}</flux:navlist.item>
+                    @can('ver productos')
+                        <flux:navlist.item icon="cube" :href="route('products')" :current="request()->routeIs('products')" wire:navigate>{{ __('Producto') }}</flux:navlist.item>
+                    @endcan
+                    <flux:dropdown position="bottom" align="start">
+                        <flux:navlist.item icon="bars-3" icon-trailing="chevron-down">
+                            {{ __('Configuración') }}
+                        </flux:navlist.item>
+
+                        <flux:menu class="w-[220px]">
+                            <flux:menu.radio.group>
+                                <flux:menu.item icon="bars-2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Tipo de Producto') }}</flux:menu.item>
+                                @can('ver categorias')
+                                    <flux:menu.item icon="bars-2" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Categoría') }}</flux:menu.item>
+                                @endcan
+                            </flux:menu.radio.group>
+                        </flux:menu>
+                    </flux:dropdown>
                 </flux:navlist.group>
-
-                <flux:dropdown position="bottom" align="start">
-                    <flux:navlist.item icon="bars-3" icon-trailing="chevron-down">
-                        {{ __('Configuración') }}
-                    </flux:navlist.item>
-
-                    <flux:menu class="w-[220px]">
-                        <flux:menu.radio.group>
-                            <flux:menu.item icon="bars-2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Tipo de Producto') }}</flux:menu.item>
-                            <flux:menu.item icon="bars-2" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Categoría') }}</flux:menu.item>
-                        </flux:menu.radio.group>
-                    </flux:menu>
-                </flux:dropdown>
 
             </flux:navlist>
 
             <flux:spacer />
-
+            <!--
             <flux:navlist variant="outline">
                 <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
                 {{ __('Repository') }}
@@ -55,7 +64,7 @@
                 {{ __('Documentation') }}
                 </flux:navlist.item>
             </flux:navlist>
-
+            -->
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">
                 <flux:profile

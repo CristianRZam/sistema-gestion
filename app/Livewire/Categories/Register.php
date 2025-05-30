@@ -61,11 +61,15 @@ class Register extends Component
             }
         } else {
             // Modo creación
+            // Obtener el siguiente idParametro para tipo CATEGORIA
+            $siguienteIdParametro = Parameter::where('tipo', 'CATEGORIA')->max('idParametro') + 1;
+
             Parameter::create([
+                'idParametro' => $siguienteIdParametro,
+                'tipo' => 'CATEGORIA',
                 'nombre' => $this->nombre,
                 'nombreCorto' => $this->nombreCorto,
                 'orden' => $this->orden,
-                'tipo' => "CATEGORIA",
                 'auditoriaFechaCreacion' => Carbon::now(),
                 'auditoriaCreadoPor' => $userId,
             ]);

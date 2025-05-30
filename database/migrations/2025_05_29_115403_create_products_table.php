@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parameters', function (Blueprint $table) {
-            $table->id(); // Long id
-            $table->unsignedBigInteger('idParametroPadre')->nullable(); // Long idParametroPadre
-            $table->unsignedBigInteger('idParametro')->nullable(); // Long idParametro
-            $table->string('tipo'); // String tipo
-            $table->string('nombre'); // String nombre
-            $table->string('nombreCorto')->nullable(); // String nombreCorto
-            $table->unsignedBigInteger('orden')->nullable(); // Long orden
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('codigo')->unique(); // Código único del producto
+            $table->string('nombre'); // Nombre del producto
+            $table->text('descripcion')->nullable(); // Descripción del producto
+            $table->decimal('precio', 10, 2); // Precio del producto
+            $table->integer('stock')->default(0); // Stock del producto
+            $table->unsignedBigInteger('categoria_id'); // Categoria del producto (Relación lógica)
 
             // Auditoría
             $table->date('auditoriaFechaCreacion')->nullable(); // LocalDate auditoriaFechaCreacion
@@ -27,16 +27,16 @@ return new class extends Migration
             $table->string('auditoriaModificadoPor')->nullable(); // String auditoriaModificadoPor
             $table->date('auditoriaFechaEliminacion')->nullable(); // LocalDate auditoriaFechaEliminacion
             $table->string('auditoriaEliminadoPor')->nullable(); // String auditoriaEliminadoPor
-
-            //$table->timestamps(); // created_at y updated_at
+            // $table->timestamps(); // Si deseas controlar fechas de creación/actualización
         });
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('parameters');
+        Schema::dropIfExists('products');
     }
 };

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Parameter extends Model
 {
     // Si no usas timestamps
-    // public $timestamps = false;
+    public $timestamps = false;
 
     protected $table = 'parameters';
 

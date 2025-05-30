@@ -8,6 +8,8 @@ use App\Exports\RolesExcelExport;
 use App\Exports\RolesPdfExport;
 use App\Exports\UsersExcelExport;
 use App\Exports\UsersPdfExport;
+use App\Exports\ProductsExcelExport;
+use App\Exports\ProductsPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
@@ -44,7 +46,7 @@ Route::middleware(['auth', 'can:ver categorias'])->group(function () {
     //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'can:ver usuarios'])->group(function () {
     // Ruta para exportar Excel de usuarios
     Route::get('/users/exportar-excel', function () {
         return Excel::download(new UsersExcelExport, 'users.xlsx');
@@ -61,7 +63,7 @@ Route::middleware(['auth'])->group(function () {
     //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'can:ver roles'])->group(function () {
     // Ruta para exportar Excel de roles
     Route::get('/roles/exportar-excel', function () {
         return Excel::download(new RolesExcelExport, 'roles.xlsx');
@@ -83,5 +85,23 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('/roles/{role}/permissions', 'permissions.lista')->name('permissions');
 });
 
+
+Route::middleware(['auth', 'can:ver productos'])->group(function () {
+    // Ruta para exportar Excel de productos
+    Route::get('/products/exportar-excel', function () {
+        return Excel::download(new ProductsExcelExport, 'productos.xlsx');
+    })->name('products.exportar.excel');
+
+    // Ruta para exportar PDF de categorías
+   Route::get('/products/exportar-pdf', function () {
+        return (new ProductsPdfExport)->download('productos.pdf');
+    })->name('products.exportar.pdf');
+
+
+    // Rutas existentes
+    Volt::route('products', 'products.lista')->name('products');
+    //Volt::route('settings/password', 'settings.password')->name('settings.password');
+    //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+});
 
 require __DIR__.'/auth.php';

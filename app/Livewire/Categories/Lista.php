@@ -70,9 +70,4 @@ class Lista extends Component
         $this->reset('categoryIdToDelete');
     }
 
-    public function exportarExcel()
-    {
-        return Excel::download(new CategoriesExcelExport, 'categorias.xlsx');
-    }
-
 }

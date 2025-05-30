@@ -17,6 +17,15 @@
            class="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white mr-2">
             Exportar Excel
         </a>
+
+        <flux:modal.trigger name="register-user">
+            <button
+                class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer"
+                x-data=""
+                x-on:click.prevent="$dispatch('open-modal-user')">
+                {{ __('Agregar') }}
+            </button>
+        </flux:modal.trigger>
     </div>
 
     <!-- Tabla de usuarios -->

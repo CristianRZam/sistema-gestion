@@ -68,7 +68,7 @@ class Register extends Component
             $nuevo = User::create([
                 'name' => $this->nombre,
                 'email' => $this->email,
-                'password' => bcrypt('password'), // puedes ajustar esto
+                'password' => bcrypt('12345678'), // puedes ajustar esto
             ]);
 
             $nuevo->assignRole($this->role);
