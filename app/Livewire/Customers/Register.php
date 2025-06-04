@@ -15,6 +15,9 @@ class Register extends Component
     public $email;
     public $direccion;
 
+    public $modo = 'crud'; // 'crud' o 'venta'
+    public $clienteEncontrado = null;
+
     protected $rules = [
         'nombre' => 'required|string|max:255',
         'documento' => 'required|string|max:50|unique:customers,documento',
@@ -23,12 +26,19 @@ class Register extends Component
         'direccion' => 'nullable|string|max:255',
     ];
 
-    protected $listeners = ['open-modal' => 'abrir'];
+    protected $listeners = ['open-modal-customer' => 'abrir'];
 
-    public function abrir($id = null)
+    public function abrir($id = null, $modo = 'crud')
     {
         $this->resetValidation();
+        $this->modo = $modo;
         $this->customerId = $id;
+
+        if ($this->modo === 'venta') {
+            $this->reset(['nombre', 'documento', 'telefono', 'email', 'direccion']);
+            // Aquí podrías activar automáticamente un input para buscar por DNI
+            return;
+        }
 
         if ($this->customerId) {
             $customer = Customer::find($this->customerId);
@@ -43,6 +53,7 @@ class Register extends Component
             $this->reset(['nombre', 'documento', 'telefono', 'email', 'direccion']);
         }
     }
+
 
     public function guardarCustomer()
     {
@@ -86,9 +97,31 @@ class Register extends Component
             ]);
         }
 
-        $this->dispatch('actualiza-lista-customer');
+        if ($this->modo === 'venta') {
+            $cliente = Customer::where('documento', $this->documento)->first();
+            $this->dispatch('clienteSeleccionadoDesdeVenta', $cliente->id);
+        } else {
+            $this->dispatch('actualiza-lista-customer');
+        }
+
         $this->dispatch('cerrarModalCustomer');
+
     }
+
+    public function buscarClientePorDocumento()
+    {
+        $this->resetValidation();
+
+        $this->clienteEncontrado = Customer::where('documento', $this->documento)->first();
+
+        if ($this->clienteEncontrado) {
+            $this->dispatch('clienteSeleccionadoDesdeVenta', $this->clienteEncontrado->id);
+            $this->dispatch('cerrarModalCustomer');
+        } else {
+            $this->addError('documento', 'Cliente no encontrado. Por favor completa el formulario para registrarlo.');
+        }
+    }
+
 
     public function render()
     {

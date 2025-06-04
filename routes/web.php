@@ -138,5 +138,24 @@ Route::middleware(['auth', 'can:ver proveedores'])->group(function () {
     Volt::route('suppliers', 'suppliers.lista')->name('suppliers');
 });
 
+Route::middleware(['auth', 'can:ver ventas'])->group(function () {
+    // Exportar Excel de suppliers
+    Route::get('/sales/exportar-excel', function () {
+        return Excel::download(new SuppliersExcelExport, 'ventas.xlsx');
+    })->name('sales.exportar.excel');
+
+    // Exportar PDF de suppliers
+    Route::get('/sales/exportar-pdf', function () {
+        return (new SuppliersPdfExport)->download('ventas.pdf');
+    })->name('sales.exportar.pdf');
+
+    // Ruta lista suppliers (si la tienes)
+    Volt::route('sales', 'sales.lista')->name('sales');
+    Volt::route('sales/add', 'sales.register')->name('sales.register');
+    Volt::route('sales/pay/{venta}', 'sales.pay')->name('sales.pay');
+});
+
+
+
 
 require __DIR__.'/auth.php';
