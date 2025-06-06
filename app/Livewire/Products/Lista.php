@@ -11,6 +11,8 @@ class Lista extends Component
 {
     public $productos;
     public $productIdToDelete;
+    public $modoContinuo = false; // Nuevo: Modo escaneo continuo
+    public $codigoEscaneado = '';
 
     protected $listeners = [
         'actualiza-lista-producto' => 'actualizarProductos',
@@ -59,4 +61,34 @@ class Lista extends Component
         $this->dispatch('cerrarModalDeteleProduct');
         $this->reset('productIdToDelete');
     }
+
+    public function procesarCodigoEscaneado($codigo)
+    {
+        $this->codigoEscaneado = $codigo;
+
+        $producto = Product::where('codigo', $codigo)->first();
+
+        if (!$producto) {
+            session()->flash('error', 'Producto no encontrado.');
+            $this->dispatch('open-modal-product');
+            return;
+        }
+
+        if ($this->modoContinuo) {
+            // Agregar stock de 1 directamente
+            $producto->stock += 1;
+            $producto->save();
+            session()->flash('success', 'Stock actualizado automáticamente.');
+            $this->dispatch('actualiza-lista-producto');
+        } else {
+            // Abrir modal como si fuera edición
+            $this->dispatch('open-modal-product', ['id' => $producto->id]);
+        }
+    }
+
+    public function toggleModoEscaneoContinuo()
+    {
+        $this->modoContinuo = !$this->modoContinuo;
+    }
+
 }

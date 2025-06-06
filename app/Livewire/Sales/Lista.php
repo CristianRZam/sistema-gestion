@@ -9,14 +9,13 @@ class Lista extends Component
 {
     public function render()
     {
-        $ventas = Sale::with('vendedor')->with('customer')
-        ->orderBy('fecha_venta', 'desc')
+        $ventas = Sale::with(['vendedor', 'customer', 'estadoVenta'])
+            ->orderBy('fecha_venta', 'desc')
             ->get();
-
-
 
         return view('livewire.sales.lista', [
             'ventas' => $ventas
         ]);
     }
+
 }

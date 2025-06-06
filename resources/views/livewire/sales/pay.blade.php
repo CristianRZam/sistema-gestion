@@ -1,7 +1,45 @@
 <div class="p-6 bg-white dark:bg-zinc-900 rounded-lg shadow-md space-y-6">
 
-    {{-- Título --}}
-    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Detalles de pago</h2>
+    {{-- Título y botón de imprimir --}}
+    <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Detalles de pago</h2>
+
+        <div class="flex items-center gap-2">
+            @can('crear venta')
+                <a href="{{ route('sales.register') }}"
+                   class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition cursor-pointer">
+                    Realizar nueva venta
+                </a>
+            @endcan
+
+            @if($estadoVenta == 2)
+                <flux:modal.trigger name="comprobante-preview">
+                    <button
+                        class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition cursor-pointer"
+                        x-data
+                        x-on:click.prevent="$dispatch('open-modal-comprobante')">
+                        {{ __('Imprimir comprobante') }}
+                    </button>
+                </flux:modal.trigger>
+            @endif
+        </div>
+    </div>
+
+
+
+    <flux:modal name="comprobante-preview" :show="$mostrarModalComprobante" focusable class="max-w-lg">
+        <div class="mb-4">
+            <flux:heading size="lg">{{ __('Vista previa del comprobante') }}</flux:heading>
+        </div>
+
+        <div class="border rounded shadow-sm" style="height: 400px;">
+            @if($iframeSrc)
+                <iframe src="{{ $iframeSrc }}"
+                        class="w-full h-full"
+                        frameborder="0"></iframe>
+            @endif
+        </div>
+    </flux:modal>
 
     {{-- Datos del Cliente --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -115,12 +153,70 @@
 
     {{-- Botón de acción --}}
     <div class="flex justify-between items-center mt-6">
-        <a href="{{ route('sales.register') }}" class="text-sm text-blue-600 dark:text-white hover:underline">
-            ← Editar venta
-        </a>
-        <button wire:click="procesarPago"
-                class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-            Pagar
-        </button>
+        {{-- Lado izquierdo --}}
+        @can('editar venta')
+            <div>
+                @if($estadoVenta == 1)
+                    <a href="{{ route('sales.edit', $venta) }}" class="text-sm text-blue-600 dark:text-white hover:underline">
+                        ← Editar venta
+                    </a>
+                @endif
+            </div>
+        @endcan
+
+        {{-- Lado derecho --}}
+        <div class="flex gap-2">
+            @can('eliminar venta')
+                @if($estadoVenta == 2 || $estadoVenta == 1)
+                    <flux:modal.trigger name="confirm-sale-deletion">
+                        <flux:button class="cursor-pointer" variant="danger" x-data="" x-on:click.prevent="$dispatch('open-modal-sale-delete', 'confirm-sale-deletion')">
+                            {{ __('Cancelar venta') }}
+                        </flux:button>
+                    </flux:modal.trigger>
+                @endif
+            @endcan
+
+            @can('pagar venta')
+                @if($estadoVenta == 1)
+                    <button wire:click="procesarPago"
+                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer">
+                        Pagar
+                    </button>
+                @endif
+            @endcan
+        </div>
     </div>
+
+    <flux:modal name="confirm-sale-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
+        <form wire:submit="eliminarVenta" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('¿Estás seguro de que deseas cancelar esta venta?') }}</flux:heading>
+
+                <flux:subheading>
+                    {{ __('Una vez cancelada, esta venta no podrá recuperarse. Esta acción es permanente. Confirma si deseas continuar.') }}
+                </flux:subheading>
+            </div>
+
+            <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                <flux:modal.close>
+                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                </flux:modal.close>
+
+                @can('eliminar venta')
+                    @if($estadoVenta == 2 || $estadoVenta == 1)
+                        <flux:button variant="danger" type="submit">{{ __('Continuar') }}</flux:button>
+                    @endif
+                @endcan
+            </div>
+        </form>
+    </flux:modal>
+
+
+    <script>
+        window.addEventListener('open-modal-comprobante', () => {
+            console.log("hahaha")
+            Flux.modal('comprobante-preview').show();
+        });
+    </script>
+
 </div>

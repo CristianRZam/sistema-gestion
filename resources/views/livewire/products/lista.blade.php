@@ -9,6 +9,12 @@
 
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4 text-right">
+        <button
+            wire:click="toggleModoEscaneoContinuo"
+            class="px-4 py-2 rounded
+            {{ $modoContinuo ? 'bg-green-600 text-white' : 'border border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white' }}">
+            {{ $modoContinuo ? 'Modo Escaneo Continuo: ON' : 'Modo Escaneo Continuo: OFF' }}
+        </button>
         @can('exportar productos')
             <a href="{{ route('products.exportar.pdf') }}"
                class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">

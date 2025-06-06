@@ -49,6 +49,13 @@ class Sale extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
+    // Sale.php
+    public function estadoVenta()
+    {
+        return $this->belongsTo(Parameter::class, 'estado_venta_id', 'idParametro')
+            ->where('tipo', 'ESTADO_VENTA');
+    }
+
     /**
      * Casting de atributos para asegurar el formato correcto al acceder a ellos.
      */

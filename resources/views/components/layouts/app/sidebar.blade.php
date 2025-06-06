@@ -60,8 +60,15 @@
                 <flux:navlist.group :heading="__('Operaciones')" class="grid">
                     {{-- SECCIÓN VENTAS --}}
                     @can('ver ventas')
-                        <flux:navlist.item icon="shopping-cart" :href="route('sales')" :current="request()->routeIs('sales')" wire:navigate>{{ __('Ventas') }}</flux:navlist.item>
+                        <flux:navlist.item
+                            icon="shopping-cart"
+                            :href="route('sales')"
+                            :current="request()->routeIs('sales*')"
+                            wire:navigate>
+                            {{ __('Punto de venta') }}
+                        </flux:navlist.item>
                     @endcan
+
                     <!--@can('ver categorias')
                         <flux:navlist.item icon="credit-card" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Ventas Generales') }}</flux:navlist.item>
                     @endcan-->

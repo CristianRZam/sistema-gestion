@@ -20,11 +20,11 @@
         @endcan
 
         @can('crear venta')
-                <a href="{{ route('sales.register') }}"
-                   class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer">
-                    {{ __('Nueva Venta') }}
-                </a>
-            @endcan
+            <a href="{{ route('sales.register') }}"
+               class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer">
+                {{ __('Nueva Venta') }}
+            </a>
+        @endcan
     </div>
 
     <!-- Tabla de ventas -->
@@ -39,6 +39,7 @@
                 <th class="border p-2">Cliente</th>
                 <th class="border p-2">Usuario vendedor</th>
                 <th class="border p-2">Total</th>
+                <th class="border p-2">Estado</th>
                 <th class="border p-2">Acciones</th>
             </tr>
             </thead>
@@ -51,54 +52,54 @@
                     <td class="border p-2">{{ $venta->vendedor?->name ?? '-' }}</td>
                     <td class="border p-2 text-center">S/ {{ number_format($venta->total, 2) }}</td>
                     <td class="border p-2 text-center">
+                        @php
+                            $estado = $venta->estadoVenta?->nombre ?? 'Desconocido';
+                            $color = match($venta->estado_venta_id) {
+                                1 => 'bg-yellow-500 text-white', // Pendiente
+                                2 => 'bg-green-600 text-white',  // Pagada
+                                3 => 'bg-red-600 text-white',    // Anulada
+                                default => 'bg-gray-600 text-white',
+                            };
+                        @endphp
+                        <span class="px-2 py-1 rounded text-sm font-semibold {{ $color }}">
+                            {{ $estado }}
+                        </span>
+                    </td>
+
+
+                    <td class="border p-2 text-center">
+                        {{-- Botón "Ver" disponible siempre si el usuario tiene permiso --}}
                         @can('ver venta')
                             <a href="{{ route('sales.show', $venta->id) }}"
                                class="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-500 hover:text-white mr-2 cursor-pointer">
                                 Ver
                             </a>
                         @endcan
-                        @can('eliminar venta')
-                            <flux:modal.trigger name="confirm-sale-deletion">
-                                <button
-                                    class="border border-red-500 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white cursor-pointer"
-                                    x-data=""
-                                    x-on:click.prevent="$dispatch('open-modal-delete-sale', { id: {{ $venta->id }} })"
-                                >
-                                    Eliminar
-                                </button>
-                            </flux:modal.trigger>
-                        @endcan
+
+                        {{-- Acciones según estado_venta_id --}}
+                        @if ($venta->estado_venta_id === 1)
+                            {{-- Venta pendiente --}}
+                            @can('ver venta')
+                                <a href="{{ route('sales.pay', $venta->id) }}"
+                                   class="border border-yellow-500 text-yellow-500 px-3 py-1 rounded hover:bg-yellow-500 hover:text-white cursor-pointer">
+                                    Continuar venta
+                                </a>
+                            @endcan
+                        @elseif ($venta->estado_venta_id === 2 || $venta->estado_venta_id === 3)
+                            {{-- Venta pagada --}}
+                            @can('ver venta')
+                                <a href="{{ route('sales.pay', $venta->id) }}"
+                                   class="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-500 hover:text-white mr-2 cursor-pointer">
+                                    Ver
+                                </a>
+                            @endcan
+                        @endif
                     </td>
+
                 </tr>
             @endforeach
             </tbody>
         </table>
     @endif
 
-    <flux:modal name="confirm-sale-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
-        <form wire:submit="deleteSale" class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('¿Estás seguro de que quieres eliminar esta venta?') }}</flux:heading>
-                <flux:subheading>
-                    {{ __('Una vez eliminada la venta, esta acción no se puede deshacer.') }}
-                </flux:subheading>
-            </div>
-
-            <div class="flex justify-end space-x-2">
-                <flux:modal.close>
-                    <flux:button class="cursor-pointer" variant="filled">{{ __('Cancelar') }}</flux:button>
-                </flux:modal.close>
-
-                <flux:button class="cursor-pointer" variant="danger" type="submit">{{ __('Eliminar') }}</flux:button>
-            </div>
-        </form>
-    </flux:modal>
-
-
 </section>
-
-<script>
-    window.addEventListener('cerrarModalDeteleSale', () => {
-        Flux.modal('confirm-sale-deletion').close();
-    });
-</script>

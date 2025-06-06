@@ -9,7 +9,6 @@ use App\Models\SaleDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-
 class Register extends Component
 {
     public $fecha_venta;
@@ -26,6 +25,7 @@ class Register extends Component
     public $producto_precio;
     public $producto_cantidad;
     public $mostrar_modal_producto = false;
+    public $ventaId;
 
     protected $listeners = [
         'clienteSeleccionadoDesdeVenta' => 'cargarClienteDesdeModal',
@@ -54,8 +54,24 @@ class Register extends Component
     public $productosDisponibles = [];
 
 
-    public function mount()
+    public function mount($id = null)
     {
+        if ($id !== null) {
+            $ventaModel = Sale::findOrFail($id);
+
+            // 🔒 Validar si ya está pagada
+            if ($ventaModel->estado_venta_id != 1) {
+                session()->flash('error', 'La venta ya fue pagada y no se puede editar.');
+                redirect()->route('sales');
+                return;
+            }
+
+            $this->ventaId = $id;
+
+            $this->cargarVentaExistente($id); // Carga los datos de la venta existente
+        }
+
+        // Productos disponibles se cargan siempre
         $this->productosDisponibles = DB::table('products as p')
             ->leftJoin('parameters as c', function ($join) {
                 $join->on('p.categoria_id', '=', 'c.idParametro')
@@ -78,6 +94,38 @@ class Register extends Component
 
         $this->calcularTotal();
     }
+
+    public function cargarVentaExistente($id)
+    {
+        $venta = Sale::with(['customer'])->findOrFail($id);
+
+
+        // Cliente
+        if ($venta->customer) {
+            $this->cliente_seleccionado = [
+                'id' => $venta->customer->id,
+                'nombre' => $venta->customer->nombre,
+                'dni' => $venta->customer->documento,
+                'direccion' => $venta->customer->direccion,
+            ];
+            $this->cliente_nombre = $venta->customer->nombre;
+        }
+
+        $detalles = SaleDetail::with('product')->where('sale_id', $id)->get();
+
+        $this->productos = $detalles->map(function ($detalle) {
+            return [
+                'id' => $detalle->product->id,
+                'nombre' => $detalle->product->nombre,
+                'precio' => $detalle->precio_unitario,
+                'cantidad' => $detalle->cantidad,
+                'stock' => $detalle->product->stock,
+            ];
+        })->toArray();
+        $this->fecha_venta = $venta->fecha_venta;
+        $this->total = $venta->total;
+    }
+
 
 
 
@@ -176,14 +224,11 @@ class Register extends Component
 
     public function registrarVenta()
     {
-
-        // Verificar que hay al menos un producto agregado
         if (empty($this->productos)) {
             $this->addError('productos', 'Debe agregar al menos un producto para registrar la venta.');
             return;
         }
 
-        // Validar que todos los productos tengan suficiente stock
         foreach ($this->productos as $producto) {
             if ($producto['cantidad'] > $producto['stock']) {
                 $this->addError('stock', "El producto '{$producto['nombre']}' no tiene suficiente stock.");
@@ -191,34 +236,92 @@ class Register extends Component
             }
         }
 
-        $venta = Sale::create([
-            'customer_id' => $this->cliente_seleccionado['id'] ?? null,
-            'usuario_id' => auth()->id(),
-            'fecha_venta' => Carbon::now(),
-            'total' => $this->total ?? 0,
-            'estado_venta_id' => 1,
-            'auditoriaFechaCreacion' => Carbon::now(),
-            'auditoriaCreadoPor' => auth()->id(),
-        ]);
+        DB::beginTransaction();
 
-        foreach ($this->productos as $producto) {
-            SaleDetail::create([
-                'sale_id' => $venta->id,
-                'product_id' => $producto['id'],
-                'cantidad' => $producto['cantidad'],
-                'precio_unitario' => $producto['precio'],
-                'subtotal' => $producto['cantidad'] * $producto['precio'],
+        try {
+            if ($this->ventaId) {
+                // Venta existente: actualizar
+                $venta = Sale::findOrFail($this->ventaId);
+                $venta->customer_id = $this->cliente_seleccionado['id'] ?? null;
+                $venta->total = $this->total ?? 0;
+                $venta->auditoriaFechaModificacion = Carbon::now();
+                $venta->auditoriaModificadoPor = auth()->id();
+                $venta->save();
 
-                'auditoriaFechaCreacion' => Carbon::now(),
-                'auditoriaCreadoPor' => auth()->id(),
-            ]);
+                // Obtener productos actuales del detalle
+                $detallesActuales = SaleDetail::where('sale_id', $venta->id)->get()->keyBy('product_id');
 
-            // (Opcional) Actualizar el stock del producto
-            // Product::where('id', $producto['id'])->decrement('stock', $producto['cantidad']);
+                $idsEnNuevaVenta = [];
+
+                foreach ($this->productos as $producto) {
+                    $idsEnNuevaVenta[] = $producto['id'];
+
+                    if ($detallesActuales->has($producto['id'])) {
+                        // Ya existe, actualizar
+                        $detalle = $detallesActuales[$producto['id']];
+                        $detalle->cantidad = $producto['cantidad'];
+                        $detalle->precio_unitario = $producto['precio'];
+                        $detalle->subtotal = $producto['cantidad'] * $producto['precio'];
+                        $detalle->auditoriaFechaModificacion = Carbon::now();
+                        $detalle->auditoriaModificadoPor = auth()->id();
+                        $detalle->save();
+                    } else {
+                        // Nuevo detalle
+                        SaleDetail::create([
+                            'sale_id' => $venta->id,
+                            'product_id' => $producto['id'],
+                            'cantidad' => $producto['cantidad'],
+                            'precio_unitario' => $producto['precio'],
+                            'subtotal' => $producto['cantidad'] * $producto['precio'],
+                            'auditoriaFechaCreacion' => Carbon::now(),
+                            'auditoriaCreadoPor' => auth()->id(),
+                        ]);
+                    }
+                }
+
+                // Eliminar detalles que ya no están
+                foreach ($detallesActuales as $productId => $detalle) {
+                    if (!in_array($productId, $idsEnNuevaVenta)) {
+                        $detalle->delete();
+                    }
+                }
+
+            } else {
+                // Nueva venta
+                $venta = Sale::create([
+                    'customer_id' => $this->cliente_seleccionado['id'] ?? null,
+                    'usuario_id' => auth()->id(),
+                    'fecha_venta' => Carbon::now(),
+                    'total' => $this->total ?? 0,
+                    'estado_venta_id' => 1,
+                    'auditoriaFechaCreacion' => Carbon::now(),
+                    'auditoriaCreadoPor' => auth()->id(),
+                ]);
+
+                foreach ($this->productos as $producto) {
+                    SaleDetail::create([
+                        'sale_id' => $venta->id,
+                        'product_id' => $producto['id'],
+                        'cantidad' => $producto['cantidad'],
+                        'precio_unitario' => $producto['precio'],
+                        'subtotal' => $producto['cantidad'] * $producto['precio'],
+                        'auditoriaFechaCreacion' => Carbon::now(),
+                        'auditoriaCreadoPor' => auth()->id(),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('sales.pay', ['venta' => $venta->id]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al registrar/editar venta: ' . $e->getMessage());
+            $this->addError('productos', 'Ocurrió un error al registrar la venta.');
         }
-
-        return redirect()->route('sales.pay', ['venta' => $venta->id]);
     }
+
 
     public $producto_buscar_filtro = '';
 
