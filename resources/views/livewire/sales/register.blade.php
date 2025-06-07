@@ -154,7 +154,7 @@
 
                     <flux:button
                         wire:click="registrarVenta"
-                        class="w-full"
+                        class="w-full cursor-pointer"
                         variant="primary"
                     >
                         {{ __('Completar venta') }}

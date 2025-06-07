@@ -16,6 +16,7 @@ use App\Exports\SuppliersExcelExport;
 use App\Exports\SuppliersPdfExport;
 use App\Exports\SalesExcelExport;
 use App\Exports\SalesPdfExport;
+use App\Livewire\Sales\Pay;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
@@ -172,12 +173,38 @@ Route::middleware(['auth'])->group(function () {
         ->name('sales.pay');
 });
 
-
-
-
-use App\Livewire\Sales\Pay;
-
 Route::get('/comprobante/preview/{ventaId}', [Pay::class, 'vistaComprobantePreview'])->name('comprobante.preview');
 
+Route::middleware(['auth'])->group(function () {
+    // Exportar Excel de ventas
+    Route::get('/purchases/exportar-excel', function () {
+        return Excel::download(new SalesExcelExport, 'ventas.xlsx');
+    })->middleware('can:exportar ventas')->name('purchases.exportar.excel');
+
+    // Exportar PDF de ventas
+    Route::get('/purchases/exportar-pdf', function () {
+        return (new SalesPdfExport)->download('ventas.pdf');
+    })->middleware('can:exportar ventas')->name('purchases.exportar.pdf');
+
+    // Lista de ventas
+    Volt::route('purchases', 'purchases.lista')
+        ->middleware('can:ver ventas')
+        ->name('purchases');
+
+    // Crear venta
+    Volt::route('purchases/add', 'sales.register')
+        ->middleware('can:crear venta')
+        ->name('purchases.register');
+
+    // Editar venta
+    Volt::route('purchases/edit/{id}', 'sales.register')
+        ->middleware('can:editar venta')
+        ->name('purchases.edit');
+
+    // Registrar pago
+    Volt::route('purchases/pay/{venta}', 'sales.pay')
+        ->middleware('can:editar venta') // O crea 'pagar venta' si quieres más granularidad
+        ->name('purchases.pay');
+});
 
 require __DIR__.'/auth.php';

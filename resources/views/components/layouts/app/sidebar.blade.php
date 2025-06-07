@@ -60,28 +60,32 @@
                 <flux:navlist.group :heading="__('Operaciones')" class="grid">
                     {{-- SECCIÓN VENTAS --}}
                     @can('ver ventas')
-                        <flux:navlist.item
-                            icon="shopping-cart"
-                            :href="route('sales')"
-                            :current="request()->routeIs('sales*')"
-                            wire:navigate>
+                        <flux:navlist.item icon="shopping-cart" :href="route('sales')" :current="request()->routeIs('sales*')" wire:navigate>
                             {{ __('Punto de venta') }}
                         </flux:navlist.item>
                     @endcan
 
-                    <!--@can('ver categorias')
-                        <flux:navlist.item icon="credit-card" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Ventas Generales') }}</flux:navlist.item>
-                    @endcan-->
-
                     {{-- SECCIÓN COMPRAS --}}
                     @can('ver categorias')
-                        <flux:navlist.item icon="shopping-bag" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Mis Compras') }}</flux:navlist.item>
-                    @endcan
-                    @can('ver categorias')
-                        <flux:navlist.item icon="inbox" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Compras Generales') }}</flux:navlist.item>
+                        <flux:navlist.item icon="shopping-bag" :href="route('purchases')" :current="request()->routeIs('purchases*')" wire:navigate>{{ __('Mis Compras') }}</flux:navlist.item>
                     @endcan
 
                 </flux:navlist.group>
+
+                <flux:navlist.group :heading="__('Reportes')" class="grid">
+                    @can('ver categorias')
+                        <flux:navlist.item icon="chart-bar" :href="route('purchases')" :current="request()->routeIs('purchases')" wire:navigate>
+                            {{ __('Reportes Financieros') }}
+                        </flux:navlist.item>
+                    @endcan
+
+                    @can('ver categorias')
+                        <flux:navlist.item icon="users" :href="route('purchases')" :current="request()->routeIs('purchases')" wire:navigate>
+                            {{ __('Reportes de Clientes') }}
+                        </flux:navlist.item>
+                    @endcan
+                </flux:navlist.group>
+
 
 
             </flux:navlist>
@@ -197,5 +201,7 @@
         {{ $slot }}
 
         @fluxScripts
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </body>
 </html>
