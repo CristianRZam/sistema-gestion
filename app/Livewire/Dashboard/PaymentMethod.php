@@ -19,7 +19,7 @@ class PaymentMethod extends Component
 
     public function cargarDatos()
     {
-        $metodos = Parameter::where('tipo', 'METODO_PAGO')
+        $metodos = Parameter::where('codigoParametro', 'METODO_PAGO')
             ->whereNull('auditoriaFechaEliminacion')
             ->orderBy('orden')
             ->get();

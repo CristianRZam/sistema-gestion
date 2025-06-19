@@ -6,25 +6,26 @@ use App\Models\Parameter;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class CategoriesExcelExport extends BaseExcelExport implements FromCollection
+class ParametersExcelExport extends BaseExcelExport implements FromCollection
 {
-    protected string $reportTitle = 'Reporte de Categorías';
-    protected array $headings = ['Nº', 'Nombre', 'Nombre Corto', 'Orden'];
+    protected string $reportTitle = 'Reporte de Parámetros';
+    protected array $headings = ['Nº', 'Nombre', 'Nombre Corto', 'Orden', 'Código Parametro'];
 
     public function collection(): Collection
     {
-        return Parameter::where('tipo', 'CATEGORIA')
-            ->whereNull('auditoriaFechaEliminacion')
-            ->select('nombre', 'nombreCorto', 'orden')
+        return Parameter::whereNull('auditoriaFechaEliminacion')
+            ->select('nombre', 'nombreCorto', 'orden', 'codigoParametro')
+            ->orderBy('codigoParametro')
             ->orderBy('orden')
             ->get()
-            ->values() // Asegura que el índice sea 0, 1, 2,...
+            ->values()
             ->map(function ($item, $index) {
                 return [
                     $index + 1,            // Nº
                     $item->nombre,
                     $item->nombreCorto,
                     $item->orden,
+                    $item->codigoParametro,
                 ];
             });
     }

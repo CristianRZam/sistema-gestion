@@ -27,12 +27,12 @@ class PermissionSeeder extends Seeder
         // PERMISOS
         Permission::create(['name' => 'editar permisos']);
 
-        // CATEGORIAS
-        Permission::create(['name' => 'ver categorias']);
-        Permission::create(['name' => 'crear categoria']);
-        Permission::create(['name' => 'editar categoria']);
-        Permission::create(['name' => 'eliminar categoria']);
-        Permission::create(['name' => 'exportar categorias']);
+        // PARAMETROS
+        Permission::create(['name' => 'ver parametros']);
+        Permission::create(['name' => 'crear parametro']);
+        Permission::create(['name' => 'editar parametro']);
+        Permission::create(['name' => 'eliminar parametro']);
+        Permission::create(['name' => 'exportar parametros']);
 
         // CATEGORIAS
         Permission::create(['name' => 'ver productos']);
@@ -40,6 +40,7 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'editar producto']);
         Permission::create(['name' => 'eliminar producto']);
         Permission::create(['name' => 'exportar productos']);
+        Permission::create(['name' => 'importar productos']);
 
         // CLIENTES
         Permission::create(['name' => 'ver clientes']);

@@ -6,31 +6,59 @@ use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Lista extends Component
 {
-    public $productos;
+    use WithPagination;
+    protected $paginationTheme = 'tailwind'; // Puedes usar 'bootstrap' si lo prefieres
+
     public $productIdToDelete;
     public $modoContinuo = false; // Nuevo: Modo escaneo continuo
     public $codigoEscaneado = '';
 
-    protected $listeners = [
-        'actualiza-lista-producto' => 'actualizarProductos',
-        'open-modal-delete-product' => 'setProductIdToDelete',
-    ];
+    // Filtros
+    public $nombreFiltro = '';
+    public $categoriaFiltro = '';
+    public $stockFiltro = '';
 
-    public function actualizarProductos()
-    {
-        $this->productos = Product::whereNull('auditoriaFechaEliminacion')->get();
-    }
+    protected $listeners = [
+        'actualiza-lista-producto' => '$refresh',
+        'open-modal-delete-product' => 'setProductIdToDelete',
+        'filtrosActualizados' => 'actualizarFiltros',
+    ];
 
     public function render()
     {
-        $this->actualizarProductos();
+        $query = Product::query()->whereNull('auditoriaFechaEliminacion');
+
+        if ($this->nombreFiltro) {
+            $query->where('nombre', 'like', '%' . $this->nombreFiltro . '%');
+        }
+
+        if ($this->categoriaFiltro) {
+            $query->where('categoria_id', $this->categoriaFiltro);
+        }
+
+        if (is_numeric($this->stockFiltro) && $this->stockFiltro > 0) {
+            $query->where('stock', '>=', $this->stockFiltro);
+        }
+
+        $productos = $query->paginate(10);
+
 
         return view('livewire.products.lista', [
-            'productos' => $this->productos,
+            'productos' => $productos,
         ]);
+
+    }
+
+    public function actualizarFiltros($filtros)
+    {
+        $this->nombreFiltro = $filtros['nombre'] ?? '';
+        $this->categoriaFiltro = $filtros['categoria_id'] ?? '';
+        $this->stockFiltro = $filtros['stock'] ?? '';
+        $this->resetPage(); // Reinicia la paginación al aplicar nuevos filtros
     }
 
     public function setProductIdToDelete($id = null)

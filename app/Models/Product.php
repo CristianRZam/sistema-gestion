@@ -8,6 +8,8 @@ class Product extends Model
 {
     // Laravel no manejará automáticamente created_at y updated_at
     public $timestamps = false;
+    protected $table = 'products';
+
 
     // Campos que se pueden llenar en masa
     protected $fillable = [
@@ -26,9 +28,15 @@ class Product extends Model
     ];
 
     // Convertir las fechas automáticamente a objetos Date
+    // Convertir las fechas automáticamente a objetos Date
     protected $dates = [
         'auditoriaFechaCreacion',
         'auditoriaFechaModificacion',
         'auditoriaFechaEliminacion',
     ];
+
+    public function imagenes()
+    {
+        return $this->hasMany(ProductImage::class, 'product_id');
+    }
 }

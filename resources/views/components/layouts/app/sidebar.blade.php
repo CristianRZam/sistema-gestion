@@ -41,7 +41,9 @@
                     @can('ver proveedores')
                         <flux:navlist.item icon="truck" :href="route('suppliers')" :current="request()->routeIs('suppliers')" wire:navigate>{{ __('Proveedor') }}</flux:navlist.item>
                     @endcan
-                    <flux:dropdown position="bottom" align="start">
+                        <flux:navlist.item icon="cog" :href="route('parameters')" :current="request()->routeIs('parameters')" wire:navigate>{{ __('Parametros') }}</flux:navlist.item>
+
+                       <!-- <flux:dropdown position="bottom" align="start">
                         <flux:navlist.item icon="bars-3" icon-trailing="chevron-down">
                             {{ __('Configuración') }}
                         </flux:navlist.item>
@@ -54,7 +56,7 @@
                                 @endcan
                             </flux:menu.radio.group>
                         </flux:menu>
-                    </flux:dropdown>
+                    </flux:dropdown>-->
                 </flux:navlist.group>
 
                 <flux:navlist.group :heading="__('Operaciones')" class="grid">

@@ -2,14 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
-use App\Exports\CategoriesExcelExport;
-use App\Exports\CategoriesPdfExport;
 use App\Exports\RolesExcelExport;
 use App\Exports\RolesPdfExport;
 use App\Exports\UsersExcelExport;
 use App\Exports\UsersPdfExport;
 use App\Exports\ProductsExcelExport;
 use App\Exports\ProductsPdfExport;
+use App\Exports\ProductsCatalogPdfExport;
 use App\Exports\CustomersExcelExport;
 use App\Exports\CustomersPdfExport;
 use App\Exports\SuppliersExcelExport;
@@ -17,7 +16,11 @@ use App\Exports\SuppliersPdfExport;
 use App\Exports\SalesExcelExport;
 use App\Exports\SalesPdfExport;
 use App\Livewire\Sales\Pay;
+use App\Exports\ParametersExcelExport;
+use App\Exports\ParametersPdfExport;
+use App\Http\Controllers\ParametroController;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
@@ -35,23 +38,6 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
-Route::middleware(['auth', 'can:ver categorias'])->group(function () {
-    // Ruta para exportar Excel de categorías
-    Route::get('/categories/exportar-excel', function () {
-        return Excel::download(new CategoriesExcelExport, 'categorias.xlsx');
-    })->name('categories.exportar.excel');
-
-    // Ruta para exportar PDF de categorías
-    Route::get('/categories/exportar-pdf', function () {
-        return (new CategoriesPdfExport)->download('categorias.pdf');
-    })->name('categories.exportar.pdf');
-
-
-    // Rutas existentes
-    Volt::route('categories', 'categories.lista')->name('categories');
-    //Volt::route('settings/password', 'settings.password')->name('settings.password');
-    //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
-});
 
 Route::middleware(['auth', 'can:ver usuarios'])->group(function () {
     // Ruta para exportar Excel de usuarios
@@ -104,6 +90,9 @@ Route::middleware(['auth', 'can:ver productos'])->group(function () {
         return (new ProductsPdfExport)->download('productos.pdf');
     })->name('products.exportar.pdf');
 
+    Route::get('/products/exportar-catalogo-pdf', function (Request $request) {
+        return (new ProductsCatalogPdfExport($request))->download('catalogo-productos.pdf');
+    })->name('products.exportar-catalogo.pdf');
 
     // Rutas existentes
     Volt::route('products', 'products.lista')->name('products');
@@ -206,5 +195,21 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('can:editar venta') // O crea 'pagar venta' si quieres más granularidad
         ->name('purchases.pay');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/parameters/exportar-excel', function () {
+        return Excel::download(new ParametersExcelExport, 'parametros.xlsx');
+    })->name('parameters.exportar.excel');
+
+    // Ruta para exportar PDF de categorías
+    Route::get('/parameters/exportar-pdf', function () {
+        return (new ParametersPdfExport)->download('parametros.pdf');
+    })->name('parameters.exportar.pdf');
+
+    // Rutas ver parametros (configuraciones)
+    Volt::route('parameters', 'parameters.lista')->middleware('can:ver parametros')->name('parameters');
+});
+
+Route::get('/parameters/dowloader/{codigoParametro}', [ParametroController::class, 'descargar'])->name('parametros.descargar');
 
 require __DIR__.'/auth.php';

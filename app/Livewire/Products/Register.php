@@ -4,6 +4,7 @@ namespace App\Livewire\Products;
 
 use App\Models\Product;
 use App\Models\Parameter;
+use App\Models\ProductImage;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -18,6 +19,10 @@ class Register extends Component
     public $categoria; // Este será el ID lógico de la categoría
 
     public $categoriasDisponibles = [];
+
+    // ... tus propiedades anteriores
+    public $imagen; // Imagen cargada
+    public $imagenActualUrl; // URL para previsualizar si ya existe
 
     protected $rules = [
         'codigo' => 'required|string|max:50',
@@ -42,6 +47,8 @@ class Register extends Component
         $this->productoId = $id;
 
         $this->categoriasDisponibles = $this->obtenerCategorias();
+        $this->imagen = null;
+        $this->imagenActualUrl = null;
 
         if ($this->productoId) {
             $producto = Product::find($this->productoId);
@@ -52,6 +59,11 @@ class Register extends Component
                 $this->precio = $producto->precio;
                 $this->stock = $producto->stock;
                 $this->categoria = $producto->categoria_id;
+
+                $imagen = $producto->imagenes()->where('es_principal', true)->first();
+                if ($imagen) {
+                    $this->imagenActualUrl = asset('storage/' . $imagen->imagen_url);
+                }
             }
         } else {
             $this->reset(['codigo', 'nombre', 'descripcion', 'precio', 'stock', 'categoria']);
@@ -60,16 +72,16 @@ class Register extends Component
 
     public function guardarProducto()
     {
-        $this->validate(
-            $this->productoId
+        $this->validate([
+            ...($this->productoId
                 ? array_merge($this->rules, [
-                'codigo' => 'required|string|max:50|unique:products,codigo,' . $this->productoId,
-            ])
+                    'codigo' => 'required|string|max:50|unique:products,codigo,' . $this->productoId,
+                ])
                 : array_merge($this->rules, [
-                'codigo' => 'required|string|max:50|unique:products,codigo',
-            ])
-        );
-
+                    'codigo' => 'required|string|max:50|unique:products,codigo',
+                ])),
+            'imagen' => 'nullable|image|max:2048', // máx 2MB
+        ]);
         $userId = auth()->id();
 
         if ($this->productoId) {
@@ -99,14 +111,43 @@ class Register extends Component
             ]);
         }
 
+
+        // Si se subió imagen
+        if ($this->imagen) {
+            $anterior = $producto->imagenes()->where('es_principal', true)->first();
+
+            // Guarda nueva imagen
+            $nuevoPath = $this->imagen->store('productos', 'public');
+
+            if ($anterior) {
+                // Elimina el archivo antiguo
+                \Storage::disk('public')->delete($anterior->imagen_url);
+
+                // Actualiza el registro existente
+                $anterior->update([
+                    'imagen_url' => $nuevoPath,
+                    'auditoriaFechaModificacion' => now(),
+                    'auditoriaModificadoPor' => $userId,
+                ]);
+            } else {
+                // Si no había una imagen principal, crea una nueva
+                ProductImage::create([
+                    'product_id' => $producto->id,
+                    'imagen_url' => $nuevoPath,
+                    'es_principal' => true,
+                    'auditoriaFechaCreacion' => now(),
+                    'auditoriaCreadoPor' => $userId,
+                ]);
+            }
+        }
         $this->dispatch('actualiza-lista-producto');
         $this->dispatch('cerrarModalProduct');
     }
 
     public function obtenerCategorias()
     {
-        // Obtenemos categorías desde la tabla parameters (tipo = CATEGORIA)
-        return Parameter::where('tipo', 'CATEGORIA')->orderBy('nombre')->pluck('nombre', 'idParametro')->toArray();
+        // Obtenemos categorías desde la tabla parameters (codigoParametro = CATEGORIA)
+        return Parameter::where('codigoParametro', 'CATEGORIA')->orderBy('nombre')->pluck('nombre', 'idParametro')->toArray();
     }
 
     public function render()

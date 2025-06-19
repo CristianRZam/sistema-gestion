@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id(); // Long id
             $table->unsignedBigInteger('idParametroPadre')->nullable(); // Long idParametroPadre
             $table->unsignedBigInteger('idParametro')->nullable(); // Long idParametro
-            $table->string('tipo'); // String tipo
+            $table->string('codigoParametro'); // String tipo
+            $table->unsignedBigInteger('tipo')->nullable();;
             $table->string('nombre'); // String nombre
             $table->string('nombreCorto')->nullable(); // String nombreCorto
             $table->unsignedBigInteger('orden')->nullable(); // Long orden
@@ -28,7 +29,6 @@ return new class extends Migration
             $table->date('auditoriaFechaEliminacion')->nullable(); // LocalDate auditoriaFechaEliminacion
             $table->string('auditoriaEliminadoPor')->nullable(); // String auditoriaEliminadoPor
 
-            //$table->timestamps(); // created_at y updated_at
         });
     }
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Parameter extends Model
 {
-    // Si no usas timestamps
+    // Inhabilitar created_at y updated_at
     public $timestamps = false;
 
     protected $table = 'parameters';
@@ -14,6 +14,7 @@ class Parameter extends Model
     protected $fillable = [
         'idParametroPadre',
         'idParametro',
+        'codigoParametro',
         'tipo',
         'nombre',
         'nombreCorto',
@@ -24,5 +25,12 @@ class Parameter extends Model
         'auditoriaModificadoPor',
         'auditoriaFechaEliminacion',
         'auditoriaEliminadoPor',
+    ];
+
+    // Convertir las fechas automáticamente a objetos Date
+    protected $dates = [
+        'auditoriaFechaCreacion',
+        'auditoriaFechaModificacion',
+        'auditoriaFechaEliminacion',
     ];
 }

@@ -20,6 +20,6 @@ class RoleSeeder extends Seeder
         $roleSuperAdministrador->syncPermissions($permissionsSuperAdministrador);
 
         $roleAdministrador = Role::create(['name' => 'administrador']);
-        $roleAdministrador->SyncPermissions('exportar categorias');
+        $roleAdministrador->SyncPermissions('ver parametros');
     }
 }

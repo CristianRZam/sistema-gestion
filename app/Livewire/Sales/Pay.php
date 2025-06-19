@@ -44,7 +44,7 @@ class Pay extends Component
         $this->venta = $venta;
         $this->ventaId = $venta;
 
-        $this->metodosPago = Parameter::where('tipo', 'METODO_PAGO')
+        $this->metodosPago = Parameter::where('codigoParametro', 'METODO_PAGO')
             ->orderBy('orden')
             ->get();
 
