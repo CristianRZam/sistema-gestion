@@ -15,7 +15,7 @@ class Filter extends Component
 
     public function mount()
     {
-        $this->categorias = Parameter::where('codigoParametro', 'CATEGORIA')->get();
+        $this->categorias = Parameter::where('codigoParametro', 'CATEGORIA')->orderBY('orden')->get();
     }
 
     public function filtrar()

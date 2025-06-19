@@ -99,8 +99,8 @@
             <thead>
             <tr>
                 <th class="border p-2">Nº</th>
+                <th class="border p-2">Código</th>
                 <th class="border p-2">Nombre</th>
-                <th class="border p-2">Descripción</th>
                 <th class="border p-2">Stock</th>
                 <th class="border p-2">Precio</th>
                 <th class="border p-2">Acciones</th>
@@ -110,8 +110,8 @@
             @foreach($productos as $index => $producto)
                 <tr wire:key="producto-{{ $producto->id }}">
                     <td class="border p-2 text-center">{{ $loop->iteration + ($productos->currentPage() - 1) * $productos->perPage() }}</td>
+                    <td class="border p-2">{{ $producto->codigo }}</td>
                     <td class="border p-2">{{ $producto->nombre }}</td>
-                    <td class="border p-2">{{ $producto->descripcion }}</td>
                     <td class="border p-2 text-center">{{ $producto->stock }}</td>
                     <td class="border p-2 text-center">{{ $producto->precio }}</td>
                     <td class="border p-2 text-center">

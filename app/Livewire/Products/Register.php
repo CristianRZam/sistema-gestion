@@ -7,9 +7,11 @@ use App\Models\Parameter;
 use App\Models\ProductImage;
 use Carbon\Carbon;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Register extends Component
 {
+    use WithFileUploads;
     public $productoId = null;
     public $codigo;
     public $nombre;
@@ -99,7 +101,7 @@ class Register extends Component
                 ]);
             }
         } else {
-            Product::create([
+            $producto = Product::create([
                 'codigo' => $this->codigo,
                 'nombre' => $this->nombre,
                 'descripcion' => $this->descripcion,

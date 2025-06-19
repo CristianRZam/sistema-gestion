@@ -157,18 +157,23 @@
         <table>
             <thead>
             <tr>
-                <th style="text-align: center;">MODELO</th>
+                <th style="text-align: center;">CÓDIGO</th>
                 <th style="text-align: center;">DESCRIPCIÓN</th>
-                <th style="text-align: center;">PRECIO (S/)</th>
-                <th style="text-align: center;">IMAGEN</th>
+                <th style="text-align: center; width: 80px;">PRECIO (S/)</th>
+                <th style="text-align: center; width: 100px;">IMAGEN</th>
             </tr>
             </thead>
             <tbody>
             @foreach ($productos as $producto)
                 <tr>
                     <td style="text-align: center;">{{ $producto['modelo'] }}</td>
-                    <td>{{ $producto['descripcion'] }}</td>
-                    <td style="text-align: center;">{{ $producto['precio'] }}</td>
+                    <td>
+                        <strong class="text-sm text-gray-800">{{ $producto['nombre'] }}</strong><br>
+                        <span class="text-xs text-gray-600">{{ $producto['descripcion'] }}</span>
+                    </td>
+
+
+                    <td style="text-align: center;">S/ {{ $producto['precio'] }}</td>
                     <td style="text-align: center;">
                         @if (!empty($producto['imagen_url']))
                             <img src="{{ $producto['imagen_url'] }}" alt="Imagen" width="50">

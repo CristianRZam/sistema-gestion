@@ -64,6 +64,7 @@ class ProductsCatalogPdfExport
                 return array_filter([
                     'nro' => $index + 1,
                     'modelo' => $producto->codigo,
+                    'nombre' => $producto->nombre,
                     'descripcion' => $producto->descripcion,
                     'precio' => number_format($producto->precio, 2),
                     'categoria' => $categorias[$producto->categoria_id] ?? '-',

@@ -14,7 +14,7 @@ class ProductsExcelExport extends BaseExcelExport implements FromCollection
     public function collection(): Collection
     {
         // Obtener todas las categorías (tipo CATEGORIA) indexadas por idParametro
-        $categorias = Parameter::where('tipo', 'CATEGORIA')
+        $categorias = Parameter::where('codigoParametro', 'CATEGORIA')
             ->pluck('nombre', 'idParametro');
 
         // Obtener todos los productos
