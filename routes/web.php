@@ -9,6 +9,7 @@ use App\Exports\UsersPdfExport;
 use App\Exports\ProductsExcelExport;
 use App\Exports\ProductsPdfExport;
 use App\Exports\ProductsCatalogPdfExport;
+use \App\Http\Controllers\ProductController;
 use App\Exports\CustomersExcelExport;
 use App\Exports\CustomersPdfExport;
 use App\Exports\SuppliersExcelExport;
@@ -99,6 +100,11 @@ Route::middleware(['auth', 'can:ver productos'])->group(function () {
     //Volt::route('settings/password', 'settings.password')->name('settings.password');
     //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
+
+Route::get('/products/descargar-imagenes', [ProductController::class, 'descargarImagenes'])
+    ->name('products.descargar.imagenes')
+    ->middleware('can:exportar productos');
+
 
 Route::middleware(['auth', 'can:ver clientes'])->group(function () {
     // Exportar Excel de customers

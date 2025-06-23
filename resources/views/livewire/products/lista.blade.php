@@ -38,6 +38,17 @@
                         <span>{{ __('Importar') }}</span>
                     </button>
                 </flux:modal.trigger>
+                <a href="{{ route('products.descargar.imagenes', [
+                        'nombre' => $nombreFiltro,
+                        'categoria_id' => $categoriaFiltro,
+                        'stock' => $stockFiltro,
+                    ]) }}"
+                   x-data
+                   x-init="tippy($el, { content: 'Descargar Imágenes' })"
+                   class="rounded-full border border-purple-600 text-purple-600 px-4 py-2 hover:bg-purple-600 hover:text-white transition duration-200 cursor-pointer inline-flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span>{{ __('Imágenes') }}</span>
+                </a>
             @endcan
 
             @can('exportar productos')

@@ -89,9 +89,13 @@
                                 x-data
                                 x-on:click.prevent="$dispatch('open-modal-product-detail', { productoId: {{ $producto['id'] }} })"
                             >
-                                <img src="{{ $producto['imagen'] ?? 'https://img.kwcdn.com/product/open/0d9d4e1aff5a4660a8cd4f2805bb66cc-goods.jpeg?imageView2/2/w/1300/q/90/format/webp' }}"
-                                     alt="{{ $producto['nombre'] }}"
-                                     class="w-full h-32 object-cover"/>
+                                <img
+                                    src="{{ $producto['imagen_url']
+                    ? asset('storage/' . $producto['imagen_url'])
+                    : 'https://img.kwcdn.com/product/open/0d9d4e1aff5a4660a8cd4f2805bb66cc-goods.jpeg?imageView2/2/w/1300/q/90/format/webp' }}"
+                                    alt="{{ $producto['nombre'] }}"
+                                    class="w-full h-32 object-cover"
+                                />
 
                                 <div class="px-2 py-2 space-y-2">
                                     <p class="text-xs text-gray-600 dark:text-gray-300 truncate">{{ $producto['nombre'] }}</p>
@@ -123,6 +127,7 @@
                             </div>
                         </flux:modal.trigger>
                     @endforeach
+
 
                 </div>
 

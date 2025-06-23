@@ -72,7 +72,14 @@ class ProductsCatalogPdfExport
                 ]);
             });
 
-        $productosAgrupados = $productos->groupBy('categoria');
+        $productosAgrupados = $productos
+            ->groupBy('categoria')
+            ->map(function ($grupo) {
+                return $grupo->sortBy(function ($item) {
+                    return floatval(str_replace(',', '', $item['precio']));
+                })->values();
+            });
+
 
         // Datos de empresa
         $nombreEmpresa = $this->getParametro('EMPRESA_NOMBRE');

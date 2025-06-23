@@ -59,7 +59,6 @@ class Register extends Component
         if ($id !== null) {
             $ventaModel = Sale::findOrFail($id);
 
-            // 🔒 Validar si ya está pagada
             if ($ventaModel->estado_venta_id != 1) {
                 session()->flash('error', 'La venta ya fue pagada y no se puede editar.');
                 redirect()->route('sales');
@@ -67,15 +66,17 @@ class Register extends Component
             }
 
             $this->ventaId = $id;
-
-            $this->cargarVentaExistente($id); // Carga los datos de la venta existente
+            $this->cargarVentaExistente($id);
         }
 
-        // Productos disponibles se cargan siempre
         $this->productosDisponibles = DB::table('products as p')
             ->leftJoin('parameters as c', function ($join) {
                 $join->on('p.categoria_id', '=', 'c.idParametro')
                     ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
             })
             ->select(
                 'p.id',
@@ -84,7 +85,8 @@ class Register extends Component
                 'p.descripcion',
                 'p.stock',
                 'p.categoria_id',
-                'c.nombre as categoria_nombre'
+                'c.nombre as categoria_nombre',
+                'pi.imagen_url' // ← Imagen principal
             )
             ->get()
             ->map(function ($item) {
