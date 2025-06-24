@@ -14,7 +14,6 @@ class Lista extends Component
     protected $paginationTheme = 'tailwind'; // Puedes usar 'bootstrap' si lo prefieres
 
     public $productIdToDelete;
-    public $modoContinuo = false; // Nuevo: Modo escaneo continuo
     public $codigoEscaneado = '';
 
     // Filtros
@@ -90,33 +89,25 @@ class Lista extends Component
         $this->reset('productIdToDelete');
     }
 
-    public function procesarCodigoEscaneado($codigo)
+    public function procesarCodigoEscaneado()
     {
-        $this->codigoEscaneado = $codigo;
+        $codigo = $this->codigoEscaneado;
 
         $producto = Product::where('codigo', $codigo)->first();
 
+
         if (!$producto) {
             session()->flash('error', 'Producto no encontrado.');
-            $this->dispatch('open-modal-product');
+            $this->dispatch('abrirModalScaneo');
+            $this->dispatch('open-modal-product', codigo: $codigo);
             return;
         }
 
-        if ($this->modoContinuo) {
-            // Agregar stock de 1 directamente
-            $producto->stock += 1;
-            $producto->save();
-            session()->flash('success', 'Stock actualizado automáticamente.');
-            $this->dispatch('actualiza-lista-producto');
-        } else {
-            // Abrir modal como si fuera edición
-            $this->dispatch('open-modal-product', ['id' => $producto->id]);
-        }
+
+        $this->dispatch('abrirModalScaneo');
+        $this->dispatch('open-modal-product', id: $producto->id);
+
     }
 
-    public function toggleModoEscaneoContinuo()
-    {
-        $this->modoContinuo = !$this->modoContinuo;
-    }
 
 }

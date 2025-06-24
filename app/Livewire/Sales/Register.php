@@ -78,21 +78,25 @@ class Register extends Component
                 $join->on('p.id', '=', 'pi.product_id')
                     ->where('pi.es_principal', '=', true);
             })
+            ->where('p.stock', '>', 0)
             ->select(
                 'p.id',
+                'p.codigo',
                 'p.nombre',
                 'p.precio',
                 'p.descripcion',
                 'p.stock',
                 'p.categoria_id',
                 'c.nombre as categoria_nombre',
-                'pi.imagen_url' // ← Imagen principal
+                'pi.imagen_url as imagen',
             )
             ->get()
             ->map(function ($item) {
                 return (array) $item;
             })
             ->toArray();
+
+
 
         $this->calcularTotal();
     }
@@ -172,7 +176,9 @@ class Register extends Component
                 'precio' => $producto['precio'],
                 'cantidad' => min($producto['cantidad'], $producto['stock']),
                 'stock' => $producto['stock'],
+                'imagen' => $producto['imagen'] ?? null,
             ];
+
         }
 
         $this->calcularTotal();
@@ -203,12 +209,60 @@ class Register extends Component
                     'precio' => $producto['precio'],
                     'cantidad' => 1,
                     'stock' => $producto['stock'],
+                    'imagen' => $producto['imagen'] ?? null,
                 ];
             }
 
             $this->calcularTotal();
         }
     }
+
+    public string $codigoEscaneadoVenta = '';
+
+    public function agregarProductoPorCodigo()
+    {
+        $codigo = trim($this->codigoEscaneadoVenta);
+        $this->codigoEscaneadoVenta = ''; // limpia después de usar
+
+        if (empty($codigo)) return;
+
+        $producto = collect($this->productosDisponibles)->firstWhere('codigo', $codigo);
+
+        if (!$producto) {
+            session()->flash('error', "Producto con código {$codigo} no encontrado.");
+            return;
+        }
+
+        // Busca si ya está en el carrito
+        $index = null;
+        foreach ($this->productos as $i => $p) {
+            if ($p['id'] === $producto['id']) {
+                $index = $i;
+                break;
+            }
+        }
+
+        if ($index !== null) {
+            if ($this->productos[$index]['cantidad'] < $producto['stock']) {
+                $this->productos[$index]['cantidad']++;
+            } else {
+                session()->flash('warning', "Stock máximo alcanzado para {$producto['nombre']}");
+            }
+        } else {
+            $this->productos[] = [
+                'id' => $producto['id'],
+                'nombre' => $producto['nombre'],
+                'precio' => $producto['precio'],
+                'cantidad' => 1,
+                'stock' => $producto['stock'],
+                'imagen' => $producto['imagen'] ?? null,
+            ];
+        }
+
+        $this->calcularTotal();
+    }
+
+
 
 
 

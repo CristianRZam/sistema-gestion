@@ -3,11 +3,20 @@
         <div class="flex space-x-6">
             <!-- Imagen producto (50%) -->
             <div class="w-1/2 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden">
+                @php
+                    $imagenUrl = $productoSeleccionado['imagen'] ?? null;
+                    $imagen = $imagenUrl
+                        ? asset('storage/' . $imagenUrl)
+                        : 'https://img.kwcdn.com/product/Fancyalgo/VirtualModelMatting/c4c714885c2839352082b265af3d3352.jpg?imageView2/2/w/1300/q/90/format/webp';
+                @endphp
+
+
                 <img
-                    src="{{ $productoSeleccionado['imagen'] ?? 'https://img.kwcdn.com/product/Fancyalgo/VirtualModelMatting/c4c714885c2839352082b265af3d3352.jpg?imageView2/2/w/1300/q/90/format/webp' }}"
+                    src="{{ $imagen }}"
                     alt="{{ $productoSeleccionado['nombre'] ?? 'Producto' }}"
                     class="object-contain max-h-64 w-full"
                 />
+
             </div>
 
             <!-- Detalles producto (50%) -->

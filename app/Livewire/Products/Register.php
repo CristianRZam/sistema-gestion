@@ -43,7 +43,7 @@ class Register extends Component
     }
 
 
-    public function abrir($id = null)
+    public function abrir($id = null, $codigo = null)
     {
         $this->resetValidation();
         $this->productoId = $id;
@@ -51,6 +51,7 @@ class Register extends Component
         $this->categoriasDisponibles = $this->obtenerCategorias();
         $this->imagen = null;
         $this->imagenActualUrl = null;
+
 
         if ($this->productoId) {
             $producto = Product::find($this->productoId);
@@ -69,7 +70,11 @@ class Register extends Component
             }
         } else {
             $this->reset(['codigo', 'nombre', 'descripcion', 'precio', 'stock', 'categoria']);
+            if ($codigo) {
+                $this->codigo = $codigo; // ✅ precargar código
+            }
         }
+
     }
 
     public function guardarProducto()

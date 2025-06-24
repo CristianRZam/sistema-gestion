@@ -134,8 +134,12 @@
 </flux:modal>
 
 <script>
-    window.addEventListener('cerrarModal', () => {
-        Flux.modal('register-parameter').close();
-        toastr.success('Registro guardado.');
-    });
+    if (!window._cerrarModalParameterRegistrado) {
+        window._cerrarModalParameterRegistrado = true;
+
+        window.addEventListener('cerrarModal', () => {
+            Flux.modal('register-parameter').close();
+            toastr.success('Registro guardado.');
+        });
+    }
 </script>

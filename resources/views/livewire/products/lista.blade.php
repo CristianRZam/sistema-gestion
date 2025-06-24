@@ -6,25 +6,67 @@
         <flux:separator variant="subtle" />
     </div>
 
+    <input
+        type="text"
+        wire:model.live="codigoEscaneado"
+        wire:keydown.enter="procesarCodigoEscaneado"
+        x-data
+        x-ref="inputCodigo"
+        x-on:keydown.enter="$nextTick(() => { $refs.inputCodigo.value = '' })"
+        id="codigoEscaneo"
+        class="absolute opacity-0 pointer-events-none"
+        autocomplete="off"
+    />
+    <input
+        type="text"
+        id="codigoEscaneo"
+        wire:model.live="codigoEscaneado"
+        wire:keydown.enter="procesarCodigoEscaneado"
+        class="absolute opacity-0 pointer-events-none"
+        autocomplete="off"
+    />
+
+    <script>
+        (() => {
+            let buffer = '';
+            let lastTime = Date.now();
+            let timeout;
+
+            document.addEventListener('keydown', (e) => {
+                const currentTime = Date.now();
+                const diff = currentTime - lastTime;
+
+                if (diff > 100) {
+                    buffer = ''; // Tecla muy lenta, asumimos que es humano
+                }
+
+                lastTime = currentTime;
+
+                if (e.key !== 'Enter') {
+                    buffer += e.key;
+                    return;
+                }
+
+                // Si llega aquí, es porque se presionó Enter
+                if (buffer.length >= 5) {
+                    // Asumimos que es escáner (rápido y con longitud mínima)
+                    const input = document.getElementById('codigoEscaneo');
+                    input.value = buffer;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+                    buffer = '';
+                }
+            });
+        })();
+    </script>
+
+
     @livewire('products.filter')
 
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4">
         <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-4">
-
-            <!-- Escaneo continuo -->
-            @if (Auth::user()->can('crear producto') && Auth::user()->can('editar producto'))
-                <button
-                    wire:click="toggleModoEscaneoContinuo"
-                    x-data
-                    x-init="tippy($el, { content: 'Escaneo Continuo' })"
-                    class="px-4 py-2 rounded-full cursor-pointer
-                    {{ $modoContinuo ? 'bg-green-600 text-white' : 'border border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white' }}">
-                    {{ $modoContinuo ? 'ON' : 'OFF' }}
-                </button>
-            @endif
-
-
 
             <!-- Importar -->
             @can('importar productos')

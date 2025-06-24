@@ -135,8 +135,25 @@
 
 <!-- Script para cerrar modal -->
 <script>
-    window.addEventListener('cerrarModalProduct', () => {
-        Flux.modal('register-product').close();
-        toastr.success('Registro guardado.');
-    });
+    if (!window._cerrarModalProductRegistrado) {
+        window._cerrarModalProductRegistrado = true;
+
+        window.addEventListener('cerrarModalProduct', () => {
+            Flux.modal('register-product').close();
+            toastr.success('Registro guardado.');
+        });
+    }
+
+
+    if (!window._abrirModalScaneoRegistrado) {
+        window._abrirModalScaneoRegistrado = true;
+
+        window.addEventListener('abrirModalScaneo', () => {
+            setTimeout(() => {
+                Flux.modal('register-product').show();
+            }, 100);
+        });
+    }
 </script>
+
+

@@ -90,8 +90,8 @@
                                 x-on:click.prevent="$dispatch('open-modal-product-detail', { productoId: {{ $producto['id'] }} })"
                             >
                                 <img
-                                    src="{{ $producto['imagen_url']
-                    ? asset('storage/' . $producto['imagen_url'])
+                                    src="{{ $producto['imagen']
+                    ? asset('storage/' . $producto['imagen'])
                     : 'https://img.kwcdn.com/product/open/0d9d4e1aff5a4660a8cd4f2805bb66cc-goods.jpeg?imageView2/2/w/1300/q/90/format/webp' }}"
                                     alt="{{ $producto['nombre'] }}"
                                     class="w-full h-32 object-cover"
@@ -145,6 +145,47 @@
             @endif
         </div>
 
+        <input
+            type="text"
+            id="codigoEscaneoVenta"
+            wire:model.live="codigoEscaneadoVenta"
+            wire:keydown.enter="agregarProductoPorCodigo"
+            class="absolute opacity-0 pointer-events-none"
+            autocomplete="off"
+        />
+
+        <script>
+            (() => {
+                let buffer = '';
+                let lastTime = Date.now();
+
+                document.addEventListener('keydown', (e) => {
+                    const currentTime = Date.now();
+                    const diff = currentTime - lastTime;
+
+                    if (diff > 100) {
+                        buffer = '';
+                    }
+
+                    lastTime = currentTime;
+
+                    if (e.key !== 'Enter') {
+                        buffer += e.key;
+                        return;
+                    }
+
+                    if (buffer.length >= 4) {
+                        const input = document.getElementById('codigoEscaneoVenta');
+                        input.value = buffer;
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                        buffer = '';
+                    }
+                });
+            })();
+        </script>
+
+
         @livewire('sales.product-detail')
         <!-- Sidebar derecho fijo -->
         <aside class="w-64 bg-white dark:bg-zinc-900 rounded-lg shadow-lg flex flex-col h-screen fixed right-0 top-0 z-10">
@@ -189,9 +230,20 @@
                     <h4 class="font-semibold mb-2">{{ __('Productos agregados') }}</h4>
 
                     @forelse($productos as $index => $producto)
-                        <div class="relative border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
+                        @php
+                            $imagenUrl = $producto['imagen']
+                                ? asset('storage/' . $producto['imagen'])
+                                : 'https://img.kwcdn.com/product/Fancyalgo/VirtualModelMatting/c4c714885c2839352082b265af3d3352.jpg?imageView2/2/w/1300/q/90/format/webp';
+
+                            $tooltip = "{$producto['nombre']}";
+                        @endphp
+
+                        <div
+                            class="relative border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center"
+                            title="{{ $tooltip }}"
+                        >
                             <img
-                                src="https://img.kwcdn.com/product/Fancyalgo/VirtualModelMatting/c4c714885c2839352082b265af3d3352.jpg?imageView2/2/w/1300/q/90/format/webp"
+                                src="{{ $imagenUrl }}"
                                 alt="{{ $producto['nombre'] }}"
                                 class="mx-auto w-20 h-20 object-cover rounded"
                             />
@@ -210,13 +262,12 @@
                                         <option value="{{ $i }}">{{ $i }}</option>
                                     @endfor
                                 </flux:select>
-
                             </div>
-
                         </div>
                     @empty
                         <p class="text-gray-600 dark:text-gray-400">{{ __('No hay productos agregados') }}</p>
                     @endforelse
+
                 </div>
             </div>
         </aside>
