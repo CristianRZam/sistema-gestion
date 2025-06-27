@@ -11,18 +11,33 @@
         </div>
 
         <flux:input
+            wire:model.defer="documento"
+            :label="__('Documento (DNI o RUC)')"
+            type="text"
+            required
+            wire:keydown.enter="buscarProveedorPorDocumento"
+        >
+            @if($modo === 'compra')
+                <x-slot name="iconTrailing">
+                    <flux:button
+                        size="sm"
+                        variant="subtle"
+                        icon="magnifying-glass"
+                        wire:click="buscarProveedorPorDocumento"
+                        title="Buscar"
+                        class="-mr-1"
+                    />
+                </x-slot>
+            @endif
+        </flux:input>
+
+        <flux:input
             wire:model.defer="nombre"
             :label="__('Nombre')"
             type="text"
             required
         />
 
-        <flux:input
-            wire:model.defer="documento"
-            :label="__('Documento (DNI o RUC)')"
-            type="text"
-            required
-        />
 
         <flux:input
             wire:model.defer="telefono"

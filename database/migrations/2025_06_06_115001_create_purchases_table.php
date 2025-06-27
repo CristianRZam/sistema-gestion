@@ -25,9 +25,6 @@ return new class extends Migration
             // Total de la venta
             $table->decimal('total', 10, 2);
 
-            // Descuento de la venta
-            $table->decimal('descuento', 10, 2)->default(0);
-
             // Método de pago (opcional)
             $table->unsignedBigInteger('metodo_pago_id')->nullable();
 

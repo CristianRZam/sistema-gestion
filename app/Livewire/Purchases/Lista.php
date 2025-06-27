@@ -9,7 +9,7 @@ class Lista extends Component
 {
     public function render()
     {
-        $compras = Purchase::with(['comprador', 'suplier', 'estadoCompra'])
+        $compras = Purchase::with(['comprador', 'supplier', 'estadoCompra'])
             ->orderBy('fecha_compra', 'desc')
             ->get();
         return view('livewire.purchases.lista', [

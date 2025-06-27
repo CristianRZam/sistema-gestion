@@ -244,6 +244,71 @@ class ParameterSeeder extends Seeder
             ],
         ]);
 
+        // ESTADO DE COMPRA
+
+        Parameter::insert([
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 1,
+                'tipo' => 2,
+                'codigoParametro' => 'ESTADO_COMPRA',
+                'nombre' => 'Pendiente',
+                'nombreCorto' => 'Pendiente',
+                'orden' => 4,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 2,
+                'tipo' => 2,
+                'codigoParametro' => 'ESTADO_COMPRA',
+                'nombre' => 'Pagada',
+                'nombreCorto' => 'Pagada',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 3,
+                'tipo' => 2,
+                'codigoParametro' => 'ESTADO_COMPRA',
+                'nombre' => 'Completada',
+                'nombreCorto' => 'Completada',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 4,
+                'tipo' => 2,
+                'codigoParametro' => 'ESTADO_COMPRA',
+                'nombre' => 'Cancelada',
+                'nombreCorto' => 'Cancelada',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+        ]);
+
         // PARAMETROS PARA CATALOGO
         Parameter::insert([
             [

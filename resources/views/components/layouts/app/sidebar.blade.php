@@ -67,9 +67,10 @@
                         </flux:navlist.item>
                     @endcan
 
-                    {{-- SECCIÓN COMPRAS --}}
-                    @can('ver categorias')
-                        <flux:navlist.item icon="shopping-bag" :href="route('purchases')" :current="request()->routeIs('purchases*')" wire:navigate>{{ __('Mis Compras') }}</flux:navlist.item>
+                    @can('ver ventas')
+                        <flux:navlist.item icon="shopping-bag" :href="route('purchases')" :current="request()->routeIs('purchases*')" wire:navigate>
+                            {{ __('Compras') }}
+                        </flux:navlist.item>
                     @endcan
 
                 </flux:navlist.group>

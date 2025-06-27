@@ -1,0 +1,222 @@
+<?php
+
+namespace App\Livewire\Purchases;
+
+use App\Models\Parameter;
+use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\PurchaseDetail;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
+
+class Pay extends Component
+{
+    public $productos = [];
+    public $metodoPago = '';
+    public $total = 0;
+
+    public $compraId;
+
+    public $proveedor_nombre = '';
+    public $proveedor_documento = '';
+    public $proveedor_id = '';
+    public $metodosPago = [];
+
+    public $estadosCompra = [];
+
+    public $compra;
+    public $estadoCompra=1;
+    public $mostrarModalComprobante = false;
+    public $iframeSrc;
+
+
+    protected $listeners = [
+        'open-modal-comprobante' => 'openModalPreview',
+    ];
+
+    public function openModalPreview()
+    {
+        $this->vistaComprobantePreview($this->compraId);
+    }
+    public function mount($compra)
+    {
+        $this->compra = $compra;
+        $this->compraId = $compra;
+
+        $this->metodosPago = Parameter::where('codigoParametro', 'METODO_PAGO')
+            ->orderBy('orden')
+            ->get();
+
+        $this->estadosCompra = Parameter::where('codigoParametro', 'ESTADO_COMPRA')
+            ->orderBy('orden')
+            ->get();
+
+        $compraModel = Purchase::with('supplier')->findOrFail($compra);
+        $this->estadoCompra = $compraModel->estado_compra_id;
+
+        $this->metodoPago = $compraModel->metodo_pago_id ?? '';
+        $this->total = $compraModel->total;
+
+        if ($compraModel->estado_compra_id != 4) {
+            $this->iframeSrc = route('comprobante.compra.preview', ['compraId' => $this->compraId]) . '?t=' . now()->timestamp;
+        }
+
+
+        if ($compraModel->supplier) {
+            $this->proveedor_id = $compraModel->supplier->id;
+            $this->proveedor_nombre = $compraModel->supplier->nombre;
+            $this->proveedor_documento = $compraModel->supplier->documento;
+        }
+
+        $detalles = PurchaseDetail::with('product')
+            ->where('purchase_id', $compra)
+            ->get();
+
+        $this->productos = $detalles->map(function ($detalle) {
+            return [
+                'id'       => $detalle->product_id,
+                'nombre'   => $detalle->product->nombre ?? '',
+                'precio'   => $detalle->precio_unitario,
+                'cantidad' => $detalle->cantidad,
+                'stock'    => $detalle->product->stock ?? 0,
+            ];
+        })->toArray();
+    }
+
+
+
+    public function getTotalConDescuentoProperty()
+    {
+        return max(0, $this->total);
+    }
+
+
+    public function guardar()
+    {
+        // Validar que se haya seleccionado un método de pago
+        if (!$this->metodoPago) {
+            $this->addError('metodoPago', 'Debe seleccionar un método de pago.');
+            return;
+        }
+
+
+        // Iniciar transacción
+        DB::beginTransaction();
+
+        try {
+            foreach ($this->productos as $producto) {
+                $productoDB = Product::find($producto['id']);
+
+                if (!$productoDB) {
+                    DB::rollBack();
+                    $this->addError('productos', 'Producto no encontrado.');
+                    return;
+                }
+
+                // Si la compra está marcada como completa (id = 4), aumentar el stock
+                if ($this->estadoCompra == 3) {
+                    $productoDB->stock += $producto['cantidad'];
+                    $productoDB->save();
+                }
+            }
+
+
+            // Actualizar estado de la venta
+            $compra = Purchase::find($this->compraId);
+            if (!$compra) {
+                DB::rollBack();
+                $this->addError('productos', 'Compra no encontrada.');
+                return;
+            }
+
+            $compra->estado_compra_id = $this->estadoCompra ; // Pagada
+            $compra->metodo_pago_id = $this->metodoPago;
+            $compra->auditoriaFechaModificacion = Carbon::now();
+            $compra->auditoriaModificadoPor = auth()->id();
+            $compra->save();
+
+            DB::commit();
+
+            $this->iframeSrc = route('comprobante.compra.preview', ['compraId' => $this->compraId]) . '?t=' . now()->timestamp;
+            $this->mostrarModalComprobante = true;
+            $this->dispatch('open-modal-comprobante');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->addError('productos', 'Ocurrió un error al procesar el pago.'. $e->getMessage());
+            \Log::error('Error al procesar pago: ' . $e->getMessage());
+        }
+    }
+
+    public function eliminarCompra()
+    {
+        DB::beginTransaction();
+
+        try {
+            $compra = Purchase::with('detalles')->findOrFail($this->compraId);
+
+            // Verifica si la venta está pagada
+            if ($this->estadoCompra == '3') {
+                // Recuperar los detalles de la venta
+                $detalles = PurchaseDetail::where('purchase_id', $compra->id)->get();
+
+                // Restar del stock los productos de la compra cancelada
+                foreach ($detalles as $detalle) {
+                    $producto = Product::find($detalle->product_id);
+                    if ($producto) {
+                        $producto->stock -= $detalle->cantidad;
+                        $producto->save();
+                    }
+                }
+
+            }
+
+            // Cambiar el estado de la venta a "cancelada" (3)
+            $compra->estado_compra_id = 4;
+            $compra->auditoriaFechaModificacion = Carbon::now();
+            $compra->auditoriaModificadoPor = auth()->id();
+            $compra->save();
+
+            DB::commit();
+
+            session()->flash('success', 'La compra fue cancelada correctamente.');
+            return redirect()->route('purchases');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al eliminar la compra: ' . $e->getMessage());
+            $this->addError('eliminacion', 'Ocurrió un error al intentar eliminar la compra.');
+        }
+    }
+
+    public function vistaComprobantePreview($compraId)
+    {
+        $compra = Purchase::with('supplier')->findOrFail($compraId);
+
+        $productos = PurchaseDetail::with('product')
+            ->where('purchase_id', $compraId)
+            ->get()
+            ->map(function ($detalle) {
+                return [
+                    'id'       => $detalle->product_id,
+                    'nombre'   => $detalle->product->nombre ?? '',
+                    'precio_unitario'   => $detalle->precio_unitario,
+                    'subtotal'   => $detalle->subtotal,
+                    'cantidad' => $detalle->cantidad,
+                    'stock'    => $detalle->product->stock ?? 0,
+                ];
+            })->toArray();
+
+        $pdf = Pdf::loadView('pdf.ticket-pedido-termica', compact('compra', 'productos'))
+            ->setPaper([0, 0, 226.77, 600]); // 80mm de ancho
+
+        return $pdf->stream("comprobante-{$compraId}.pdf");
+    }
+
+    public function render()
+    {
+        return view('livewire.purchases.pay');
+    }
+}

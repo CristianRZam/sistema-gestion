@@ -15,7 +15,6 @@ class Purchase extends Model
         'usuario_id',
         'fecha_compra',
         'total',
-        'descuento',
         'metodo_pago_id',
         'estado_compra_id',
         'auditoriaFechaCreacion',
@@ -48,7 +47,7 @@ class Purchase extends Model
     public function estadoCompra()
     {
         return $this->belongsTo(Parameter::class, 'estado_compra_id', 'idParametro')
-            ->where('tipo', 'ESTADO_COMPRA');
+            ->where('codigoParametro', 'ESTADO_COMPRA');
     }
 
     /**

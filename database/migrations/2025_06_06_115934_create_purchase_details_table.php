@@ -14,20 +14,23 @@ return new class extends Migration
         Schema::create('purchase_details', function (Blueprint $table) {
             $table->id();
 
-            // Venta relacionada
+            // Compra relacionada
             $table->unsignedBigInteger('purchase_id');
 
-            // Producto vendido
+            // Producto comprado
             $table->unsignedBigInteger('product_id');
 
-            // Cantidad vendida
+            // Cantidad comprada
             $table->integer('cantidad');
 
-            // Precio unitario al momento de la venta
+            // Precio unitario al momento de la compra
             $table->decimal('precio_unitario', 10, 2);
 
             // Subtotal = cantidad * precio_unitario
             $table->decimal('subtotal', 10, 2);
+
+            // Stock restatnte para el metodo FIFO
+            $table->integer('stock_restante');
 
             // Auditoría (opcional)
             $table->date('auditoriaFechaCreacion')->nullable();

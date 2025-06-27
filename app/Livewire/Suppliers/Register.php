@@ -15,6 +15,8 @@ class Register extends Component
     public $email;
     public $direccion;
 
+    public $modo = 'crud'; // 'crud' o 'compra'
+    public $proveedorEncontrado = null;
     protected $rules = [
         'nombre' => 'required|string|max:255',
         'documento' => 'required|string|max:50|unique:suppliers,documento',
@@ -23,13 +25,19 @@ class Register extends Component
         'direccion' => 'nullable|string|max:255',
     ];
 
-    protected $listeners = ['open-modal' => 'abrir'];
+    protected $listeners = ['open-modal-supplier' => 'abrir'];
 
-    public function abrir($id = null)
+    public function abrir($id = null, $modo = 'crud')
     {
         $this->resetValidation();
+        $this->modo = $modo;
         $this->supplierId = $id;
 
+        if ($this->modo === 'compra') {
+            $this->reset(['nombre', 'documento', 'telefono', 'email', 'direccion']);
+            // Aquí podrías activar automáticamente un input para buscar por DNI
+            return;
+        }
         if ($this->supplierId) {
             $supplier = Supplier::find($this->supplierId);
             if ($supplier) {
@@ -86,10 +94,29 @@ class Register extends Component
             ]);
         }
 
-        $this->dispatch('actualiza-lista-supplier');
+        if ($this->modo === 'compra') {
+            $proveedor = Supplier::where('documento', $this->documento)->first();
+            $this->dispatch('proveedorSeleccionadoDesdeCompra', $proveedor->id);
+        } else {
+            $this->dispatch('actualiza-lista-supplier');
+        }
+
         $this->dispatch('cerrarModalSupplier');
     }
 
+    public function buscarProveedorPorDocumento()
+    {
+        $this->resetValidation();
+
+        $this->proveedorEncontrado = Supplier::where('documento', $this->documento)->first();
+
+        if ($this->proveedorEncontrado) {
+            $this->dispatch('proveedorSeleccionadoDesdeCompra', $this->proveedorEncontrado->id);
+            $this->dispatch('cerrarModalSupplier');
+        } else {
+            $this->addError('documento', 'Proveedor no encontrado. Por favor completa el formulario para registrarlo.');
+        }
+    }
     public function render()
     {
         return view('livewire.suppliers.register');

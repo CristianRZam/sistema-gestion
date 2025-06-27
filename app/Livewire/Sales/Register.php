@@ -4,6 +4,7 @@ namespace App\Livewire\Sales;
 
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\PurchaseDetail;
 use App\Models\Sale;
 use App\Models\SaleDetail;
 use Carbon\Carbon;
@@ -13,7 +14,7 @@ class Register extends Component
 {
     public $fecha_venta;
     public $cliente_nombre = '';
-    public $clientes_sugeridos = [];
+
     public $total = 0;
     public $metodo_pago;
     public $productos = [];
@@ -24,7 +25,6 @@ class Register extends Component
     public $producto_nombre;
     public $producto_precio;
     public $producto_cantidad;
-    public $mostrar_modal_producto = false;
     public $ventaId;
 
     protected $listeners = [
@@ -79,6 +79,7 @@ class Register extends Component
                     ->where('pi.es_principal', '=', true);
             })
             ->where('p.stock', '>', 0)
+            ->whereNull('p.auditoriaFechaEliminacion')
             ->select(
                 'p.id',
                 'p.codigo',
@@ -117,7 +118,10 @@ class Register extends Component
             $this->cliente_nombre = $venta->customer->nombre;
         }
 
-        $detalles = SaleDetail::with('product')->where('sale_id', $id)->get();
+        $detalles = SaleDetail::with(['product.imagenPrincipal'])
+            ->where('sale_id', $id)
+            ->get();
+
 
         $this->productos = $detalles->map(function ($detalle) {
             return [
@@ -126,6 +130,7 @@ class Register extends Component
                 'precio' => $detalle->precio_unitario,
                 'cantidad' => $detalle->cantidad,
                 'stock' => $detalle->product->stock,
+                'imagen' => $detalle->product->imagenPrincipal->imagen_url ?? null, // Agrega la imagen aquí
             ];
         })->toArray();
         $this->fecha_venta = $venta->fecha_venta;
@@ -148,6 +153,14 @@ class Register extends Component
 
         $this->calcularTotal();
     }
+
+    public function eliminarProducto($index)
+    {
+        unset($this->productos[$index]);
+        $this->productos = array_values($this->productos); // Reindexar el array
+        $this->calcularTotal();
+    }
+
 
 
     public function agregarProductoDesdeModal($producto)
@@ -296,7 +309,7 @@ class Register extends Component
 
         try {
             if ($this->ventaId) {
-                // Venta existente: actualizar
+                // Actualizar venta existente
                 $venta = Sale::findOrFail($this->ventaId);
                 $venta->customer_id = $this->cliente_seleccionado['id'] ?? null;
                 $venta->total = $this->total ?? 0;
@@ -304,16 +317,14 @@ class Register extends Component
                 $venta->auditoriaModificadoPor = auth()->id();
                 $venta->save();
 
-                // Obtener productos actuales del detalle
                 $detallesActuales = SaleDetail::where('sale_id', $venta->id)->get()->keyBy('product_id');
-
                 $idsEnNuevaVenta = [];
 
                 foreach ($this->productos as $producto) {
                     $idsEnNuevaVenta[] = $producto['id'];
 
                     if ($detallesActuales->has($producto['id'])) {
-                        // Ya existe, actualizar
+                        // Actualizar detalle existente
                         $detalle = $detallesActuales[$producto['id']];
                         $detalle->cantidad = $producto['cantidad'];
                         $detalle->precio_unitario = $producto['precio'];
@@ -322,7 +333,7 @@ class Register extends Component
                         $detalle->auditoriaModificadoPor = auth()->id();
                         $detalle->save();
                     } else {
-                        // Nuevo detalle
+                        // Crear nuevo detalle
                         SaleDetail::create([
                             'sale_id' => $venta->id,
                             'product_id' => $producto['id'],
@@ -338,6 +349,7 @@ class Register extends Component
                 // Eliminar detalles que ya no están
                 foreach ($detallesActuales as $productId => $detalle) {
                     if (!in_array($productId, $idsEnNuevaVenta)) {
+                        DB::table('purchase_sale_details')->where('sale_detail_id', $detalle->id)->delete();
                         $detalle->delete();
                     }
                 }
@@ -377,6 +389,8 @@ class Register extends Component
             $this->addError('productos', 'Ocurrió un error al registrar la venta.');
         }
     }
+
+
 
 
     public $producto_buscar_filtro = '';

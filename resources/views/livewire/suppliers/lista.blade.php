@@ -64,7 +64,7 @@
                                 <button
                                     class="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-white mr-2 cursor-pointer"
                                     x-data=""
-                                    x-on:click.prevent="$dispatch('open-modal', { id: {{ $supplier->id }} })"
+                                    x-on:click.prevent="$dispatch('open-modal-supplier', { id: {{ $supplier->id }} })"
                                 >
                                     {{ __('Editar') }}
                                 </button>

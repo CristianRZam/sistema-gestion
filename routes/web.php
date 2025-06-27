@@ -187,20 +187,22 @@ Route::middleware(['auth'])->group(function () {
         ->name('purchases');
 
     // Crear venta
-    Volt::route('purchases/add', 'sales.register')
+    Volt::route('purchases/add', 'purchases.register')
         ->middleware('can:crear venta')
         ->name('purchases.register');
 
     // Editar venta
-    Volt::route('purchases/edit/{id}', 'sales.register')
+    Volt::route('purchases/edit/{id}', 'purchases.register')
         ->middleware('can:editar venta')
         ->name('purchases.edit');
 
     // Registrar pago
-    Volt::route('purchases/pay/{venta}', 'sales.pay')
+    Volt::route('purchases/pay/{compra}', 'purchases.pay')
         ->middleware('can:editar venta') // O crea 'pagar venta' si quieres más granularidad
         ->name('purchases.pay');
 });
+
+Route::get('/comprobante/compra/preview/{compraId}', [\App\Livewire\Purchases\Pay::class, 'vistaComprobantePreview'])->name('comprobante.compra.preview');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/parameters/exportar-excel', function () {

@@ -53,7 +53,7 @@ class Sale extends Model
     public function estadoVenta()
     {
         return $this->belongsTo(Parameter::class, 'estado_venta_id', 'idParametro')
-            ->where('tipo', 'ESTADO_VENTA');
+            ->where('codigoParametro', 'ESTADO_VENTA');
     }
 
     /**

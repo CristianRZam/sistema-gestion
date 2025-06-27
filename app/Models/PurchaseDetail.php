@@ -14,6 +14,7 @@ class PurchaseDetail extends Model
         'cantidad',
         'precio_unitario',
         'subtotal',
+        'stock_restante',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',

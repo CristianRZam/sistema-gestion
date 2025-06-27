@@ -4,6 +4,7 @@ namespace App\Livewire\Sales;
 
 use App\Models\Parameter;
 use App\Models\Product;
+use App\Models\PurchaseDetail;
 use App\Models\Sale;
 use App\Models\SaleDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -25,6 +26,7 @@ class Pay extends Component
     public $cliente_id = '';
     public $metodosPago = [];
     public $pago_con = 0; // Monto con el que pagó
+    public $vuelto = 0;
     public $venta;
     public $estadoVenta=1;
     public $mostrarModalComprobante = false;
@@ -104,43 +106,19 @@ class Pay extends Component
 
     public function procesarPago()
     {
-        // Validar que se haya seleccionado un método de pago
         if (!$this->metodoPago) {
             $this->addError('metodoPago', 'Debe seleccionar un método de pago.');
             return;
         }
 
-        // Validación básica
         if (!is_numeric($this->pago_con) || $this->pago_con < $this->totalConDescuento) {
             $this->addError('pago_con', 'El monto pagado debe ser mayor o igual al total con descuento.');
             return;
         }
 
-        // Iniciar transacción
         DB::beginTransaction();
 
         try {
-            foreach ($this->productos as $producto) {
-                $productoDB = Product::find($producto['id']);
-
-                if (!$productoDB) {
-                    DB::rollBack();
-                    $this->addError('productos', 'Producto no encontrado.');
-                    return;
-                }
-
-                if ($productoDB->stock < $producto['cantidad']) {
-                    DB::rollBack();
-                    $this->addError('productos', "Stock insuficiente para {$producto['nombre']}.");
-                    return;
-                }
-
-                // Descontar el stock
-                $productoDB->stock -= $producto['cantidad'];
-                $productoDB->save();
-            }
-
-            // Actualizar estado de la venta
             $venta = Sale::find($this->ventaId);
             if (!$venta) {
                 DB::rollBack();
@@ -148,6 +126,66 @@ class Pay extends Component
                 return;
             }
 
+            foreach ($venta->detalles as $detalle) {
+                $producto = Product::find($detalle->product_id);
+                if (!$producto) {
+                    DB::rollBack();
+                    $this->addError('productos', 'Producto no encontrado.');
+                    return;
+                }
+
+                if ($producto->stock < $detalle->cantidad) {
+                    DB::rollBack();
+                    $this->addError('productos', "Stock insuficiente para '{$producto->nombre}'.");
+                    return;
+                }
+
+                // Descontar del stock total del producto
+                $producto->stock -= $detalle->cantidad;
+                $producto->save();
+
+                // Eliminar cualquier relación FIFO previa
+                DB::table('purchase_sale_details')->where('sale_detail_id', $detalle->id)->delete();
+
+                $cantidadRestante = $detalle->cantidad;
+
+                // Obtener lotes FIFO válidos con compras confirmadas
+                $lotes = PurchaseDetail::where('product_id', $detalle->product_id)
+                    ->where('stock_restante', '>', 0)
+                    ->whereHas('purchase', function ($query) {
+                        $query->where('estado_compra_id', 3);
+                    })
+                    ->orderBy('id', 'asc')
+                    ->get();
+
+                foreach ($lotes as $lote) {
+                    if ($cantidadRestante <= 0) break;
+
+                    $usar = min($cantidadRestante, $lote->stock_restante);
+
+                    DB::table('purchase_sale_details')->insert([
+                        'sale_detail_id' => $detalle->id,
+                        'purchase_detail_id' => $lote->id,
+                        'cantidad_utilizada' => $usar,
+                        'costo_unitario' => $lote->precio_unitario,
+                        'auditoriaFechaCreacion' => now(),
+                        'auditoriaCreadoPor' => auth()->id(),
+                    ]);
+
+                    $lote->stock_restante -= $usar;
+                    $lote->save();
+
+                    $cantidadRestante -= $usar;
+                }
+
+                if ($cantidadRestante > 0) {
+                    DB::rollBack();
+                    $this->addError('productos', "No hay suficiente stock FIFO para '{$producto->nombre}'.");
+                    return;
+                }
+            }
+
+            // Confirmar venta
             $venta->estado_venta_id = 2; // Pagada
             $venta->metodo_pago_id = $this->metodoPago;
             $venta->descuento = $this->descuento;
@@ -166,7 +204,7 @@ class Pay extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->addError('productos', 'Ocurrió un error al procesar el pago.');
+            $this->addError('productos', 'Error al procesar el pago. ' . $e->getMessage());
             \Log::error('Error al procesar pago: ' . $e->getMessage());
         }
     }
@@ -178,36 +216,50 @@ class Pay extends Component
         try {
             $venta = Sale::with('detalles')->findOrFail($this->ventaId);
 
-            // Verifica si la venta está pagada
-            if ($venta->estado_venta_id == 2) {
-                // Recuperar los detalles de la venta
-                $detalles = SaleDetail::where('sale_id', $venta->id)->get();
-
-                // Devolver los productos al stock
-                foreach ($detalles as $detalle) {
+            if ($venta->estado_venta_id == 2) { // Si está pagada
+                foreach ($venta->detalles as $detalle) {
+                    // Restaurar stock total del producto
                     $producto = Product::find($detalle->product_id);
                     if ($producto) {
                         $producto->stock += $detalle->cantidad;
                         $producto->save();
                     }
+
+                    // Restaurar stock de los lotes FIFO utilizados
+                    $relacionesFIFO = DB::table('purchase_sale_details')
+                        ->where('sale_detail_id', $detalle->id)
+                        ->get();
+
+                    foreach ($relacionesFIFO as $relacion) {
+                        $lote = PurchaseDetail::find($relacion->purchase_detail_id);
+                        if ($lote) {
+                            $lote->stock_restante += $relacion->cantidad_utilizada;
+                            $lote->save();
+                        }
+                    }
+
+                    // Eliminar las relaciones FIFO
+                    DB::table('purchase_sale_details')
+                        ->where('sale_detail_id', $detalle->id)
+                        ->delete();
                 }
             }
 
-            // Cambiar el estado de la venta a "cancelada" (3)
+            // Cambiar estado de la venta (ej. 4 = anulada o cancelada)
             $venta->estado_venta_id = 3;
-            $venta->auditoriaFechaModificacion = Carbon::now();
+            $venta->auditoriaFechaModificacion = now();
             $venta->auditoriaModificadoPor = auth()->id();
             $venta->save();
 
             DB::commit();
 
-            session()->flash('success', 'La venta fue cancelada correctamente.');
+            session()->flash('success', 'La venta fue anulada correctamente.');
             return redirect()->route('sales');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error al eliminar la venta: ' . $e->getMessage());
-            $this->addError('eliminacion', 'Ocurrió un error al intentar eliminar la venta.');
+            \Log::error('Error al anular la venta: ' . $e->getMessage());
+            $this->addError('eliminacion', 'Ocurrió un error al intentar anular la venta.');
         }
     }
 

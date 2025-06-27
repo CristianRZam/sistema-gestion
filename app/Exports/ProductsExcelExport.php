@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 class ProductsExcelExport extends BaseExcelExport implements FromCollection
 {
     protected string $reportTitle = 'Reporte de Productos';
-    protected array $headings = ['Nº', 'Nombre', 'Descripción', 'Stock', 'Precio (S/)', 'Categoría'];
+    protected array $headings = ['Nº', 'Código', 'Nombre', 'Descripción', 'Stock', 'Precio (S/)', 'Categoría'];
     public function collection(): Collection
     {
         // Obtener todas las categorías (tipo CATEGORIA) indexadas por idParametro
@@ -23,6 +23,7 @@ class ProductsExcelExport extends BaseExcelExport implements FromCollection
             ->map(function ($producto, $index) use ($categorias) {
                 return [
                     $index + 1,                               // Nº
+                    $producto->codigo,
                     $producto->nombre,
                     $producto->descripcion,
                     $producto->stock,

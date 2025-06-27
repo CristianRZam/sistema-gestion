@@ -20,9 +20,9 @@
         @endcan
 
         @can('crear venta')
-            <a href="{{ route('sales.register') }}"
+            <a href="{{ route('purchases.register') }}"
                class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer">
-                {{ __('Nueva Venta') }}
+                {{ __('Nueva Compra') }}
             </a>
         @endcan
     </div>
@@ -47,19 +47,21 @@
             @foreach($compras as $index => $compra)
                 <tr>
                     <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                    <td class="border p-2 text-center">{{ $compra->fecha_compra->format('d/m/Y') }}</td>
+                    <td class="border p-2 text-center">{{ $compra->fecha_compra->format('d/m/Y H:m') }}</td>
                     <td class="border p-2">{{ $compra->supplier?->nombre ?? '-' }}</td>
                     <td class="border p-2">{{ $compra->comprador?->name ?? '-' }}</td>
                     <td class="border p-2 text-center">S/ {{ number_format($compra->total, 2) }}</td>
                     <td class="border p-2 text-center">
                         @php
                             $estado = $compra->estadoCompra?->nombre ?? 'Desconocido';
-                            $color = match($venta->estado_compra_id) {
-                                1 => 'bg-yellow-500 text-white', // Pendiente
-                                2 => 'bg-green-600 text-white',  // Pagada
-                                3 => 'bg-red-600 text-white',    // Anulada
+                            $color = match($compra->estado_compra_id) {
+                                1 => 'bg-yellow-500 text-black',  // Pendiente
+                                2 => 'bg-blue-500 text-white',    // Pagada
+                                3 => 'bg-green-600 text-white',   // Completada
+                                4 => 'bg-red-600 text-white',     // Cancelada
                                 default => 'bg-gray-600 text-white',
                             };
+
                         @endphp
                         <span class="px-2 py-1 rounded text-sm font-semibold {{ $color }}">
                             {{ $estado }}
@@ -70,18 +72,18 @@
                     <td class="border p-2 text-center">
                         {{-- Botón "Ver" disponible siempre si el usuario tiene permiso --}}
                         {{-- Acciones según estado_venta_id --}}
-                        @if ($compra->estado_compra_id === 1)
+                        @if ($compra->estado_compra_id === 1 || $compra->estado_compra_id === 2)
                             {{-- Venta pendiente --}}
                             @can('ver venta')
-                                <a href="{{ route('sales.pay', $compra->id) }}"
+                                <a href="{{ route('purchases.pay', $compra->id) }}"
                                    class="border border-yellow-500 text-yellow-500 px-3 py-1 rounded hover:bg-yellow-500 hover:text-white cursor-pointer">
-                                    Continuar venta
+                                    Continuar compra
                                 </a>
                             @endcan
-                        @elseif ($compra->estado_compra_id === 2 || $venta->estado_compra_id === 3)
+                        @elseif ($compra->estado_compra_id === 3 || $compra->estado_compra_id === 4)
                             {{-- Venta pagada --}}
                             @can('ver venta')
-                                <a href="{{ route('sales.pay', $compra->id) }}"
+                                <a href="{{ route('purchases.pay', $compra->id) }}"
                                    class="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-500 hover:text-white mr-2 cursor-pointer">
                                     Ver
                                 </a>

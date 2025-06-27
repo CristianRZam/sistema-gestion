@@ -239,9 +239,22 @@
                         @endphp
 
                         <div
-                            class="relative border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center"
+                            class="relative border rounded-lg p-3 text-center transition duration-150 ease-in-out
+        {{ $producto['stock'] == 0 ? 'border-red-400 bg-red-50 dark:bg-red-100/10' : 'border-gray-200 dark:border-gray-700' }}"
                             title="{{ $tooltip }}"
                         >
+
+                        {{-- Botón eliminar solo si stock es 0 --}}
+                            @if ($producto['stock'] == 0)
+                                <button
+                                    wire:click="eliminarProducto({{ $index }})"
+                                    class=" cursor-pointer absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition duration-150 ease-in-out"
+                                    title="Eliminar producto"
+                                >
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
+                            @endif
+
                             <img
                                 src="{{ $imagenUrl }}"
                                 alt="{{ $producto['nombre'] }}"

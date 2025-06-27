@@ -39,4 +39,10 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class, 'product_id');
     }
+
+    public function imagenPrincipal()
+    {
+        return $this->hasOne(ProductImage::class)->where('es_principal', true);
+    }
+
 }
