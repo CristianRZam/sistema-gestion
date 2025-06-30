@@ -129,12 +129,31 @@
         @foreach ($productos as $producto)
             <tr>
                 <td>{{ $producto['nombre'] }}</td>
-                <td class="cantidad" style="text-align:center;">{{ $producto['cantidad'] }}</td>
+                <td class="cantidad" style="text-align:center;">
+                    {{ $producto['cantidad'] }}
+                    @if($producto['cantidad_descontada'] > 0)
+                        <div style=" font-size:10px;">
+                            -{{ $producto['cantidad_descontada'] }}
+                        </div>
+                    @endif
+                </td>
                 <td class="precio" style="text-align:right;">S/ {{ number_format($producto['precio_unitario'], 2) }}</td>
-                <td class="precio" style="text-align:right;">S/ {{ number_format($producto['subtotal'], 2) }}</td>
+                <td class="precio" style="text-align:right;">
+                    @if($producto['cantidad_descontada'] > 0)
+                        <div style="text-decoration: line-through;  font-size: 10px;">
+                            S/ {{ number_format($producto['precio_unitario'] * $producto['cantidad'], 2) }}
+                        </div>
+                        <div >
+                            S/ {{ number_format($producto['subtotal'], 2) }}
+                        </div>
+                    @else
+                        S/ {{ number_format($producto['subtotal'], 2) }}
+                    @endif
+                </td>
             </tr>
         @endforeach
         </tbody>
+
     </table>
 
     <div class="line"></div>

@@ -68,6 +68,9 @@
         <table class="w-full text-left border-t border-gray-200 dark:border-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-700">
             <tr>
+                @if(in_array($estadoCompra, [3]))
+                    <th class="py-2 px-4 text-sm text-red-600 dark:text-red-400">Pérdidas</th>
+                @endif
                 <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300">Producto</th>
                 <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300">Precio</th>
                 <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300">Cantidad</th>
@@ -75,25 +78,68 @@
             </tr>
             </thead>
             <tbody>
-            @forelse($productos as $producto)
+            @forelse($productos as $index => $detalle)
+                @php
+                    $fallidas = collect($detalle['fallidas'] ?? []);
+                    $fallidasQueDescuentan = $fallidas->filter(fn($f) => in_array($f['tipo_id'], [1, 3]));
+                    $cantidadDescontada = $fallidasQueDescuentan->sum('cantidad_fallida');
+                    $subtotalDescontado = ($detalle['cantidad'] - $cantidadDescontada) * $detalle['precio'];
+                    $subtotalOriginal = $detalle['cantidad'] * $detalle['precio'];
+                @endphp
                 <tr class="border-t border-gray-200 dark:border-gray-600">
-                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">{{ $producto['nombre'] }}</td>
-                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">S/ {{ number_format($producto['precio'], 2) }}</td>
-                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">{{ $producto['cantidad'] }}</td>
-                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">S/ {{ number_format($producto['precio'] * $producto['cantidad'], 2) }}</td>
+                    @if(in_array($estadoCompra, [3]))
+                        <td class="py-2 px-4 space-y-1">
+                            <flux:modal.trigger name="product-loss">
+                                <button
+                                    class="block mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                                    x-data
+                                    x-on:click.prevent="$dispatch('open-modal-loss', { id: {{ $detalle['id'] }} })">
+                                    {{ __('Registrar pérdida') }}
+                                </button>
+                            </flux:modal.trigger>
+                        </td>
+                    @endif
+
+                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">{{ $detalle['nombre'] }}</td>
+
+                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">
+                        S/ {{ number_format($detalle['precio'], 2) }}
+                    </td>
+
+                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">
+                        {{ $detalle['cantidad'] }}
+                        @if($fallidas->count() > 0)
+                            <div class="text-xs text-red-500">
+                                -{{ $fallidas->sum('cantidad_fallida') }} pérdidas
+                            </div>
+                        @endif
+                    </td>
+
+                    <td class="py-2 px-4 text-gray-800 dark:text-gray-100">
+                        @if($fallidasQueDescuentan->count() > 0)
+                            <div class="line-through text-sm text-red-500">
+                                S/ {{ number_format($subtotalOriginal, 2) }}
+                            </div>
+                            <div class="text-green-600 font-semibold">
+                                S/ {{ number_format($subtotalDescontado, 2) }}
+                            </div>
+                        @else
+                            S/ {{ number_format($subtotalOriginal, 2) }}
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="py-3 px-4 text-gray-500 dark:text-gray-400 text-center">No hay productos agregados.</td>
+                    <td colspan="{{ in_array($estadoCompra, [3]) ? 5 : 4 }}"
+                        class="py-3 px-4 text-gray-500 dark:text-gray-400 text-center">
+                        No hay productos agregados.
+                    </td>
                 </tr>
             @endforelse
             </tbody>
         </table>
 
-        @error('productos')
-        <div class="text-red-600 dark:text-red-400 text-sm mt-2">{{ $message }}</div>
-        @enderror
-    </div>
+        @livewire('purchases.loss')
 
     {{-- Método de pago y resumen --}}
     <div class="space-y-4">

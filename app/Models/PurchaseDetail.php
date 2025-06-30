@@ -35,6 +35,12 @@ class PurchaseDetail extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function losses()
+    {
+        return $this->hasMany(PurchaseLoss::class);
+    }
+
+
     /**
      * Casting de atributos para asegurar el formato correcto al acceder a ellos.
      */

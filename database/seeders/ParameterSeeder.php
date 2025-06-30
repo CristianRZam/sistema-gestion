@@ -309,6 +309,113 @@ class ParameterSeeder extends Seeder
             ],
         ]);
 
+
+        // MOTIVOS DE PÉRDIDA DE COMPRA
+
+        Parameter::insert([
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 1,
+                'tipo' => 3,
+                'codigoParametro' => 'MOTIVO_PERDIDA_COMPRA',
+                'nombre' => 'Producto defectuoso',
+                'nombreCorto' => 'Defectuoso',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 2,
+                'tipo' => 3,
+                'codigoParametro' => 'MOTIVO_PERDIDA_COMPRA',
+                'nombre' => 'Producto robado',
+                'nombreCorto' => 'Robo',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 3,
+                'tipo' => 3,
+                'codigoParametro' => 'MOTIVO_PERDIDA_COMPRA',
+                'nombre' => 'Producto vencido',
+                'nombreCorto' => 'Vencido',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+            [
+                'idParametroPadre' => null,
+                'idParametro' => 4,
+                'tipo' => 3,
+                'codigoParametro' => 'MOTIVO_PERDIDA_COMPRA',
+                'nombre' => 'Otro motivo',
+                'nombreCorto' => 'Otro',
+                'orden' => 4,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+                'auditoriaFechaModificacion' => null,
+                'auditoriaModificadoPor' => null,
+                'auditoriaFechaEliminacion' => null,
+                'auditoriaEliminadoPor' => null,
+            ],
+        ]);
+
+
+        // TIPOS DE PÉRDIDA DE COMPRA
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_PERDIDA_COMPRA',
+                'nombre' => 'Devolución',
+                'nombreCorto' => 'Devolución',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_PERDIDA_COMPRA',
+                'nombre' => 'Pérdida',
+                'nombreCorto' => 'Pérdida',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_PERDIDA_COMPRA',
+                'nombre' => 'Reembolso sin devolución',
+                'nombreCorto' => 'Solo reembolso',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+
+
+
         // PARAMETROS PARA CATALOGO
         Parameter::insert([
             [

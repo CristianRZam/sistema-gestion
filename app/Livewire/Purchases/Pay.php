@@ -34,6 +34,7 @@ class Pay extends Component
 
     protected $listeners = [
         'open-modal-comprobante' => 'openModalPreview',
+        'detalleActualizado' => 'actualizarDetalles',
     ];
 
     public function openModalPreview()
@@ -70,27 +71,56 @@ class Pay extends Component
             $this->proveedor_documento = $compraModel->supplier->documento;
         }
 
-        $detalles = PurchaseDetail::with('product')
-            ->where('purchase_id', $compra)
-            ->get();
+        $this->actualizarDetalles();
 
-        $this->productos = $detalles->map(function ($detalle) {
-            return [
-                'id'       => $detalle->product_id,
-                'nombre'   => $detalle->product->nombre ?? '',
-                'precio'   => $detalle->precio_unitario,
-                'cantidad' => $detalle->cantidad,
-                'stock'    => $detalle->product->stock ?? 0,
-            ];
-        })->toArray();
+
     }
 
+    public function actualizarDetalles()
+    {
+        $detalles = PurchaseDetail::with([
+            'product',
+            'losses' => fn ($q) => $q
+                ->whereNull('auditoriaFechaEliminacion')
+                ->with(['motivo', 'tipo']),
+        ])->where('purchase_id', $this->compraId)->get();
+
+        $this->productos = $detalles->map(function ($detalle) {
+            // Solo considerar tipo_id 1 o 3 como descuentos
+            $perdidasQueDescuentan = $detalle->losses
+                ->filter(fn($l) => in_array($l->tipo_id, [1, 3]));
+
+            $cantidadDescontada = $perdidasQueDescuentan->sum('cantidad_fallida');
+            $cantidadUtil = $detalle->cantidad - $cantidadDescontada;
+
+            return [
+                'id'         => $detalle->id,
+                'product_id' => $detalle->product_id,
+                'nombre'     => $detalle->product->nombre ?? '',
+                'precio'     => $detalle->precio_unitario,
+                'cantidad'   => $detalle->cantidad,
+                'fallidas'   => $detalle->losses->map(function ($loss) {
+                    return [
+                        'cantidad_fallida' => $loss->cantidad_fallida,
+                        'motivo' => optional($loss->motivo)->nombre ?? '',
+                        'tipo'   => optional($loss->tipo)->nombre ?? '',
+                        'tipo_id' => $loss->tipo_id,
+                        'fecha'  => $loss->fecha_perdida,
+                    ];
+                })->toArray(),
+                'cantidad_util' => $cantidadUtil,
+                'subtotal'      => $cantidadUtil * $detalle->precio_unitario,
+            ];
+        })->toArray();
+
+    }
 
 
     public function getTotalConDescuentoProperty()
     {
-        return max(0, $this->total);
+        return max(0, collect($this->productos)->sum('subtotal'));
     }
+
 
 
     public function guardar()
@@ -195,25 +225,40 @@ class Pay extends Component
     {
         $compra = Purchase::with('supplier')->findOrFail($compraId);
 
-        $productos = PurchaseDetail::with('product')
+        $productos = PurchaseDetail::with([
+            'product',
+            'losses' => fn ($q) => $q
+                ->whereNull('auditoriaFechaEliminacion')
+                ->with(['tipo'])
+        ])
             ->where('purchase_id', $compraId)
             ->get()
             ->map(function ($detalle) {
+                // Pérdidas que descuentan del total (tipo 1 o 3)
+                $descuentan = $detalle->losses->filter(fn($l) => in_array($l->tipo_id, [1, 3]));
+                $cantidadDescontada = $descuentan->sum('cantidad_fallida');
+                $cantidadFinal = max(0, $detalle->cantidad - $cantidadDescontada);
+
                 return [
-                    'id'       => $detalle->product_id,
-                    'nombre'   => $detalle->product->nombre ?? '',
-                    'precio_unitario'   => $detalle->precio_unitario,
-                    'subtotal'   => $detalle->subtotal,
-                    'cantidad' => $detalle->cantidad,
-                    'stock'    => $detalle->product->stock ?? 0,
+                    'id'              => $detalle->product_id,
+                    'nombre'          => $detalle->product->nombre ?? '',
+                    'precio_unitario' => $detalle->precio_unitario,
+                    'cantidad'        => $detalle->cantidad,
+                    'cantidad_descontada' => $cantidadDescontada,
+                    'subtotal'        => $cantidadFinal * $detalle->precio_unitario,
                 ];
             })->toArray();
+
+        // Recalcular el total del comprobante
+        $total = collect($productos)->sum('subtotal');
+        $compra->total = $total;
 
         $pdf = Pdf::loadView('pdf.ticket-pedido-termica', compact('compra', 'productos'))
             ->setPaper([0, 0, 226.77, 600]); // 80mm de ancho
 
         return $pdf->stream("comprobante-{$compraId}.pdf");
     }
+
 
     public function render()
     {
