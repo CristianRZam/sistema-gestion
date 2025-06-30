@@ -52,19 +52,6 @@
                 />
             </div>
             <div class="w-1/2">
-                <flux:input
-                    wire:model.defer="stock"
-                    :label="__('Stock')"
-                    type="number"
-                    min="0"
-                    required
-                />
-            </div>
-        </div>
-
-        <!-- Garantía y Categoría -->
-        <div class="flex gap-4">
-            <div class="w-full">
                 <flux:select
                     wire:model.defer="categoria"
                     :label="__('Categoría')"
@@ -77,6 +64,7 @@
                 </flux:select>
             </div>
         </div>
+
 
         <!-- Imagen del producto (100%) -->
         <div x-data="{ abrirFile() { $refs.inputImagen.click(); } }" class="space-y-1">

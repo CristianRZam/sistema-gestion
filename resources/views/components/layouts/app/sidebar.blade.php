@@ -67,7 +67,7 @@
                         </flux:navlist.item>
                     @endcan
 
-                    @can('ver ventas')
+                    @can('ver compras')
                         <flux:navlist.item icon="shopping-bag" :href="route('purchases')" :current="request()->routeIs('purchases*')" wire:navigate>
                             {{ __('Compras') }}
                         </flux:navlist.item>

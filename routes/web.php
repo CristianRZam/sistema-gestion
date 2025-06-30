@@ -164,7 +164,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Registrar pago
     Volt::route('sales/pay/{venta}', 'sales.pay')
-        ->middleware('can:editar venta') // O crea 'pagar venta' si quieres más granularidad
+        ->middleware('can:pagar venta') // O crea 'pagar venta' si quieres más granularidad
         ->name('sales.pay');
 });
 
@@ -174,31 +174,31 @@ Route::middleware(['auth'])->group(function () {
     // Exportar Excel de ventas
     Route::get('/purchases/exportar-excel', function () {
         return Excel::download(new SalesExcelExport, 'ventas.xlsx');
-    })->middleware('can:exportar ventas')->name('purchases.exportar.excel');
+    })->middleware('can:exportar compras')->name('purchases.exportar.excel');
 
     // Exportar PDF de ventas
     Route::get('/purchases/exportar-pdf', function () {
         return (new SalesPdfExport)->download('ventas.pdf');
-    })->middleware('can:exportar ventas')->name('purchases.exportar.pdf');
+    })->middleware('can:exportar compras')->name('purchases.exportar.pdf');
 
     // Lista de ventas
     Volt::route('purchases', 'purchases.lista')
-        ->middleware('can:ver ventas')
+        ->middleware('can:ver compras')
         ->name('purchases');
 
     // Crear venta
     Volt::route('purchases/add', 'purchases.register')
-        ->middleware('can:crear venta')
+        ->middleware('can:crear compra')
         ->name('purchases.register');
 
     // Editar venta
     Volt::route('purchases/edit/{id}', 'purchases.register')
-        ->middleware('can:editar venta')
+        ->middleware('can:editar compra')
         ->name('purchases.edit');
 
     // Registrar pago
     Volt::route('purchases/pay/{compra}', 'purchases.pay')
-        ->middleware('can:editar venta') // O crea 'pagar venta' si quieres más granularidad
+        ->middleware('can:pagar compra') // O crea 'pagar venta' si quieres más granularidad
         ->name('purchases.pay');
 });
 

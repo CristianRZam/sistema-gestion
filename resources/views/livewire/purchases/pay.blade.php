@@ -5,7 +5,7 @@
         <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Detalles de pago</h2>
 
         <div class="flex items-center gap-2">
-            @can('crear venta')
+            @can('crear compra')
                 <a href="{{ route('purchases.register') }}"
                    class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition cursor-pointer">
                     Realizar nueva compra
@@ -161,7 +161,7 @@
     {{-- Botón de acción --}}
     <div class="flex justify-between items-center mt-6">
         {{-- Lado izquierdo --}}
-        @can('editar venta')
+        @can('editar compra')
             <div>
                 @if($estadoCompra == 1 || $estadoCompra == 2)
                     <a href="{{ route('purchases.edit', $compra) }}" class="text-sm text-blue-600 dark:text-white hover:underline">
@@ -173,7 +173,7 @@
 
         {{-- Lado derecho --}}
         <div class="flex gap-2">
-            @can('eliminar venta')
+            @can('eliminar compra')
                 @if($estadoCompra == 2 || $estadoCompra == 1 )
                     <flux:modal.trigger name="confirm-purchase-deletion">
                         <flux:button class="cursor-pointer" variant="danger" x-data="" x-on:click.prevent="$dispatch('open-modal-purchase-delete', 'confirm-purchase-deletion')">
@@ -183,7 +183,7 @@
                 @endif
             @endcan
 
-            @can('pagar venta')
+            @can('pagar compra')
                 @if($estadoCompra == 1 || $estadoCompra == 2)
                     <button wire:click="guardar"
                             class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer">

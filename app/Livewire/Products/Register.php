@@ -17,7 +17,6 @@ class Register extends Component
     public $nombre;
     public $descripcion;
     public $precio;
-    public $stock;
     public $categoria; // Este será el ID lógico de la categoría
 
     public $categoriasDisponibles = [];
@@ -31,7 +30,6 @@ class Register extends Component
         'nombre' => 'required|string|max:255',
         'descripcion' => 'nullable|string|max:1000',
         'precio' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
         'categoria' => 'required|integer',
     ];
 
@@ -60,7 +58,6 @@ class Register extends Component
                 $this->nombre = $producto->nombre;
                 $this->descripcion = $producto->descripcion;
                 $this->precio = $producto->precio;
-                $this->stock = $producto->stock;
                 $this->categoria = $producto->categoria_id;
 
                 $imagen = $producto->imagenes()->where('es_principal', true)->first();
@@ -69,7 +66,7 @@ class Register extends Component
                 }
             }
         } else {
-            $this->reset(['codigo', 'nombre', 'descripcion', 'precio', 'stock', 'categoria']);
+            $this->reset(['codigo', 'nombre', 'descripcion', 'precio', 'categoria']);
             if ($codigo) {
                 $this->codigo = $codigo; // ✅ precargar código
             }
@@ -99,7 +96,6 @@ class Register extends Component
                     'nombre' => $this->nombre,
                     'descripcion' => $this->descripcion,
                     'precio' => $this->precio,
-                    'stock' => $this->stock,
                     'categoria_id' => $this->categoria,
                     'auditoriaFechaModificacion' => Carbon::now(),
                     'auditoriaModificadoPor' => $userId,
@@ -111,7 +107,7 @@ class Register extends Component
                 'nombre' => $this->nombre,
                 'descripcion' => $this->descripcion,
                 'precio' => $this->precio,
-                'stock' => $this->stock,
+                'stock' => 0,
                 'categoria_id' => $this->categoria,
                 'auditoriaFechaCreacion' => Carbon::now(),
                 'auditoriaCreadoPor' => $userId,

@@ -64,5 +64,14 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'ver venta']);
         Permission::create(['name' => 'eliminar venta']);
         Permission::create(['name' => 'exportar ventas']);
+
+        // COMPRAS
+        Permission::create(['name' => 'ver compras']);
+        Permission::create(['name' => 'crear compra']);
+        Permission::create(['name' => 'editar compra']);
+        Permission::create(['name' => 'pagar compra']);
+        Permission::create(['name' => 'ver compra']);
+        Permission::create(['name' => 'eliminar compra']);
+        Permission::create(['name' => 'exportar compras']);
     }
 }

@@ -8,7 +8,7 @@
 
     <!-- Botones alineados a la derecha -->
     <div class="mb-4 text-right">
-        @can('exportar ventas')
+        @can('exportar compras')
             <a href="{{ route('sales.exportar.pdf') }}"
                class="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white mr-2">
                 Exportar PDF
@@ -19,7 +19,7 @@
             </a>
         @endcan
 
-        @can('crear venta')
+        @can('crear compra')
             <a href="{{ route('purchases.register') }}"
                class="border border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white cursor-pointer">
                 {{ __('Nueva Compra') }}
@@ -74,7 +74,7 @@
                         {{-- Acciones según estado_venta_id --}}
                         @if ($compra->estado_compra_id === 1 || $compra->estado_compra_id === 2)
                             {{-- Venta pendiente --}}
-                            @can('ver venta')
+                            @can('ver compra')
                                 <a href="{{ route('purchases.pay', $compra->id) }}"
                                    class="border border-yellow-500 text-yellow-500 px-3 py-1 rounded hover:bg-yellow-500 hover:text-white cursor-pointer">
                                     Continuar compra
@@ -82,7 +82,7 @@
                             @endcan
                         @elseif ($compra->estado_compra_id === 3 || $compra->estado_compra_id === 4)
                             {{-- Venta pagada --}}
-                            @can('ver venta')
+                            @can('ver compra')
                                 <a href="{{ route('purchases.pay', $compra->id) }}"
                                    class="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-500 hover:text-white mr-2 cursor-pointer">
                                     Ver
