@@ -35,7 +35,7 @@
             <thead>
             <tr>
                 <th class="border p-2">Nº</th>
-                <th class="border p-2">Fecha</th>
+                <th class="border p-2">Fecha compra</th>
                 <th class="border p-2">Proveedor</th>
                 <th class="border p-2">Usuario comprador</th>
                 <th class="border p-2">Total</th>
@@ -47,7 +47,9 @@
             @foreach($compras as $index => $compra)
                 <tr>
                     <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                    <td class="border p-2 text-center">{{ $compra->fecha_compra->format('d/m/Y H:m') }}</td>
+                    <td class="border p-2 text-center">
+                        {{ optional($compra->fecha_compra)->format('d/m/Y H:i') }}
+                    </td>
                     <td class="border p-2">{{ $compra->supplier?->nombre ?? '-' }}</td>
                     <td class="border p-2">{{ $compra->comprador?->name ?? '-' }}</td>
                     <td class="border p-2 text-center">S/ {{ number_format($compra->total, 2) }}</td>

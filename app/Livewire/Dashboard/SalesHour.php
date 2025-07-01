@@ -8,16 +8,32 @@ use Livewire\Component;
 
 class SalesHour extends Component
 {
+    public ?string $fechaInicio = null;
+    public ?string $fechaFin = null;
+
     public $ventasPorHora = [];
+
+    protected $listeners = ['rangoFechasActualizado' => 'actualizarRangoFechas'];
 
     public function mount()
     {
+        $this->fechaInicio = now()->toDateString();
+        $this->fechaFin = now()->toDateString();
+
+        $this->cargarDatos();
+    }
+
+    public function actualizarRangoFechas(array $rango)
+    {
+        $this->fechaInicio = $rango['inicio'];
+        $this->fechaFin = $rango['fin'];
+
         $this->cargarDatos();
     }
 
     public function cargarDatos()
     {
-        $hoy = Carbon::now()->format('Y-m-d');
+        $this->ventasPorHora = [];
 
         // Inicializar las horas de 6 a.m. (06) a 10 p.m. (22)
         $horas = [];
@@ -25,14 +41,13 @@ class SalesHour extends Component
             $horas[str_pad($i, 2, '0', STR_PAD_LEFT)] = 0;
         }
 
-        // Obtener ventas de hoy entre 6:00 a.m. y 10:59 p.m.
+        $inicio = Carbon::parse($this->fechaInicio)->startOfDay();
+        $fin = Carbon::parse($this->fechaFin)->endOfDay();
+
         $ventas = Sale::where('estado_venta_id', 2)
             ->whereNull('auditoriaFechaEliminacion')
-            ->whereDate('fecha_venta', $hoy)
-            ->whereTime('fecha_venta', '>=', '06:00:00')
-            ->whereTime('fecha_venta', '<=', '22:59:59')
+            ->whereBetween('fecha_venta', [$inicio, $fin])
             ->get();
-
 
         foreach ($ventas as $venta) {
             $hora = Carbon::parse($venta->fecha_venta)->format('H');
@@ -42,6 +57,11 @@ class SalesHour extends Component
         }
 
         $this->ventasPorHora = $horas;
+
+        $this->dispatch('actualizarGraficoVentasHora', [
+            'labels' => $this->generarEtiquetas(),
+            'ventas' => array_values($this->ventasPorHora),
+        ]);
     }
 
     public function render()
@@ -56,7 +76,7 @@ class SalesHour extends Component
     {
         $labels = [];
         for ($i = 6; $i <= 22; $i++) {
-            $labels[] = Carbon::createFromTime($i)->format('g a'); // Ej: 6 a.m., 7 a.m., ..., 10 p.m.
+            $labels[] = Carbon::createFromTime($i)->format('g a');
         }
         return $labels;
     }

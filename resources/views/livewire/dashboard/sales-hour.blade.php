@@ -3,17 +3,26 @@
     <canvas id="ventasPorHoraChart"></canvas>
 
     <script>
-        document.addEventListener('livewire:navigated', function () {
-            const ctx = document.getElementById('ventasPorHoraChart').getContext('2d');
+        window.addEventListener('actualizarGraficoVentasHora', (event) => {
+            const data = event.detail[0];
+            const { labels, ventas } = data;
+
+            const ctx = document.getElementById('ventasPorHoraChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (window.ventasHoraChart instanceof Chart) {
+                window.ventasHoraChart.destroy();
+            }
+
             const isDark = document.documentElement.classList.contains('dark');
 
-            new Chart(ctx, {
+            window.ventasHoraChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: {!! $labelsJson !!},
+                    labels: labels,
                     datasets: [{
                         label: 'Ventas',
-                        data: {!! $ventasPorHoraJson !!},
+                        data: ventas,
                         backgroundColor: 'rgba(59, 130, 246, 0.5)',
                         borderColor: 'rgba(59, 130, 246, 1)',
                         borderWidth: 1,
@@ -46,4 +55,5 @@
             });
         });
     </script>
+
 </div>

@@ -1,6 +1,46 @@
 <div class="shadow space-y-6">
     <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Resumen General</h2>
 
+    <!-- Filtro de fechas -->
+    <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 rounded-xl shadow p-4 mt-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <!-- Botones -->
+            <div class="flex flex-wrap gap-2">
+                @foreach (['hoy' => 'Hoy', 'semana' => 'Esta semana', 'mes' => 'Este mes', 'personalizado' => 'Personalizado'] as $clave => $texto)
+                    <button
+                        wire:click="$set('filtroFecha', '{{ $clave }}')"
+                        class="cursor-pointer px-4 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500
+            {{ $filtroFecha === $clave ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' : 'text-gray-700 dark:text-gray-200 bg-transparent' }}"
+                    >
+                        {{ $texto }}
+                    </button>
+                @endforeach
+            </div>
+
+            <!-- Rango personalizado -->
+            @if($filtroFecha === 'personalizado')
+                <div class="flex flex-col sm:flex-row gap-4 items-center mt-2 md:mt-0">
+                    <div class="flex flex-col">
+                        <label for="fechaInicio" class="text-sm text-gray-600 dark:text-gray-300 mb-1">Desde</label>
+                        <input type="date" wire:model.live="fechaInicio" id="fechaInicio"
+                               class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-white text-sm px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="fechaFin" class="text-sm text-gray-600 dark:text-gray-300 mb-1">Hasta</label>
+                        <input type="date" wire:model.live="fechaFin" id="fechaFin"
+                               class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-white text-sm px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                @if($fechaInicio && $fechaFin && \Carbon\Carbon::parse($fechaInicio)->gt(\Carbon\Carbon::parse($fechaFin)))
+                    <p class="text-red-500 text-sm mt-2">La fecha de inicio no puede ser mayor que la fecha de fin.</p>
+                @endif
+            @endif
+        </div>
+    </div>
+
+
+
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
         <!-- Clientes -->
         <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
@@ -19,7 +59,6 @@
             </div>
         </div>
 
-
         <!-- Ventas -->
         <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
             <div class="bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-300 p-3 rounded-full">
@@ -34,7 +73,6 @@
                 <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ $cantidadVentas }}</p>
             </div>
         </div>
-
 
         <!-- Productos vendidos -->
         <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
@@ -51,7 +89,6 @@
             </div>
         </div>
 
-
         <!-- Ingresos del día -->
         <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
             <div class="bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 p-3 rounded-full">
@@ -64,6 +101,23 @@
             <div>
                 <h4 class="text-sm text-gray-500 dark:text-gray-400">Ingresos hoy</h4>
                 <p class="text-xl font-semibold text-gray-800 dark:text-white">S/ {{ number_format($ingresosHoy, 2) }}</p>
+            </div>
+        </div>
+
+        <!-- Ganancias del día -->
+        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+            <div class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.1 0-2 .9-2 2v4H8v2h2v2h2v-2h2v-2h-2v-4h2V8h-2z" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">Ganancias hoy</h4>
+                <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                    S/ {{ number_format($gananciasHoy, 2) }}
+                </p>
             </div>
         </div>
     </div>

@@ -35,7 +35,7 @@
             <thead>
             <tr>
                 <th class="border p-2">Nº</th>
-                <th class="border p-2">Fecha</th>
+                <th class="border p-2">Fecha venta</th>
                 <th class="border p-2">Cliente</th>
                 <th class="border p-2">Usuario vendedor</th>
                 <th class="border p-2">Total</th>
@@ -47,7 +47,9 @@
             @foreach($ventas as $index => $venta)
                 <tr>
                     <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                    <td class="border p-2 text-center">{{ $venta->fecha_venta->format('d/m/Y') }}</td>
+                    <td class="border p-2 text-center">
+                        {{ $venta->fecha_venta ? $venta->fecha_venta->format('d/m/Y H:m') : '' }}
+                    </td>
                     <td class="border p-2">{{ $venta->customer?->nombre ?? '-' }}</td>
                     <td class="border p-2">{{ $venta->vendedor?->name ?? '-' }}</td>
                     <td class="border p-2 text-center">S/ {{ number_format($venta->total, 2) }}</td>

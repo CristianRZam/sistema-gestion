@@ -384,7 +384,6 @@ class Register extends Component
                 $compra = Purchase::create([
                     'supplier_id' => $this->proveedor_seleccionado['id'] ?? null,
                     'usuario_id' => auth()->id(),
-                    'fecha_compra' => Carbon::now(),
                     'total' => $this->total ?? 0,
                     'estado_compra_id' => 1,
                     'auditoriaFechaCreacion' => Carbon::now(),

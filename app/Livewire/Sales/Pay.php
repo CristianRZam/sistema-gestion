@@ -193,6 +193,7 @@ class Pay extends Component
             $venta->vuelto = $this->vuelto;
             $venta->auditoriaFechaModificacion = Carbon::now();
             $venta->auditoriaModificadoPor = auth()->id();
+            $venta->fecha_venta = Carbon::now();
             $venta->save();
 
             DB::commit();
@@ -249,6 +250,7 @@ class Pay extends Component
             $venta->estado_venta_id = 3;
             $venta->auditoriaFechaModificacion = now();
             $venta->auditoriaModificadoPor = auth()->id();
+            $venta->fecha_venta = Carbon::now();
             $venta->save();
 
             DB::commit();

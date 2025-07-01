@@ -359,7 +359,6 @@ class Register extends Component
                 $venta = Sale::create([
                     'customer_id' => $this->cliente_seleccionado['id'] ?? null,
                     'usuario_id' => auth()->id(),
-                    'fecha_venta' => Carbon::now(),
                     'total' => $this->total ?? 0,
                     'estado_venta_id' => 1,
                     'auditoriaFechaCreacion' => Carbon::now(),

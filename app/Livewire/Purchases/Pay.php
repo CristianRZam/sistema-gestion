@@ -163,6 +163,9 @@ class Pay extends Component
 
             $compra->estado_compra_id = $this->estadoCompra ; // Pagada
             $compra->metodo_pago_id = $this->metodoPago;
+            if ($this->estadoCompra == 2) {
+                $compra->fecha_compra = Carbon::now();
+            }
             $compra->auditoriaFechaModificacion = Carbon::now();
             $compra->auditoriaModificadoPor = auth()->id();
             $compra->save();
@@ -207,6 +210,7 @@ class Pay extends Component
             $compra->estado_compra_id = 4;
             $compra->auditoriaFechaModificacion = Carbon::now();
             $compra->auditoriaModificadoPor = auth()->id();
+            $compra->fecha_compra = Carbon::now();
             $compra->save();
 
             DB::commit();

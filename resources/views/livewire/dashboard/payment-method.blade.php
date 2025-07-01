@@ -3,17 +3,24 @@
     <canvas id="metodosPagoChart"></canvas>
 
     <script>
-        document.addEventListener('livewire:navigated', function () {
-            const ctx = document.getElementById('metodosPagoChart').getContext('2d');
-            const montos = {!! $montosJson !!};
+        window.addEventListener('actualizarGraficoMetodoPago', (event) => {
+            const data = event.detail[0]; // Accedemos al primer objeto del array
+            const { labels, valores, montos } = data;
 
-            new Chart(ctx, {
+            const ctx = document.getElementById('metodosPagoChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (window.metodoChart) {
+                window.metodoChart.destroy();
+            }
+
+            window.metodoChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: {!! $labelsJson !!},
+                    labels: labels,
                     datasets: [{
                         label: 'Métodos de Pago',
-                        data: {!! $valoresJson !!},
+                        data: valores,
                         backgroundColor: [
                             'rgba(54, 162, 235, 0.7)',
                             'rgba(75, 192, 192, 0.7)',
@@ -36,22 +43,21 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const label = context.label || '';
                                     const value = context.parsed;
-                                    // Retornamos un array con la línea del label y luego una línea vacía para separación
                                     return [` ${label}: ${value} ventas`, ''];
                                 },
-                                afterLabel: function(context) {
+                                afterLabel: function (context) {
                                     const monto = montos[context.dataIndex];
                                     return ` Total: S/ ${monto.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
                                 }
                             }
                         }
-
                     }
                 }
             });
         });
+
     </script>
 </div>

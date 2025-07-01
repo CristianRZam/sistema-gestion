@@ -1,20 +1,28 @@
 <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 mt-4">
-    <div class="rounded">
-        <h3 class="text-lg font-bold mb-2 text-gray-800 dark:text-white">Top 10 Productos Más Vendidos</h3>
-        <canvas id="topProductosChart"></canvas>
-    </div>
+    <h3 class="text-lg font-bold mb-4 text-gray-800 dark:text-white">Top 10 Productos Más Vendidos</h3>
+    <canvas id="topProductosChart"></canvas>
 
     <script>
-        document.addEventListener('livewire:navigated', function () {
-            const ctx = document.getElementById('topProductosChart').getContext('2d');
+        window.addEventListener('actualizarGraficoTopProductos', (event) => {
+            const data = event.detail[0];
+            const { labels, data: cantidades } = data;
 
-            new Chart(ctx, {
+            const ctx = document.getElementById('topProductosChart')?.getContext('2d');
+            if (!ctx) return;
+
+            // ✅ Verifica si existe y es instancia de Chart
+            if (window.topProductosChart instanceof Chart) {
+                window.topProductosChart.destroy();
+            }
+
+            // ✅ Crea el nuevo gráfico
+            window.topProductosChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: @json($labels),
+                    labels: labels,
                     datasets: [{
                         label: 'Productos más vendidos',
-                        data: @json($data),
+                        data: cantidades,
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.7)',
                             'rgba(54, 162, 235, 0.7)',
@@ -44,4 +52,5 @@
             });
         });
     </script>
+
 </div>

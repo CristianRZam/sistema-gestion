@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('usuario_id')->nullable();
 
             // Fecha de la venta
-            $table->dateTime('fecha_venta');
+            $table->dateTime('fecha_venta')->nullable();
 
             // Total de la venta
             $table->decimal('total', 10, 2);
