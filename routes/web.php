@@ -82,13 +82,13 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'can:ver productos'])->group(function () {
     // Ruta para exportar Excel de productos
-    Route::get('/products/exportar-excel', function () {
-        return Excel::download(new ProductsExcelExport, 'productos.xlsx');
+    Route::get('/products/exportar-excel', function (Request $request) {
+        return Excel::download(new ProductsExcelExport($request), 'productos.xlsx');
     })->name('products.exportar.excel');
 
     // Ruta para exportar PDF de categorías
-   Route::get('/products/exportar-pdf', function () {
-        return (new ProductsPdfExport)->download('productos.pdf');
+    Route::get('/products/exportar-pdf', function (Request $request) {
+        return (new ProductsPdfExport($request))->download('productos.pdf');
     })->name('products.exportar.pdf');
 
     Route::get('/products/exportar-catalogo-pdf', function (Request $request) {

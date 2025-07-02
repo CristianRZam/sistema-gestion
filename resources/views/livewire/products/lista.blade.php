@@ -106,7 +106,11 @@
                 </a>
 
                 <!-- Exportar PDF -->
-                <a href="{{ route('products.exportar.pdf') }}"
+                <a href="{{ route('products.exportar.pdf', [
+                        'nombre' => $nombreFiltro,
+                        'categoria_id' => $categoriaFiltro,
+                        'stock' => $stockFiltro,
+                    ]) }}"
                    class="border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white inline-flex items-center gap-2 justify-center"
                    x-data
                    x-init="tippy($el, { content: 'Exportar PDF' })">
@@ -115,7 +119,11 @@
                 </a>
 
                 <!-- Exportar Excel -->
-                <a href="{{ route('products.exportar.excel') }}"
+                <a href="{{ route('products.exportar.excel', [
+                        'nombre' => $nombreFiltro,
+                        'categoria_id' => $categoriaFiltro,
+                        'stock' => $stockFiltro,
+                    ]) }}"
                    class="border border-green-600 text-green-600 px-4 py-2 rounded-full hover:bg-green-600 hover:text-white inline-flex items-center gap-2 justify-center"
                    x-data
                    x-init="tippy($el, { content: 'Exportar Excel' })">

@@ -4,178 +4,248 @@ namespace App\Livewire\Products;
 
 use App\Models\Parameter;
 use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
 use Livewire\WithFileUploads;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Livewire\Component;
-use Illuminate\Support\Facades\Storage;
-use App\Models\ProductImage;
 use Illuminate\Http\UploadedFile;
+use App\Models\ProductImage;
 
 class Import extends Component
 {
     use WithFileUploads;
 
     public $excelFile;
-    public $imagenes = [];
+    public $imagenesZip;
 
     protected $listeners = ['open-modal-product-import' => 'resetearCampos'];
 
     public function resetearCampos()
     {
-        $this->reset(['excelFile', 'imagenes']);
+        $this->reset(['excelFile', 'imagenesZip']);
         $this->resetValidation();
-
         $this->dispatch('abrirModalProductImport');
     }
-
 
     public function guardarProducto()
     {
         $this->validate([
             'excelFile' => 'nullable|file|mimes:xlsx,xls',
-            'imagenes.*' => 'nullable|file|image|max:2048',
+            'imagenesZip' => 'nullable|file|mimes:zip|max:102400', // 100MB
         ]);
 
-        if (!$this->excelFile && empty($this->imagenes)) {
-            $this->addError('excelFile', 'Debe subir el archivo Excel o la carpeta de imagenes.');
-            $this->addError('imagenes', 'Debe subir el archivo Excel o la carpeta de imagenes.');
+        if (!$this->excelFile && !$this->imagenesZip) {
+            $this->addError('excelFile', 'Debe subir el archivo Excel.');
+            $this->addError('imagenesZip', 'Debe subir el archivo ZIP de imágenes.');
             return;
         }
 
         $userId = auth()->id();
         $rows = [];
 
+        // Leer Excel
         if ($this->excelFile instanceof UploadedFile) {
             $spreadsheet = IOFactory::load($this->excelFile->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
         }
 
-        // Mapear imágenes subidas con el nombre del archivo sin extensión
-        $imagenesMap = [];
-        foreach ($this->imagenes as $imagen) {
-            $nombreArchivo = pathinfo($imagen->getClientOriginalName(), PATHINFO_FILENAME); // Sin extensión
-            $imagenesMap[$nombreArchivo] = $imagen;
+        // Validar filas del Excel antes de guardar
+        foreach (array_slice($rows, 1) as $index => $row) {
+            $linea = $index + 2;
+
+            $codigo = trim($row['A'] ?? '');
+            $nombre = trim($row['B'] ?? '');
+            $descripcion = $row['C'] ?? '';
+            $precio = $row['D'] ?? '';
+            $categoria = trim($row['E'] ?? '');
+
+            if (empty($codigo)) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Fila $linea: El código es obligatorio."
+                ]);
+                return;
+            }
+
+            if (strlen($codigo) > 255) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Fila $linea: El código excede 255 caracteres."
+                ]);
+                return;
+            }
+
+            if (empty($nombre)) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Fila $linea: El nombre es obligatorio."
+                ]);
+                return;
+            }
+
+            if (strlen($nombre) > 255) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Fila $linea: El nombre excede 255 caracteres."
+                ]);
+                return;
+            }
+
+            if (!is_numeric($precio)) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Fila $linea: El precio debe ser numérico."
+                ]);
+                return;
+            }
+
+            if ((float)$precio < 0) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Fila $linea: El precio no puede ser negativo."
+                ]);
+                return;
+            }
+
+            if (!empty($categoria) && strlen($categoria) > 255) {
+                $this->dispatch('cerrarModalProductImport');
+                $this->dispatch('mostrarErrorImportacion', [
+                    'mensaje' => "Línea $linea: El nombre de la categoría excede 255 caracteres."
+                ]);
+                return;
+            }
         }
 
+        // Guardar productos
+        foreach (array_slice($rows, 1) as $row) {
+            $codigo = preg_replace('/\s+/', '', trim($row['A'] ?? ''));
+            $nombre = $row['B'] ?? '';
+            $descripcion = $row['C'] ?? '';
+            $precio = $row['D'] ?? 0;
+            $nombreCategoria = trim($row['E'] ?? '');
+
+            $categoria = Parameter::where('codigoParametro', 'CATEGORIA')
+                ->whereRaw('LOWER(nombre) = ?', [strtolower($nombreCategoria)])
+                ->first();
+
+            if (!$categoria && !empty($nombreCategoria)) {
+                $nuevoIdParametro = Parameter::where('codigoParametro', 'CATEGORIA')->max('idParametro') + 1;
+                $categoria = Parameter::create([
+                    'idParametro' => $nuevoIdParametro,
+                    'tipo' => '2',
+                    'codigoParametro' => 'CATEGORIA',
+                    'nombre' => $nombreCategoria,
+                    'nombreCorto' => $nombreCategoria,
+                    'orden' => $nuevoIdParametro,
+                    'auditoriaFechaCreacion' => now(),
+                    'auditoriaCreadoPor' => $userId,
+                ]);
+            }
+
+            $categoriaId = $categoria->idParametro ?? null;
+
+            $producto = Product::where('codigo', $codigo)->first();
+            if ($producto) {
+                $producto->update([
+                    'nombre' => $nombre,
+                    'descripcion' => $descripcion,
+                    'precio' => $precio,
+                    'categoria_id' => $categoriaId,
+                    'auditoriaFechaModificacion' => now(),
+                    'auditoriaModificadoPor' => $userId,
+                ]);
+            } else {
+                Product::create([
+                    'codigo' => $codigo,
+                    'nombre' => $nombre,
+                    'descripcion' => $descripcion,
+                    'precio' => $precio,
+                    'categoria_id' => $categoriaId,
+                    'auditoriaFechaCreacion' => now(),
+                    'auditoriaCreadoPor' => $userId,
+                ]);
+            }
+        }
+
+        // Procesar imágenes
         $erroresImagenes = [];
 
-        // ✅ Caso 1: Hay Excel -> procesa filas
-        if (!empty($rows)) {
-            foreach (array_slice($rows, 1) as $row) {
-                $codigo = trim($row['A'] ?? '');
-                if (empty($codigo)) continue;
+        if ($this->imagenesZip instanceof UploadedFile) {
+            $zipRealPath = $this->imagenesZip->getRealPath();
+            $zip = new \ZipArchive;
 
-                $nombre = $row['B'] ?? '';
-                $descripcion = $row['C'] ?? '';
-                $precio = $row['D'] ?? 0;
-                $stock = $row['E'] ?? 0;
-                $nombreCategoria = trim($row['F'] ?? '');
+            if ($zip->open($zipRealPath) === true) {
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $entryName = $zip->getNameIndex($i);
 
-                // Obtener o registrar el idParametro correspondiente al nombre de categoría
-                $categoria = Parameter::where('codigoParametro', 'CATEGORIA')
-                    ->whereRaw('LOWER(nombre) = ?', [strtolower($nombreCategoria)])
-                    ->first();
+                    if (in_array(strtolower(pathinfo($entryName, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'webp'])) {
+                        $codigo = preg_replace('/\s+/', '', pathinfo($entryName, PATHINFO_FILENAME));
+                        $stream = $zip->getFromIndex($i);
 
-                if (!$categoria && !empty($nombreCategoria)) {
-                    $nuevoIdParametro = Parameter::where('codigoParametro', 'CATEGORIA')->max('idParametro') + 1;
+                        if ($stream !== false) {
+                            $tempPath = tempnam(sys_get_temp_dir(), 'img_');
+                            file_put_contents($tempPath, $stream);
 
-                    $categoria = Parameter::create([
-                        'idParametro' => $nuevoIdParametro,
-                        'tipo' => '2', // Asumiendo tipo texto. Cambia si tu sistema usa otro tipo.
-                        'codigoParametro' => 'CATEGORIA',
-                        'nombre' => $nombreCategoria,
-                        'nombreCorto' => $nombreCategoria,
-                        'orden' => $nuevoIdParametro,
-                        'auditoriaFechaCreacion' => now(),
-                        'auditoriaCreadoPor' => $userId,
-                    ]);
+                            $producto = Product::where('codigo', $codigo)->first();
+
+                            if ($producto) {
+                                $this->procesarImagenRuta($producto, $tempPath, $userId);
+                            } else {
+                                $erroresImagenes[] = "No se encontró un producto con el código: $codigo";
+                            }
+
+                            unlink($tempPath);
+                        }
+                    }
                 }
-
-                $categoriaId = $categoria->idParametro ?? null;
-
-                $producto = Product::where('codigo', $codigo)->first();
-
-                if ($producto) {
-                    $producto->update([
-                        'nombre' => $nombre,
-                        'descripcion' => $descripcion,
-                        'precio' => $precio,
-                        'stock' => $stock,
-                        'categoria_id' => $categoriaId,
-                        'auditoriaFechaModificacion' => now(),
-                        'auditoriaModificadoPor' => $userId,
-                    ]);
-                } else {
-                    $producto = Product::create([
-                        'codigo' => $codigo,
-                        'nombre' => $nombre,
-                        'descripcion' => $descripcion,
-                        'precio' => $precio,
-                        'stock' => $stock,
-                        'categoria_id' => $categoriaId,
-                        'auditoriaFechaCreacion' => now(),
-                        'auditoriaCreadoPor' => $userId,
-                    ]);
-                }
-
-                // Procesar imagen
-                if (isset($imagenesMap[$codigo])) {
-                    $this->procesarImagenProducto($producto, $imagenesMap[$codigo], $userId);
-                    unset($imagenesMap[$codigo]);
-                }
+                $zip->close();
             }
         }
 
-        // ✅ Caso 2: No hay Excel, solo imágenes
-        if (empty($rows) && !empty($imagenesMap)) {
-            foreach ($imagenesMap as $codigo => $imagen) {
-                $producto = Product::where('codigo', $codigo)->first();
-                if ($producto) {
-                    $this->procesarImagenProducto($producto, $imagen, $userId);
-                } else {
-                    $erroresImagenes[] = "No se encontró un producto con el código: $codigo";
-                }
-            }
-        }
-
-        $this->dispatch('cerrarModalProductImport');
         $this->dispatch('actualiza-lista-producto');
+        $this->dispatch('cerrarModalProductImport');
 
         if (!empty($erroresImagenes)) {
-            session()->flash('message', 'Productos e imágenes importados con algunos errores: ' . implode(', ', $erroresImagenes));
+            $this->dispatch('mostrarErrorImportacion', [
+                'mensaje' => 'Productos importados pero algunas imágenes fallaron:<br>' . implode('<br>', $erroresImagenes)
+            ]);
         } else {
-            session()->flash('message', 'Productos e imágenes importados correctamente.');
+            $this->dispatch('mostrarExitoImportacion', [
+                'mensaje' => 'Productos e imágenes importados correctamente.'
+            ]);
         }
     }
 
-    private function procesarImagenProducto($producto, $imagen, $userId)
+
+
+
+    private function procesarImagenRuta($producto, $imagenRuta, $userId)
     {
-        $rutaNueva = $imagen->store("productos", "public");
+        $contenido = file_get_contents($imagenRuta);
+        $nombreFinal = 'productos/' . uniqid() . '.' . pathinfo($imagenRuta, PATHINFO_EXTENSION);
+
+        Storage::disk('public')->put($nombreFinal, $contenido);
 
         $imagenAnterior = $producto->imagenes()->where('es_principal', true)->first();
 
         if ($imagenAnterior) {
             Storage::disk('public')->delete($imagenAnterior->imagen_url);
             $imagenAnterior->update([
-                'imagen_url' => $rutaNueva,
+                'imagen_url' => $nombreFinal,
                 'auditoriaFechaModificacion' => now(),
                 'auditoriaModificadoPor' => $userId,
             ]);
         } else {
             ProductImage::create([
                 'product_id' => $producto->id,
-                'imagen_url' => $rutaNueva,
+                'imagen_url' => $nombreFinal,
                 'es_principal' => true,
                 'auditoriaFechaCreacion' => now(),
                 'auditoriaCreadoPor' => $userId,
             ]);
         }
     }
-
 
     public function render()
     {
