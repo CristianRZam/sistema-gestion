@@ -69,7 +69,7 @@
                 </svg>
             </div>
             <div>
-                <h4 class="text-sm text-gray-700 dark:text-gray-300">Ventas hoy</h4>
+                <h4 class="text-sm text-gray-700 dark:text-gray-300">{{ $this->etiquetaVentas }}</h4>
                 <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ $cantidadVentas }}</p>
             </div>
         </div>
@@ -84,12 +84,12 @@
                 </svg>
             </div>
             <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">Productos vendidos hoy</h4>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaProductosVendidos }}</h4>
                 <p class="text-xl font-semibold text-gray-800 dark:text-white">{{ $cantidadProductosVendidos }}</p>
             </div>
         </div>
 
-        <!-- Ingresos del día -->
+        <!-- Ingresos -->
         <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
             <div class="bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-300 p-3 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
@@ -99,12 +99,12 @@
                 </svg>
             </div>
             <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">Ingresos hoy</h4>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaIngresos }}</h4>
                 <p class="text-xl font-semibold text-gray-800 dark:text-white">S/ {{ number_format($ingresosHoy, 2) }}</p>
             </div>
         </div>
 
-        <!-- Ganancias del día -->
+        <!-- Ganancias -->
         <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
             <div class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 p-3 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
@@ -114,11 +114,65 @@
                 </svg>
             </div>
             <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">Ganancias hoy</h4>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaGanancias }}</h4>
                 <p class="text-xl font-semibold text-gray-800 dark:text-white">
                     S/ {{ number_format($gananciasHoy, 2) }}
                 </p>
             </div>
         </div>
+
+        <!-- Compras -->
+        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+            <div class="bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaCompras }}</h4>
+                <p class="text-xl font-semibold text-gray-800 dark:text-white">S/ {{ number_format($comprasHoy, 2) }}</p>
+            </div>
+        </div>
+
+
+        <!-- Capital real en stock -->
+        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+            <div class="bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 10h2l1 9h12l1-9h2M16 10V6a4 4 0 00-8 0v4" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">Capital real en stock</h4>
+                <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                    S/ {{ number_format($capitalRealCompraStock, 2) }}
+                </p>
+            </div>
+        </div>
+
+
+
+        <!-- Valor estimado de ventas -->
+        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+            <div class="bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-300 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="text-sm text-gray-500 dark:text-gray-400">Valor venta stock</h4>
+                <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                    S/ {{ number_format($valorVentaStock, 2) }}
+                </p>
+            </div>
+        </div>
+
     </div>
+
 </div>

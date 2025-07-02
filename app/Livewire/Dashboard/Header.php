@@ -3,6 +3,8 @@
 namespace App\Livewire\Dashboard;
 
 use App\Models\Customer;
+use App\Models\Product;
+use App\Models\Purchase;
 use App\Models\PurchaseDetail;
 use App\Models\Sale;
 use App\Models\SaleDetail;
@@ -20,6 +22,13 @@ class Header extends Component
     public $cantidadProductosVendidos;
     public $ingresosHoy;
     public $gananciasHoy;
+
+    public $comprasHoy;
+
+    public $valorVentaStock;
+
+    public $capitalRealCompraStock;
+
 
     public function mount()
     {
@@ -105,52 +114,162 @@ class Header extends Component
 
         $this->gananciasHoy = 0;
 
-        $ventas = Sale::with(['detalles.product'])
+        $ventas = Sale::with(['detalles.purchaseDetails'])
             ->where('estado_venta_id', 2)
             ->whereNull('auditoriaFechaEliminacion')
             ->whereBetween('fecha_venta', [$inicio, $fin])
             ->get();
 
         foreach ($ventas as $venta) {
+            $totalSubtotal = $venta->detalles->sum(fn ($detalle) => $detalle->subtotal ?: ($detalle->cantidad * $detalle->precio_unitario));
+            $descuentoTotal = $venta->descuento ?? 0;
+
             foreach ($venta->detalles as $detalle) {
-                $cantidadVendida = $detalle->cantidad;
                 $precioVentaUnitario = $detalle->precio_unitario;
+                $subtotalDetalle = $detalle->subtotal ?: ($detalle->cantidad * $precioVentaUnitario);
 
-                $purchaseDetail = PurchaseDetail::where('product_id', $detalle->product_id)
-                    ->whereNull('auditoriaFechaEliminacion')
-                    ->latest('id')
-                    ->first();
+                // Descuento proporcional por detalle
+                $descuentoProporcional = $totalSubtotal > 0
+                    ? ($subtotalDetalle / $totalSubtotal) * $descuentoTotal
+                    : 0;
 
-                if (!$purchaseDetail) continue;
+                $descuentoUnitario = $detalle->cantidad > 0
+                    ? $descuentoProporcional / $detalle->cantidad
+                    : 0;
 
-                $precioCompra = $purchaseDetail->precio_unitario;
-                $cantidadCompra = $purchaseDetail->cantidad;
+                foreach ($detalle->purchaseDetails as $purchaseDetail) {
+                    $cantidadUtilizada = $purchaseDetail->pivot->cantidad_utilizada;
+                    $precioCompra = $purchaseDetail->precio_unitario;
+                    $cantidadCompra = $purchaseDetail->cantidad;
 
-                $perdidasTipo3 = $purchaseDetail->losses()
-                    ->where('tipo_id', 3)
+                    // Perdidas tipo 3: se devolvió el dinero pero no el producto
+                    $perdidasTipo3 = $purchaseDetail->losses()
+                        ->where('tipo_id', 3)
+                        ->whereNull('auditoriaFechaEliminacion')
+                        ->get();
+
+                    $cantidadGratis = $perdidasTipo3->sum('cantidad_fallida');
+
+                    // Si se usó un costo manual, respetarlo; si no, usar precioCompra
+                    $costoUnitarioBase = $purchaseDetail->pivot->costo_unitario ?? $precioCompra;
+
+                    // Calcular cuánta parte de la venta usó unidades "gratis"
+                    $cantidadConCosto0 = min($cantidadUtilizada, $cantidadGratis);
+                    $cantidadConCostoNormal = $cantidadUtilizada - $cantidadConCosto0;
+
+                    // Ganancia 100% por unidades "gratis"
+                    $gananciaGratis = ($precioVentaUnitario - $descuentoUnitario) * $cantidadConCosto0;
+
+                    // Ganancia normal por unidades restantes
+                    $gananciaNormal = ($precioVentaUnitario - $costoUnitarioBase - $descuentoUnitario) * $cantidadConCostoNormal;
+
+                    // Sumar total al acumulador
+                    $this->gananciasHoy += $gananciaGratis + $gananciaNormal;
+                }
+            }
+        }
+
+
+
+        $this->comprasHoy = 0;
+
+        $compras = Purchase::with(['detalles.losses'])
+            ->whereNull('auditoriaFechaEliminacion')
+            ->whereBetween('fecha_compra', [$inicio, $fin])
+            ->whereIn('estado_compra_id', [2, 3])
+            ->get();
+
+        foreach ($compras as $compra) {
+            foreach ($compra->detalles as $detalle) {
+                $cantidad = $detalle->cantidad;
+                $precio = $detalle->precio_unitario;
+
+                $perdidas = $detalle->losses()
+                    ->whereIn('tipo_id', [1, 2, 3])
                     ->whereNull('auditoriaFechaEliminacion')
                     ->get();
 
-                $cantidadPerdida = $perdidasTipo3->sum('cantidad_fallida');
-                $montoReembolsado = $cantidadPerdida * $precioCompra;
+                foreach ($perdidas as $perdida) {
+                    if ($perdida->tipo_id == 1 || $perdida->tipo_id == 3) {
+                        $cantidad -= $perdida->cantidad_fallida;
+                    }
+                    // tipo_id 2 (pérdida) no afecta directamente al descuento
+                }
 
-                $nuevoCostoTotal = ($precioCompra * $cantidadCompra) - $montoReembolsado;
-
-                $costoUnitarioAjustado = $cantidadCompra > 0
-                    ? $nuevoCostoTotal / $cantidadCompra
-                    : $precioCompra;
-
-                $ganancia = ($precioVentaUnitario - $costoUnitarioAjustado) * $cantidadVendida;
-                $this->gananciasHoy += $ganancia;
+                $this->comprasHoy += max(0, $cantidad) * $precio;
             }
         }
+
+
+        $this->capitalRealCompraStock = PurchaseDetail::whereNull('auditoriaFechaEliminacion')
+            ->whereHas('product', fn ($q) => $q->whereNull('auditoriaFechaEliminacion'))
+            ->get()
+            ->sum(fn ($detalle) => $detalle->stock_restante * $detalle->precio_unitario);
+
+        
+
+        $this->valorVentaStock = Product::whereNull('auditoriaFechaEliminacion')
+            ->get()
+            ->sum(fn ($producto) => $producto->stock * $producto->precio);
+
 
         $this->dispatch('rangoFechasActualizado', [
             'inicio' => $this->fechaInicio,
             'fin' => $this->fechaFin,
         ]);
-
     }
+
+
+    public function getEtiquetaVentasProperty()
+    {
+        return match ($this->filtroFecha) {
+            'hoy' => 'Ventas hoy',
+            'semana' => 'Ventas de la semana',
+            'mes' => 'Ventas del mes',
+            default => 'Ventas',
+        };
+    }
+
+    public function getEtiquetaGananciasProperty()
+    {
+        return match ($this->filtroFecha) {
+            'hoy' => 'Ganancias hoy',
+            'semana' => 'Ganancias de la semana',
+            'mes' => 'Ganancias del mes',
+            default => 'Ganancias',
+        };
+    }
+
+    public function getEtiquetaProductosVendidosProperty()
+    {
+        return match ($this->filtroFecha) {
+            'hoy' => 'Productos vendidos hoy',
+            'semana' => 'Productos vendidos de la semana',
+            'mes' => 'Productos vendidos del mes',
+            default => 'Productos vendidos',
+        };
+    }
+
+    public function getEtiquetaIngresosProperty()
+    {
+        return match ($this->filtroFecha) {
+            'hoy' => 'Ingresos hoy',
+            'semana' => 'Ingresos de la semana',
+            'mes' => 'Ingresos del mes',
+            default => 'Ingresos',
+        };
+    }
+
+    public function getEtiquetaComprasProperty()
+    {
+        return match ($this->filtroFecha) {
+            'hoy' => 'Compras hoy',
+            'semana' => 'Compras de la semana',
+            'mes' => 'Compras del mes',
+            default => 'Compras',
+        };
+    }
+
 
     public function render()
     {

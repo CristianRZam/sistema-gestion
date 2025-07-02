@@ -36,6 +36,14 @@ class SaleDetail extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function purchaseDetails()
+    {
+        return $this->belongsToMany(PurchaseDetail::class, 'purchase_sale_details', 'sale_detail_id', 'purchase_detail_id')
+            ->withPivot('cantidad_utilizada', 'costo_unitario')
+            ->whereNull('purchase_sale_details.auditoriaFechaEliminacion');
+    }
+
+
     /**
      * Casting de atributos para asegurar el formato correcto al acceder a ellos.
      */

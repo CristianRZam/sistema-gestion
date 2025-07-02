@@ -137,7 +137,7 @@ class Pay extends Component
 
         try {
             foreach ($this->productos as $producto) {
-                $productoDB = Product::find($producto['id']);
+                $productoDB = Product::find($producto['product_id']);
 
                 if (!$productoDB) {
                     DB::rollBack();
