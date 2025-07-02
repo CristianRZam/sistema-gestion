@@ -106,8 +106,10 @@ class Register extends Component
             return;
         }
 
-        // Validar que sea numérico y mayor que 0, de lo contrario, usar 0
-        $precio = is_numeric($nuevoPrecio) && $nuevoPrecio > 0 ? floatval($nuevoPrecio) : 0;
+        // Si está vacío, no es numérico o es menor que 0, usar 0
+        $precio = is_numeric($nuevoPrecio) && $nuevoPrecio >= 0
+            ? floatval($nuevoPrecio)
+            : 0.0;
 
         $this->productos[$index]['precio_unitario'] = $precio;
 

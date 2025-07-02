@@ -27,7 +27,10 @@ class Import extends Component
     {
         $this->reset(['excelFile', 'imagenes']);
         $this->resetValidation();
+
+        $this->dispatch('abrirModalProductImport');
     }
+
 
     public function guardarProducto()
     {

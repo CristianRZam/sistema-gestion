@@ -259,7 +259,7 @@
                             />
 
                             <p class="mt-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                S/ {{ number_format($producto['precio_unitario'], 2) }}
+                                S/ {{ number_format((float) ($producto['precio_unitario'] ?? 0), 2) }}
                             </p>
 
                             <!-- Cantidad -->
@@ -291,7 +291,7 @@
                             <!-- Subtotal por producto -->
                             <p class="text-sm mt-1 text-gray-600 dark:text-gray-400">
                                 {{ __('Subtotal:') }} S/
-                                {{ number_format(($producto['precio_unitario'] ?? 0) * ($producto['cantidad'] ?? 0), 2) }}
+                                {{ number_format((float) ($producto['precio_unitario'] ?? 0) * (int) ($producto['cantidad'] ?? 0), 2) }}
                             </p>
                         </div>
                     @empty

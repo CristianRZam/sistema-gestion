@@ -74,4 +74,11 @@
         Flux.modal('import-product').close();
         toastr.success('Productos importados.');
     });
+
+    window.addEventListener('abrirModalProductImport', () => {
+        // Forzar reset visual de los inputs file
+        document.getElementById('excelFile').value = '';
+        document.getElementById('imagenes').value = '';
+    });
 </script>
+
