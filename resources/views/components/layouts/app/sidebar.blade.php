@@ -204,6 +204,7 @@
         {{ $slot }}
 
         @fluxScripts
+        <script src="{{ asset('js/virtual-select.min.js') }}"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </body>

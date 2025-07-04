@@ -30,8 +30,16 @@ class ProductsExcelExport extends BaseExcelExport implements FromCollection
         $query = Product::query();
 
         // Filtros opcionales
-        if ($this->request->filled('categoria_id')) {
-            $query->where('categoria_id', $this->request->categoria_id);
+        if ($this->request->filled('product_ids')) {
+            $ids = is_array($this->request->product_ids)
+                ? $this->request->product_ids
+                : explode(',', $this->request->product_ids);
+            $query->whereIn('id', $ids);
+        }
+
+
+        if ($this->request->filled('categoria_ids')) {
+            $query->whereIn('categoria_id', $this->request->categoria_ids);
         }
 
         if ($this->request->filled('nombre')) {

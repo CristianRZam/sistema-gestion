@@ -10,16 +10,12 @@
                 min="0"
             />
 
-            <flux:select
-                wire:model.defer="categoriaFiltro"
-                placeholder="Selecciona una categoría"
-                :label="__('Categoría')"
-            >
-                <option value="">-- Categoría --</option>
-                @foreach($categorias as $categoria)
-                    <option value="{{ $categoria->idParametro }}">{{ $categoria->nombre }}</option>
-                @endforeach
-            </flux:select>
+            <div wire:ignore class="flex flex-col">
+                <label for="categoriaFiltroSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    {{ __('Categoría') }}
+                </label>
+                <div id="categoriaFiltroSelect" class="w-full mt-1"></div>
+            </div>
 
             <flux:input
                 :label="__('Stock mínimo')"
@@ -47,14 +43,55 @@
     </form>
 </div>
 
-<script>
-    document.addEventListener('livewire:navigated', function () {
-        tippy('#btnFiltrar', {
-            content: 'Filtrar',
+@push('scripts')
+    <script>
+        // Definir la función de inicialización globalmente
+        window.initCategoriaFiltroVirtualSelect = function () {
+            if (typeof inicializarVirtualSelect === 'function') {
+                const opciones = [{!!
+                collect($categorias)
+                    ->map(fn($c) => "{ label: '".e($c->nombre)."', value: '".e($c->idParametro)."' }")
+                    ->implode(',')
+            !!}];
+
+                // Arranca VirtualSelect
+                inicializarVirtualSelect('categoriaFiltroSelect', opciones, {
+                    multiple: true,
+                });
+
+                // Cuando cambie la selección, notificamos a Livewire
+                document.querySelector('#categoriaFiltroSelect')
+                    .addEventListener('change', function () {
+                        Livewire.dispatch('actualizarCategoriasDesdeJS', { valores: this.value });
+                    });
+            } else {
+                // Si aún no está cargado, reintentar en 100ms
+                setTimeout(window.initCategoriaFiltroVirtualSelect, 100);
+            }
+        };
+
+        // Al cargar la página por primera vez
+        document.addEventListener('DOMContentLoaded', () => {
+            window.initCategoriaFiltroVirtualSelect();
+            tippy('#btnFiltrar', { content: 'Filtrar' });
+            tippy('#btnLimpiar', { content: 'Limpiar' });
         });
 
-        tippy('#btnLimpiar', {
-            content: 'Limpiar',
+        // Cada vez que Livewire “navegue” o actualice el DOM de este componente
+        document.addEventListener('livewire:navigated', () => {
+            window.initCategoriaFiltroVirtualSelect();
+            tippy('#btnFiltrar', { content: 'Filtrar' });
+            tippy('#btnLimpiar', { content: 'Limpiar' });
+        });
+
+
+    </script>
+@endpush
+
+<script>
+    document.addEventListener('livewire:navigated', function () {
+        Livewire.on('limpiarFiltros', () => {
+            document.querySelector('#categoriaFiltroSelect').reset();
         });
     });
 </script>

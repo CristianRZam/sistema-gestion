@@ -203,10 +203,15 @@ class Header extends Component
 
         $this->capitalRealCompraStock = PurchaseDetail::whereNull('auditoriaFechaEliminacion')
             ->whereHas('product', fn ($q) => $q->whereNull('auditoriaFechaEliminacion'))
+            ->whereHas('purchase', function ($query) {
+                $query->whereNull('auditoriaFechaEliminacion')
+                    ->whereIn('estado_compra_id', [2, 3]);
+            })
             ->get()
             ->sum(fn ($detalle) => $detalle->stock_restante * $detalle->precio_unitario);
 
-        
+
+
 
         $this->valorVentaStock = Product::whereNull('auditoriaFechaEliminacion')
             ->get()

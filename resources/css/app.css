@@ -3,7 +3,6 @@
 
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
-
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
@@ -72,3 +71,94 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+
+/*****************START VIRTUALSELECT****************/
+.vscomp-ele {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+.vscomp-toggle-button {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #dddada !important;
+    border-radius: 6px;
+}
+
+.vscomp-wrapper:not(.has-value) .vscomp-value {
+    opacity: 1 !important;
+    font-size: 16px !important;
+}
+
+.vscomp-option-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    width: 100%;
+}
+
+
+.vscomp-wrapper.focused .vscomp-toggle-button,
+.vscomp-wrapper:focus .vscomp-toggle-button {
+    border-color: #86b7fe !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.9) !important;
+}
+
+.vscomp-value{
+    font-size: 16px !important;
+}
+
+/* En vez de usar @media (prefers-color-scheme: dark) */
+.dark .vscomp-toggle-button {
+    background-color: #3c3c3c !important;
+    border: 1px solid #52525b !important;
+    color: white !important;
+}
+
+.dark .vscomp-wrapper.focused .vscomp-toggle-button,
+.dark .vscomp-wrapper:focus .vscomp-toggle-button {
+    border-color: #3c3c3c  !important;
+    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.9) !important;
+}
+
+.dark .vscomp-dropbox {
+    background-color: #3c3c3c !important;
+    color: #f9fafb !important;
+}
+
+.dark .vscomp-option {
+    background-color: transparent !important;
+    color: #f9fafb !important;
+}
+
+.dark .vscomp-option:hover,
+.dark .vscomp-option.focused {
+    background-color: #374151 !important;
+}
+
+.dark .vscomp-toggle-all-checkbox.checked::after {
+    content: '✓';
+    color: white !important;
+    font-size: 18px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-20deg);
+}
+
+
+.dark .vscomp-option.selected .checkbox-icon::after {
+    content: '✓';
+    color: white !important;
+    font-size: 18px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-20deg); /* ya que lo pediste antes */
+}
+

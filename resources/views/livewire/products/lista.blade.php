@@ -64,6 +64,7 @@
 
     @livewire('products.filter')
 
+
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4">
         <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-4">
@@ -96,8 +97,9 @@
             @can('exportar productos')
                 <a href="{{ route('products.exportar-catalogo.pdf', [
                     'nombre' => $nombreFiltro,
-                    'categoria_id' => $categoriaFiltro,
+                    'categoria_ids' => $categoriaFiltro,
                     'stock' => $stockFiltro,
+                    'product_ids' => implode(',', $selectedProducts),
                 ]) }}"
                    x-init="tippy($el, { content: 'Generar Catálogo PDF' })"
                    class="rounded-full border border-amber-500 text-amber-500 px-4 py-2 hover:bg-amber-500 hover:text-white transition duration-200 cursor-pointer inline-flex items-center gap-2">
@@ -108,8 +110,9 @@
                 <!-- Exportar PDF -->
                 <a href="{{ route('products.exportar.pdf', [
                         'nombre' => $nombreFiltro,
-                        'categoria_id' => $categoriaFiltro,
+                        'categoria_ids' => $categoriaFiltro,
                         'stock' => $stockFiltro,
+                        'product_ids' => implode(',', $selectedProducts),
                     ]) }}"
                    class="border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white inline-flex items-center gap-2 justify-center"
                    x-data
@@ -121,8 +124,9 @@
                 <!-- Exportar Excel -->
                 <a href="{{ route('products.exportar.excel', [
                         'nombre' => $nombreFiltro,
-                        'categoria_id' => $categoriaFiltro,
+                        'categoria_ids' => $categoriaFiltro,
                         'stock' => $stockFiltro,
+                        'product_ids' => implode(',', $selectedProducts),
                     ]) }}"
                    class="border border-green-600 text-green-600 px-4 py-2 rounded-full hover:bg-green-600 hover:text-white inline-flex items-center gap-2 justify-center"
                    x-data
@@ -145,10 +149,8 @@
                     </button>
                 </flux:modal.trigger>
             @endcan
-
         </div>
     </div>
-
 
     @livewire('products.import')
 
@@ -159,6 +161,13 @@
         <table class="w-full table-auto border-collapse">
             <thead>
             <tr>
+                <th class="border p-2 text-center">
+                    <input type="checkbox"
+                           class="cursor-pointer"
+                           wire:model.live="selectAll"
+                           title="Seleccionar todos los productos filtrados" />
+                </th>
+
                 <th class="border p-2">Nº</th>
                 <th class="border p-2">Código</th>
                 <th class="border p-2">Nombre</th>
@@ -170,6 +179,13 @@
             <tbody>
             @foreach($productos as $index => $producto)
                 <tr wire:key="producto-{{ $producto->id }}">
+                    <td class="border p-2 text-center">
+                        <input type="checkbox"
+                               class="cursor-pointer"
+                               wire:model.live="selectedProducts"
+                               value="{{ $producto->id }}" />
+                    </td>
+
                     <td class="border p-2 text-center">{{ $loop->iteration + ($productos->currentPage() - 1) * $productos->perPage() }}</td>
                     <td class="border p-2">{{ $producto->codigo }}</td>
                     <td class="border p-2">{{ $producto->nombre }}</td>

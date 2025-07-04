@@ -12,3 +12,4 @@
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
+@stack('scripts')  {{-- <- necesario para que el @push se inyecte --}}

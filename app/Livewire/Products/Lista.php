@@ -11,6 +11,9 @@ use Livewire\WithPagination;
 class Lista extends Component
 {
     use WithPagination;
+
+    public $selectedProducts = [];        // IDs seleccionados
+    public $selectAll = false;
     protected $paginationTheme = 'tailwind'; // Puedes usar 'bootstrap' si lo prefieres
 
     public $productIdToDelete;
@@ -18,7 +21,8 @@ class Lista extends Component
 
     // Filtros
     public $nombreFiltro = '';
-    public $categoriaFiltro = '';
+    public $categoriaFiltro = []; // ← Ya lo estás haciendo bien
+
     public $stockFiltro = '';
 
     protected $listeners = [
@@ -26,6 +30,42 @@ class Lista extends Component
         'open-modal-delete-product' => 'setProductIdToDelete',
         'filtrosActualizados' => 'actualizarFiltros',
     ];
+
+    public function updatedSelectAll($value)
+    {
+        $this->selectedProducts = [];
+        if ($value) {
+            // Query con tus filtros idénticos al render()
+            $query = Product::query()->whereNull('auditoriaFechaEliminacion');
+
+            if ($this->nombreFiltro) {
+                $query->where('nombre', 'like', '%'.$this->nombreFiltro.'%');
+            }
+            if (!empty($this->categoriaFiltro)) {
+                $query->whereIn('categoria_id', $this->categoriaFiltro);
+            }
+            if (is_numeric($this->stockFiltro) && $this->stockFiltro > 0) {
+                $query->where('stock', '>=', $this->stockFiltro);
+            }
+
+            // Pluck de **todos** los IDs filtrados
+            $this->selectedProducts = $query->pluck('id')->toArray();
+        }
+    }
+
+    public function exportSelected()
+    {
+        if (empty($this->selectedProducts)) {
+            session()->flash('error', 'No hay productos seleccionados.');
+            return;
+        }
+
+        // Aquí generas tu Excel/PDF usando sólo los IDs de $this->selectedProducts
+        // Por ejemplo, rediriges a una ruta que reciba ?ids[]=1&ids[]=2…
+        return response()->streamDownload(function() {
+            // Lógica de generación de archivo...
+        }, 'productos_seleccionados.xlsx');
+    }
 
     public function render()
     {
@@ -35,9 +75,10 @@ class Lista extends Component
             $query->where('nombre', 'like', '%' . $this->nombreFiltro . '%');
         }
 
-        if ($this->categoriaFiltro) {
-            $query->where('categoria_id', $this->categoriaFiltro);
+        if (!empty($this->categoriaFiltro)) {
+            $query->whereIn('categoria_id', $this->categoriaFiltro);
         }
+
 
         if (is_numeric($this->stockFiltro) && $this->stockFiltro > 0) {
             $query->where('stock', '>=', $this->stockFiltro);
@@ -55,8 +96,10 @@ class Lista extends Component
     public function actualizarFiltros($filtros)
     {
         $this->nombreFiltro = $filtros['nombre'] ?? '';
-        $this->categoriaFiltro = $filtros['categoria_id'] ?? '';
+        $this->categoriaFiltro = $filtros['categoria_ids'] ?? '';
         $this->stockFiltro = $filtros['stock'] ?? '';
+        $this->selectedProducts = [];
+        $this->selectAll = false;
         $this->resetPage(); // Reinicia la paginación al aplicar nuevos filtros
     }
 

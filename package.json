@@ -16,6 +16,7 @@
         "tailwindcss": "^4.0.7",
         "tippy.js": "^6.3.7",
         "toastr": "^2.1.4",
+        "virtual-select-plugin": "^1.0.49",
         "vite": "^6.0"
     },
     "optionalDependencies": {
