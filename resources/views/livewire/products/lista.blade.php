@@ -114,7 +114,7 @@
                         'stock' => $stockFiltro,
                         'product_ids' => implode(',', $selectedProducts),
                     ]) }}"
-                   class="border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white inline-flex items-center gap-2 justify-center"
+                   class="btn-exportar-pdf"
                    x-data
                    x-init="tippy($el, { content: 'Exportar PDF' })">
                     <i class="fas fa-file-pdf"></i>
@@ -128,7 +128,7 @@
                         'stock' => $stockFiltro,
                         'product_ids' => implode(',', $selectedProducts),
                     ]) }}"
-                   class="border border-green-600 text-green-600 px-4 py-2 rounded-full hover:bg-green-600 hover:text-white inline-flex items-center gap-2 justify-center"
+                   class="btn-exportar-excel"
                    x-data
                    x-init="tippy($el, { content: 'Exportar Excel' })">
                     <i class="fas fa-file-excel"></i>
@@ -140,7 +140,7 @@
             @can('crear producto')
                 <flux:modal.trigger name="register-product">
                     <button
-                        class="border border-blue-500 text-blue-500 px-4 py-2 rounded-full hover:bg-blue-500 hover:text-white cursor-pointer inline-flex items-center gap-2 justify-center w-full sm:w-auto"
+                        class="btn-nuevo"
                         x-data
                         x-init="tippy($el, { content: 'Nuevo Registro' })"
                         x-on:click.prevent="$dispatch('open-modal-product')">
@@ -154,75 +154,76 @@
 
     @livewire('products.import')
 
-    <!-- Tabla de categorias -->
+    <!-- Tabla de productos responsiva -->
     @if ($productos->isEmpty())
         <p>No hay productos registrados.</p>
     @else
-        <table class="w-full table-auto border-collapse">
-            <thead>
-            <tr>
-                <th class="border p-2 text-center">
-                    <input type="checkbox"
-                           class="cursor-pointer"
-                           wire:model.live="selectAll"
-                           title="Seleccionar todos los productos filtrados" />
-                </th>
-
-                <th class="border p-2">Nº</th>
-                <th class="border p-2">Código</th>
-                <th class="border p-2">Nombre</th>
-                <th class="border p-2">Stock</th>
-                <th class="border p-2">Precio</th>
-                <th class="border p-2">Acciones</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach($productos as $index => $producto)
-                <tr wire:key="producto-{{ $producto->id }}">
-                    <td class="border p-2 text-center">
+        <div class="w-full overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full table-auto border-collapse text-sm">
+                <thead class="bg-gray-100 dark:bg-zinc-800">
+                <tr>
+                    <th class="border p-2 text-center">
                         <input type="checkbox"
                                class="cursor-pointer"
-                               wire:model.live="selectedProducts"
-                               value="{{ $producto->id }}" />
-                    </td>
-
-                    <td class="border p-2 text-center">{{ $loop->iteration + ($productos->currentPage() - 1) * $productos->perPage() }}</td>
-                    <td class="border p-2">{{ $producto->codigo }}</td>
-                    <td class="border p-2">{{ $producto->nombre }}</td>
-                    <td class="border p-2 text-center">{{ $producto->stock }}</td>
-                    <td class="border p-2 text-center">{{ $producto->precio }}</td>
-                    <td class="border p-2 text-center">
-                        <flux:modal.trigger name="register-product">
-                            <button
-                                class="border border-yellow-500 text-yellow-500 px-4 py-2 rounded hover:bg-yellow-500 hover:text-white mr-2 cursor-pointer"
-                                x-data
-                                x-init="tippy($el, { content: 'Editar Registro' })"
-                                x-on:click.prevent="$dispatch('open-modal-product', { id: {{ $producto->id }} })"
-                            >
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                        </flux:modal.trigger>
-
-                        <flux:modal.trigger name="confirm-product-deletion">
-                            <button
-                                class="border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-500 hover:text-white cursor-pointer"
-                                x-data
-                                x-init="tippy($el, { content: 'Eliminar Registro' })"
-                                x-on:click.prevent="$dispatch('open-modal-delete-product', { id: {{ $producto->id }} })"
-                            >
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </flux:modal.trigger>
-                    </td>
+                               wire:model.live="selectAll"
+                               title="Seleccionar todos los productos filtrados" />
+                    </th>
+                    <th class="border p-2 text-center">Nº</th>
+                    <th class="border p-2">Código</th>
+                    <th class="border p-2">Nombre</th>
+                    <th class="border p-2 text-center">Stock</th>
+                    <th class="border p-2 text-center">Precio</th>
+                    <th class="border p-2 text-center">Acciones</th>
                 </tr>
-            @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                @foreach($productos as $index => $producto)
+                    <tr wire:key="producto-{{ $producto->id }}" class="hover:bg-gray-50 dark:hover:bg-zinc-800">
+                        <td class="border p-2 text-center">
+                            <input type="checkbox"
+                                   class="cursor-pointer"
+                                   wire:model.live="selectedProducts"
+                                   value="{{ $producto->id }}" />
+                        </td>
+                        <td class="border p-2 text-center">{{ $loop->iteration + ($productos->currentPage() - 1) * $productos->perPage() }}</td>
+                        <td class="border p-2">{{ $producto->codigo }}</td>
+                        <td class="border p-2">{{ $producto->nombre }}</td>
+                        <td class="border p-2 text-center">{{ $producto->stock }}</td>
+                        <td class="border p-2 text-center">{{ $producto->precio }}</td>
+                        <td class="border p-2 text-center whitespace-nowrap">
+                            <flux:modal.trigger name="register-product">
+                                <button
+                                    class="btn-editar-table"
+                                    x-data
+                                    x-init="tippy($el, { content: 'Editar Registro' })"
+                                    x-on:click.prevent="$dispatch('open-modal-product', { id: {{ $producto->id }} })"
+                                >
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                            </flux:modal.trigger>
+
+                            <flux:modal.trigger name="confirm-product-deletion">
+                                <button
+                                    class="border border-red-500 text-red-500 px-3 py-1.5 rounded hover:bg-red-500 hover:text-white cursor-pointer"
+                                    x-data
+                                    x-init="tippy($el, { content: 'Eliminar Registro' })"
+                                    x-on:click.prevent="$dispatch('open-modal-delete-product', { id: {{ $producto->id }} })"
+                                >
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </flux:modal.trigger>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+
         <div class="mt-4">
             {{ $productos->links() }}
         </div>
-
     @endif
+
 
     <flux:modal name="confirm-product-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
         <form wire:submit="deleteProduct" class="space-y-6">

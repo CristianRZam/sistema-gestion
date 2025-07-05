@@ -45,48 +45,51 @@
 
 @push('scripts')
     <script>
-        // Definir la función de inicialización globalmente
         window.initCategoriaFiltroVirtualSelect = function () {
+            const contenedor = document.querySelector('#categoriaFiltroSelect');
+            if (!contenedor) {
+                // Si el elemento no existe aún, reintenta luego
+                return;
+            }
+
+            // Si ya fue inicializado, evita volver a inicializar
+            if (contenedor.classList.contains('vscomp-initialized')) return;
+
+            // Asegúrate de que la función existe
             if (typeof inicializarVirtualSelect === 'function') {
                 const opciones = [{!!
-                collect($categorias)
-                    ->map(fn($c) => "{ label: '".e($c->nombre)."', value: '".e($c->idParametro)."' }")
-                    ->implode(',')
-            !!}];
+                    collect($categorias)
+                        ->map(fn($c) => "{ label: '".e($c->nombre)."', value: '".e($c->idParametro)."' }")
+                        ->implode(',')
+                !!}];
 
-                // Arranca VirtualSelect
                 inicializarVirtualSelect('categoriaFiltroSelect', opciones, {
                     multiple: true,
                 });
 
-                // Cuando cambie la selección, notificamos a Livewire
-                document.querySelector('#categoriaFiltroSelect')
-                    .addEventListener('change', function () {
-                        Livewire.dispatch('actualizarCategoriasDesdeJS', { valores: this.value });
-                    });
+                contenedor.addEventListener('change', function () {
+                    Livewire.dispatch('actualizarCategoriasDesdeJS', { valores: this.value });
+                });
             } else {
-                // Si aún no está cargado, reintentar en 100ms
+                // Función aún no está lista
                 setTimeout(window.initCategoriaFiltroVirtualSelect, 100);
             }
         };
 
-        // Al cargar la página por primera vez
         document.addEventListener('DOMContentLoaded', () => {
             window.initCategoriaFiltroVirtualSelect();
             tippy('#btnFiltrar', { content: 'Filtrar' });
             tippy('#btnLimpiar', { content: 'Limpiar' });
         });
 
-        // Cada vez que Livewire “navegue” o actualice el DOM de este componente
         document.addEventListener('livewire:navigated', () => {
             window.initCategoriaFiltroVirtualSelect();
             tippy('#btnFiltrar', { content: 'Filtrar' });
             tippy('#btnLimpiar', { content: 'Limpiar' });
         });
-
-
     </script>
 @endpush
+
 
 <script>
     document.addEventListener('livewire:navigated', function () {

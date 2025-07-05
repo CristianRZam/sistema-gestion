@@ -4,32 +4,28 @@ namespace App\Livewire\Users;
 
 use App\Models\User;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Lista extends Component
 {
+    use WithPagination;
 
-    public $usuarios;
+    protected $paginationTheme = 'tailwind'; // O bootstrap si usas Bootstrap
 
     protected $listeners = [
-        'actualiza-lista-usuario' => 'actualizarUsuarios',
+        'actualiza-lista-usuario' => '$refresh',
     ];
 
-    public function mount()
+    public function updatingPage()
     {
-        $this->actualizarUsuarios(); // Cargar los roles al iniciar
+        // Para reiniciar a la primera página al hacer búsqueda o actualización
+        $this->resetPage();
     }
-
-    public function actualizarUsuarios()
-    {
-        $this->usuarios = User::with('roles')->get();
-    }
-
 
     public function render()
     {
         return view('livewire.users.lista', [
-            'usuarios' => $this->usuarios,
+            'usuarios' => User::with('roles')->paginate(10),
         ]);
     }
-
 }

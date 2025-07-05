@@ -26,7 +26,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public function login(): void
     {
         $this->validate();
-
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
@@ -34,6 +33,15 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
+            ]);
+        }
+
+        $user = Auth::user();
+
+        if (! $user->activo) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Tu cuenta está deshabilitada. Contacta al administrador.',
             ]);
         }
 
