@@ -31,7 +31,12 @@
 
 
 <script>
-    window.addEventListener('cerrarModalRole', () => {
-        Flux.modal('register-role').close();
-    });
+    if (!window._cerrarModalRoleRegistrado) {
+        window._cerrarModalRoleRegistrado = true;
+
+        window.addEventListener('cerrarModalRole', () => {
+            Flux.modal('register-role').close();
+            toastr.success('Registro guardado.');
+        });
+    }
 </script>

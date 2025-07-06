@@ -24,7 +24,7 @@
                             </flux:navlist.item>
                         @endcan
                         @can('ver roles')
-                            <flux:navlist.item icon="key" :href="route('roles')" :current="request()->routeIs('roles')" wire:navigate>
+                            <flux:navlist.item icon="key" :href="route('roles')" :current="request()->is('roles') || request()->is('roles/*')" wire:navigate>
                                 {{ __('Permisos por perfil') }}
                             </flux:navlist.item>
                         @endcan

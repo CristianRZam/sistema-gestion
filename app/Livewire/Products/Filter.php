@@ -46,9 +46,10 @@ class Filter extends Component
 
         $this->dispatch('filtrosActualizados', [
             'nombre' => '',
-            'categoria_id' => '',
+            'categoria_ids' => [],
             'stock' => '',
         ]);
+
 
         $this->dispatch('limpiarFiltros');
     }

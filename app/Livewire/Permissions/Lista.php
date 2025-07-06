@@ -24,8 +24,9 @@ class Lista extends Component
     public function syncPermissions()
     {
         $this->role->syncPermissions($this->selectedPermissions);
-        $this->message = 'Permisos actualizados correctamente.';
+        $this->dispatch('toastPermisoActualizado');
     }
+
 
     public function clearMessage()
     {

@@ -49,7 +49,12 @@
 </flux:modal>
 
 <script>
-    window.addEventListener('cerrarModalUser', () => {
-        Flux.modal('register-user').close();
-    });
+    if (!window._cerrarModalUserRegistrado) {
+        window._cerrarModalUserRegistrado = true;
+
+        window.addEventListener('cerrarModalUser', () => {
+            Flux.modal('register-user').close();
+            toastr.success('Registro guardado.');
+        });
+    }
 </script>

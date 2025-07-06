@@ -10,31 +10,11 @@
 
         <!-- Botón de volver -->
         <a href="{{ route('roles') }}"
-           class="border border-red-500 text-red-700 px-4 py-2 rounded w-max
-          hover:bg-red-500 hover:text-white
-          dark:border-red-400 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white">
+           class="btn-volver">
             ← Volver
         </a>
 
     </div>
-
-    @if ($message)
-        <div
-            x-data="{ show: true }"
-            x-init="setTimeout(() => { show = false; @this.call('clearMessage') }, 2000)"
-            x-show="show"
-            x-transition.opacity.duration.500ms
-            class="mb-4 p-4 rounded-md border
-               bg-green-100 border-green-400 text-green-800
-               dark:bg-green-900 dark:border-green-700 dark:text-green-300"
-            role="alert"
-        >
-            {{ $message }}
-        </div>
-    @endif
-
-
-
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         @foreach ($permissions as $permission)
@@ -64,32 +44,16 @@
                     {{ ucwords(str_replace('_', ' ', $permissionName)) }}
                 </span>
             </label>
-
-
         @endforeach
     </div>
-
-
-
 </div>
 
-<!--
-<label
-    class="flex items-start gap-3 p-4 border rounded-lg transition-shadow cursor-pointer
-                {{ $isChecked
-                    ? 'bg-blue-50 border-blue-400 shadow-md dark:bg-blue-900/20 dark:border-blue-500'
-                    : 'bg-white border-gray-300 shadow-sm hover:shadow-md dark:bg-gray-800 dark:border-gray-600 dark:hover:shadow-md' }}"
->
-    <input
-        type="checkbox"
-        value="{{ $permissionName }}"
-        wire:model="selectedPermissions"
-        wire:change="syncPermissions"
-        class="form-checkbox h-5 w-5 text-blue-600 dark:text-blue-400 transition duration-150 ease-in-out mt-1 border rounded-lg"
-    >
-    <span class="text-gray-800 dark:text-gray-100 font-medium break-words">
-                    {{ ucwords(str_replace('_', ' ', $permissionName)) }}
-                </span>
-</label>
--->
+<script>
+    if (!window._mostrarToastPermisos) {
+        window._mostrarToastPermisos = true;
 
+        window.addEventListener('toastPermisoActualizado', () => {
+            toastr.success('Permisos actualizados correctamente.');
+        });
+    }
+</script>

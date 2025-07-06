@@ -4,30 +4,22 @@ namespace App\Livewire\Roles;
 
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
+use Livewire\WithPagination;
 
 class Lista extends Component
 {
-    public $roles;
+    use WithPagination;
+
+    protected $paginationTheme = 'tailwind';
 
     protected $listeners = [
-        'actualiza-lista-role' => 'actualizarRoles',
+        'actualiza-lista-role' => '$refresh',
     ];
-
-    public function mount()
-    {
-        $this->actualizarRoles(); // Cargar los roles al iniciar
-    }
-
-    public function actualizarRoles()
-    {
-        $this->roles = Role::orderBy('name')->get();
-    }
-
 
     public function render()
     {
         return view('livewire.roles.lista', [
-            'roles' => $this->roles,
+            'roles' => Role::orderBy('name')->paginate(10),
         ]);
     }
 }

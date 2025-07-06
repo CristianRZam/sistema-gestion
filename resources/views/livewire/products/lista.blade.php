@@ -204,7 +204,7 @@
 
                             <flux:modal.trigger name="confirm-product-deletion">
                                 <button
-                                    class="border border-red-500 text-red-500 px-3 py-1.5 rounded hover:bg-red-500 hover:text-white cursor-pointer"
+                                    class="btn-delete-table"
                                     x-data
                                     x-init="tippy($el, { content: 'Eliminar Registro' })"
                                     x-on:click.prevent="$dispatch('open-modal-delete-product', { id: {{ $producto->id }} })"

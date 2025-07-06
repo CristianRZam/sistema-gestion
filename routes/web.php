@@ -42,13 +42,13 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'can:ver usuarios'])->group(function () {
     // Ruta para exportar Excel de usuarios
-    Route::get('/users/exportar-excel', function () {
-        return Excel::download(new UsersExcelExport, 'users.xlsx');
+    Route::get('/users/exportar-excel', function (Request $request) {
+        return Excel::download(new UsersExcelExport($request), 'users.xlsx');
     })->name('users.exportar.excel');
 
     // Ruta para exportar PDF de usuarios
-    Route::get('/users/exportar-pdf', function () {
-        return (new UsersPdfExport)->download('users.pdf');
+    Route::get('/users/exportar-pdf', function (Request $request) {
+        return (new UsersPdfExport($request))->download('users.pdf');
     })->name('users.exportar.pdf');
 
     // Rutas existentes
@@ -60,7 +60,7 @@ Route::middleware(['auth', 'can:ver usuarios'])->group(function () {
 Route::middleware(['auth', 'can:ver roles'])->group(function () {
     // Ruta para exportar Excel de roles
     Route::get('/roles/exportar-excel', function () {
-        return Excel::download(new RolesExcelExport, 'roles.xlsx');
+        return Excel::download(new RolesExcelExport(), 'roles.xlsx');
     })->name('roles.exportar.excel');
 
     // Ruta para exportar PDF de roles
@@ -73,6 +73,7 @@ Route::middleware(['auth', 'can:ver roles'])->group(function () {
     //Volt::route('settings/password', 'settings.password')->name('settings.password');
     //Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
+
 
 
 Route::middleware(['auth'])->group(function () {
@@ -108,13 +109,13 @@ Route::get('/products/descargar-imagenes', [ProductController::class, 'descargar
 
 Route::middleware(['auth', 'can:ver clientes'])->group(function () {
     // Exportar Excel de customers
-    Route::get('/customers/exportar-excel', function () {
-        return Excel::download(new CustomersExcelExport, 'clientes.xlsx');
+    Route::get('/customers/exportar-excel', function (Request $request) {
+        return Excel::download(new CustomersExcelExport($request), 'clientes.xlsx');
     })->name('customers.exportar.excel');
 
     // Exportar PDF de customers
-    Route::get('/customers/exportar-pdf', function () {
-        return (new CustomersPdfExport)->download('clientes.pdf');
+    Route::get('/customers/exportar-pdf', function (Request $request) {
+        return (new CustomersPdfExport($request))->download('clientes.pdf');
     })->name('customers.exportar.pdf');
 
     // Ruta lista customers (si la tienes)

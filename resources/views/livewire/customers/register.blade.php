@@ -73,7 +73,12 @@
 </flux:modal>
 
 <script>
-    window.addEventListener('cerrarModalCustomer', () => {
-        Flux.modal('register-customer').close();
-    });
+    if (!window._cerrarModalCustomerRegistrado) {
+        window._cerrarModalCustomerRegistrado = true;
+
+        window.addEventListener('cerrarModalCustomer', () => {
+            Flux.modal('register-customer').close();
+            toastr.success('Registro guardado.');
+        });
+    }
 </script>

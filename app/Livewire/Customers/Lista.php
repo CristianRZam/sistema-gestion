@@ -6,25 +6,31 @@ use App\Models\Customer;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Lista extends Component
 {
-    public $customers;
+    use WithPagination;
+    protected $paginationTheme = 'tailwind';
+
     public $customerIdToDelete;
 
+    // Filtros
+    public $nombreFiltro = '';
+
+    public $numeroDocumentoFiltro = '';
+
     protected $listeners = [
-        'actualiza-lista-customer' => 'actualizarCustomers',
+        'actualiza-lista-customer' => '$refresh',
         'open-modal-delete-customer' => 'setCustomerIdToDelete',
+        'filtrosActualizados' => 'actualizarFiltros',
     ];
 
-    /**
-     * Actualiza la lista de clientes cargando solo los activos (sin eliminación lógica).
-     */
-    public function actualizarCustomers()
+    public function actualizarFiltros($filtros)
     {
-        $this->customers = Customer::whereNull('auditoriaFechaEliminacion')
-            ->orderBy('nombre')
-            ->get();
+        $this->nombreFiltro = $filtros['nombre'] ?? '';
+        $this->numeroDocumentoFiltro = $filtros['numero_documento'] ?? '';
+        $this->resetPage(); // Reinicia la paginación al aplicar nuevos filtros
     }
 
     /**
@@ -32,10 +38,22 @@ class Lista extends Component
      */
     public function render()
     {
-        $this->actualizarCustomers();
+        $query = Customer::query()->whereNull('auditoriaFechaEliminacion');
+
+        // Filtro por nombre
+        if (!empty($this->nombreFiltro)) {
+            $query->where('nombre', 'like', '%' . $this->nombreFiltro . '%');
+        }
+
+        // Filtro por documento
+        if (!empty($this->numeroDocumentoFiltro)) {
+            $query->where('documento', 'like', '%' . $this->numeroDocumentoFiltro . '%');
+        }
+
+        $customers = $query->paginate(10);
 
         return view('livewire.customers.lista', [
-            'customers' => $this->customers,
+            'customers' => $customers,
         ]);
     }
 
