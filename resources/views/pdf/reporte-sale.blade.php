@@ -65,6 +65,12 @@
         </tr>
     @endforeach
     </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="4" style="text-align: right;"><strong>Total General:</strong></td>
+        <td><strong>S/ {{ $totalGeneral }}</strong></td>
+    </tr>
+    </tfoot>
 </table>
 </body>
 </html>

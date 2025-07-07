@@ -139,13 +139,13 @@ Route::middleware(['auth', 'can:ver proveedores'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     // Exportar Excel de ventas
-    Route::get('/sales/exportar-excel', function () {
-        return Excel::download(new SalesExcelExport, 'ventas.xlsx');
+    Route::get('/sales/exportar-excel', function (Request $request) {
+        return Excel::download(new SalesExcelExport($request), 'ventas.xlsx');
     })->middleware('can:exportar ventas')->name('sales.exportar.excel');
 
     // Exportar PDF de ventas
-    Route::get('/sales/exportar-pdf', function () {
-        return (new SalesPdfExport)->download('ventas.pdf');
+    Route::get('/sales/exportar-pdf', function (Request $request) {
+        return (new SalesPdfExport($request))->download('ventas.pdf');
     })->middleware('can:exportar ventas')->name('sales.exportar.pdf');
 
     // Lista de ventas
