@@ -16,15 +16,25 @@ class Lista extends Component
 
     protected $paginationTheme = 'tailwind'; // Usa Tailwind si estás usando Tailwind CSS
 
+    // Filtros
+    public $nombreFiltro = '';
+    public $tipoFiltro = [];
+    public $codigoFiltro = '';
+
     protected $listeners = [
         'actualiza-lista-parametro' => '$refresh',
         'open-modal-delete-parameter' => 'setParameterIdToDelete',
+        'filtrosActualizados' => 'actualizarFiltros',
     ];
 
-    public function updatingSearch() // Si luego deseas agregar búsqueda
+    public function actualizarFiltros($filtros)
     {
+        $this->nombreFiltro = $filtros['nombre'] ?? '';
+        $this->tipoFiltro = $filtros['tipo_ids'] ?? '';
+        $this->codigoFiltro = $filtros['codigo'] ?? '';
         $this->resetPage();
     }
+
 
     public function setParameterIdToDelete($id = null)
     {
@@ -56,10 +66,22 @@ class Lista extends Component
 
     public function render()
     {
-        $parametros = Parameter::whereNull('auditoriaFechaEliminacion')
-            ->orderBy('codigoParametro')
-            ->orderBy('orden')
-            ->paginate(10); // <- Cambia aquí el número de resultados por página
+        $query = Parameter::query()->whereNull('auditoriaFechaEliminacion');
+
+        if ($this->nombreFiltro) {
+            $query->where('nombre', 'like', '%' . $this->nombreFiltro . '%');
+        }
+
+        if (!empty($this->tipoFiltro)) {
+            $query->whereIn('tipo', $this->tipoFiltro);
+        }
+
+
+        if ($this->codigoFiltro) {
+            $query->where('codigoParametro', 'like', '%' . $this->codigoFiltro . '%');
+        }
+
+        $parametros = $query->paginate(10);
 
         return view('livewire.parameters.lista', [
             'parametros' => $parametros,

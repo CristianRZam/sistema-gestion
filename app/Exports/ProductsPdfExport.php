@@ -26,7 +26,7 @@ class ProductsPdfExport extends BasePdfExport
             ->pluck('nombre', 'idParametro');
 
         // Construir consulta base
-        $query = Product::query();
+        $query = Product::query()->whereNull('auditoriaFechaEliminacion');;
 
         // Aplicar filtros si existen
         if ($this->request->filled('product_ids')) {

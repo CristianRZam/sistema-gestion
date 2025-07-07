@@ -17,7 +17,6 @@ class Lista extends Component
 
     // Filtros
     public $nombreFiltro = '';
-
     public $numeroDocumentoFiltro = '';
 
     protected $listeners = [

@@ -19,7 +19,7 @@ class CustomersExcelExport extends BaseExcelExport implements FromCollection
     }
     public function collection(): Collection
     {
-        $query = Customer::query();
+        $query = Customer::query()->whereNull('auditoriaFechaEliminacion');
 
         // Filtro por nombre
         if ($this->request->filled('nombre')) {

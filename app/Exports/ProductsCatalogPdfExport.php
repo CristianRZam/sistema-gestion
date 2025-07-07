@@ -38,7 +38,7 @@ class ProductsCatalogPdfExport
         $portadaImagen = $this->procesarImagen($portada?->nombre, 'https://via.placeholder.com/800x1200.png?text=Portada+Catálogo');
 
         // Aplicar filtros a productos
-        $query = Product::with('imagenes');
+        $query = Product::with('imagenes')->whereNull('auditoriaFechaEliminacion');;
 
         if ($this->request->filled('product_ids')) {
             $ids = is_array($this->request->product_ids)

@@ -27,7 +27,7 @@ class ProductsExcelExport extends BaseExcelExport implements FromCollection
             ->pluck('nombre', 'idParametro');
 
         // Construir consulta base
-        $query = Product::query();
+        $query = Product::query()->whereNull('auditoriaFechaEliminacion');
 
         // Filtros opcionales
         if ($this->request->filled('product_ids')) {

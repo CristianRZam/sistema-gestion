@@ -19,7 +19,7 @@ class CustomersPdfExport extends BasePdfExport
     }
     protected function generateData(): array
     {
-        $query = Customer::query();
+        $query = Customer::query()->whereNull('auditoriaFechaEliminacion');
 
         // Filtro por nombre
         if ($this->request->filled('nombre')) {

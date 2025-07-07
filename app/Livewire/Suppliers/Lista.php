@@ -6,36 +6,53 @@ use App\Models\Supplier; // Asegúrate de tener este modelo
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class Lista extends Component
 {
-    public $suppliers;
+    use WithPagination;
+    protected $paginationTheme = 'tailwind';
     public $supplierIdToDelete;
 
+    // Filtros
+    public $nombreFiltro = '';
+    public $numeroDocumentoFiltro = '';
+
     protected $listeners = [
-        'actualiza-lista-supplier' => 'actualizarSuppliers',
+        'actualiza-lista-supplier' => '$refresh',
         'open-modal-delete-supplier' => 'setSupplierIdToDelete',
+        'filtrosActualizados' => 'actualizarFiltros',
     ];
 
-    /**
-     * Actualiza la lista de proveedores cargando solo los activos (sin eliminación lógica).
-     */
-    public function actualizarSuppliers()
+    public function actualizarFiltros($filtros)
     {
-        $this->suppliers = Supplier::whereNull('auditoriaFechaEliminacion')
-            ->orderBy('nombre')
-            ->get();
+        $this->nombreFiltro = $filtros['nombre'] ?? '';
+        $this->numeroDocumentoFiltro = $filtros['numero_documento'] ?? '';
+        $this->resetPage(); // Reinicia la paginación al aplicar nuevos filtros
     }
+
 
     /**
      * Renderiza la vista con la lista actualizada de proveedores.
      */
     public function render()
     {
-        $this->actualizarSuppliers();
+        $query = Supplier::query()->whereNull('auditoriaFechaEliminacion');
+
+        // Filtro por nombre
+        if (!empty($this->nombreFiltro)) {
+            $query->where('nombre', 'like', '%' . $this->nombreFiltro . '%');
+        }
+
+        // Filtro por documento
+        if (!empty($this->numeroDocumentoFiltro)) {
+            $query->where('documento', 'like', '%' . $this->numeroDocumentoFiltro . '%');
+        }
+
+        $suppliers = $query->paginate(10);
 
         return view('livewire.suppliers.lista', [
-            'suppliers' => $this->suppliers,
+            'suppliers' => $suppliers,
         ]);
     }
 
@@ -68,8 +85,6 @@ class Lista extends Component
             'auditoriaFechaEliminacion' => Carbon::now(),
             'auditoriaEliminadoPor' => Auth::id(),
         ]);
-
-        //session()->flash('success', 'Proveedor eliminado correctamente.');
 
         $this->dispatch('actualiza-lista-supplier');
         $this->dispatch('cerrarModalDeleteSupplier');

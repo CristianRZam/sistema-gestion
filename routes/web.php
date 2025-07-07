@@ -124,13 +124,13 @@ Route::middleware(['auth', 'can:ver clientes'])->group(function () {
 
 Route::middleware(['auth', 'can:ver proveedores'])->group(function () {
     // Exportar Excel de suppliers
-    Route::get('/suppliers/exportar-excel', function () {
-        return Excel::download(new SuppliersExcelExport, 'proveedores.xlsx');
+    Route::get('/suppliers/exportar-excel', function (Request $request) {
+        return Excel::download(new SuppliersExcelExport($request), 'proveedores.xlsx');
     })->name('suppliers.exportar.excel');
 
     // Exportar PDF de suppliers
-    Route::get('/suppliers/exportar-pdf', function () {
-        return (new SuppliersPdfExport)->download('proveedores.pdf');
+    Route::get('/suppliers/exportar-pdf', function (Request $request) {
+        return (new SuppliersPdfExport($request))->download('proveedores.pdf');
     })->name('suppliers.exportar.pdf');
 
     // Ruta lista suppliers (si la tienes)
@@ -206,13 +206,13 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/comprobante/compra/preview/{compraId}', [\App\Livewire\Purchases\Pay::class, 'vistaComprobantePreview'])->name('comprobante.compra.preview');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/parameters/exportar-excel', function () {
-        return Excel::download(new ParametersExcelExport, 'parametros.xlsx');
+    Route::get('/parameters/exportar-excel', function (Request $request) {
+        return Excel::download(new ParametersExcelExport($request), 'parametros.xlsx');
     })->name('parameters.exportar.excel');
 
     // Ruta para exportar PDF de categorías
-    Route::get('/parameters/exportar-pdf', function () {
-        return (new ParametersPdfExport)->download('parametros.pdf');
+    Route::get('/parameters/exportar-pdf', function (Request $request) {
+        return (new ParametersPdfExport($request))->download('parametros.pdf');
     })->name('parameters.exportar.pdf');
 
     // Rutas ver parametros (configuraciones)

@@ -6,27 +6,42 @@
         <flux:separator variant="subtle" />
     </div>
 
+    @livewire('parameters.filter')
 
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4">
         <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-4">
             @can('exportar parametros')
-                <a href="{{ route('parameters.exportar.pdf') }}" id="btnExportarPdf"
-                   class="border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white inline-flex items-center gap-2 justify-center">
-                    <i class="fas fa-file-pdf"></i> <span>{{ __('Exportar') }}</span>
+                <a href="{{ route('parameters.exportar.pdf', [
+                    'nombre' => $nombreFiltro,
+                    'tipo_ids' => $tipoFiltro,
+                    'codigo' => $codigoFiltro,
+                ]) }}"
+                   class="btn-exportar-pdf"
+                   x-data
+                   x-init="tippy($el, { content: 'Exportar PDF' })">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>{{ __('Exportar') }}</span>
                 </a>
-                <a href="{{ route('parameters.exportar.excel') }}" id="btnExportarExcel"
-                   class="border border-green-600 text-green-600 px-4 py-2 rounded-full hover:bg-green-600 hover:text-white inline-flex items-center gap-2 justify-center">
-                    <i class="fas fa-file-excel"></i> <span>{{ __('Exportar') }}</span>
+                <a href="{{ route('parameters.exportar.excel', [
+                    'nombre' => $nombreFiltro,
+                    'tipo_ids' => $tipoFiltro,
+                    'codigo' => $codigoFiltro,
+                ]) }}" id="btnExportarExcel"
+                   class="btn-exportar-excel"
+                   x-data
+                   x-init="tippy($el, { content: 'Exportar Excel' })">
+                    <i class="fas fa-file-excel"></i>
+                    <span>{{ __('Exportar') }}</span>
                 </a>
             @endcan
 
             @can('crear parametro')
                 <flux:modal.trigger name="register-parameter">
                     <button
-                        id="btnNuevo"
-                        class="border border-blue-500 text-blue-500 px-4 py-2 rounded-full hover:bg-blue-500 hover:text-white cursor-pointer inline-flex items-center gap-2 justify-center w-full sm:w-auto"
-                        x-data=""
+                        class="btn-nuevo"
+                        x-data
+                        x-init="tippy($el, { content: 'Nuevo Registro' })"
                         x-on:click.prevent="$dispatch('open-modal')">
                         <i class="fas fa-plus"></i> <span>{{ __('Nuevo') }}</span>
                     </button>
@@ -40,35 +55,35 @@
     @if ($parametros->isEmpty())
         <p class="text-center text-gray-600 dark:text-gray-300">No hay parámetros registrados.</p>
     @else
-        <div class="overflow-x-auto rounded-lg shadow-sm">
-            <table class="min-w-full table-auto border-collapse text-sm sm:text-base">
-                <thead class="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+        <div class="w-full overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full table-auto border-collapse text-sm">
+                <thead>
                 <tr>
-                    <th class="border p-2 text-left dark:border-gray-700">Nº</th>
-                    <th class="border p-2 text-left dark:border-gray-700">Nombre</th>
-                    <th class="border p-2 text-left dark:border-gray-700">Nombre Corto</th>
-                    <th class="border p-2 text-center dark:border-gray-700">Orden</th>
-                    <th class="border p-2 text-center dark:border-gray-700">Código</th>
-                    <th class="border p-2 text-center dark:border-gray-700">Acciones</th>
+                    <th class="border p-2 ">Nº</th>
+                    <th class="border p-2 ">Nombre</th>
+                    <th class="border p-2 ">Nombre Corto</th>
+                    <th class="border p-2 ">Orden</th>
+                    <th class="border p-2 ">Código</th>
+                    <th class="border p-2 ">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach($parametros as $index => $parametro)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td class="border p-2 text-center dark:border-gray-700">
+                    <tr>
+                        <td class="border p-2 text-center ">
                             {{ $loop->iteration + ($parametros->currentPage() - 1) * $parametros->perPage() }}
                         </td>
-                        <td class="border p-2 dark:border-gray-700">{{ $parametro->nombre }}</td>
-                        <td class="border p-2 dark:border-gray-700">{{ $parametro->nombreCorto }}</td>
-                        <td class="border p-2 text-center dark:border-gray-700">{{ $parametro->orden }}</td>
-                        <td class="border p-2 text-center dark:border-gray-700">{{ $parametro->codigoParametro }}</td>
-                        <td class="border p-2 text-center dark:border-gray-700">
+                        <td class="border p-2 ">{{ $parametro->nombre }}</td>
+                        <td class="border p-2 ">{{ $parametro->nombreCorto }}</td>
+                        <td class="border p-2 text-center ">{{ $parametro->orden }}</td>
+                        <td class="border p-2 text-center ">{{ $parametro->codigoParametro }}</td>
+                        <td class="border p-2 text-center ">
                             @can('editar parametro')
                                 <flux:modal.trigger name="register-parameter">
                                     <button
-                                        class="border border-yellow-500 text-yellow-500 px-3 py-1.5 rounded-full cursor-pointer hover:bg-yellow-500 hover:text-white dark:hover:text-black mr-2 inline-flex items-center gap-1"
-                                        x-data=""
-                                        id="btnEditar"
+                                        class="btn-editar-table"
+                                        x-data
+                                        x-init="tippy($el, { content: 'Editar Registro' })"
                                         x-on:click.prevent="$dispatch('open-modal', { id: {{ $parametro->id }} })"
                                     >
                                         <i class="fa-solid fa-pen-to-square"></i>
@@ -115,23 +130,5 @@
 <script>
     window.addEventListener('cerrarModalDeteleParameter', () => {
         Flux.modal('confirm-parameter-deletion').close();
-    });
-
-    document.addEventListener('livewire:navigated', function () {
-        tippy('#btnExportarPdf', {
-            content: 'Exportar PDF',
-        });
-
-        tippy('#btnExportarExcel', {
-            content: 'Exportar Excel',
-        });
-
-        tippy('#btnNuevo', {
-            content: 'Nuevo Registro',
-        });
-
-        tippy('#btnEditar', {
-            content: 'Editar Registro',
-        });
     });
 </script>
