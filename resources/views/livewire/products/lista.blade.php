@@ -81,6 +81,8 @@
                         <span>{{ __('Importar') }}</span>
                     </button>
                 </flux:modal.trigger>
+            @endcan
+            @can('descargar imagenes productos')
                 <a href="{{ route('products.descargar.imagenes', [
                         'nombre' => $nombreFiltro,
                         'categoria_id' => $categoriaFiltro,
@@ -94,7 +96,7 @@
                 </a>
             @endcan
 
-            @can('exportar productos')
+            @can('descargar catalogo productos')
                 <a href="{{ route('products.exportar-catalogo.pdf', [
                     'nombre' => $nombreFiltro,
                     'categoria_ids' => $categoriaFiltro,
@@ -106,7 +108,10 @@
                     <i class="fas fa-file-pdf"></i>
                     <span>Catálogo</span>
                 </a>
+            @endcan
 
+
+            @can('exportar productos')
                 <!-- Exportar PDF -->
                 <a href="{{ route('products.exportar.pdf', [
                         'nombre' => $nombreFiltro,
