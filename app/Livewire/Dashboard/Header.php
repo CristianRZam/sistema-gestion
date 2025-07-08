@@ -95,30 +95,53 @@ class Header extends Component
 
         $this->cantidadClientes = Customer::whereNull('auditoriaFechaEliminacion')->count();
 
-        $this->cantidadVentas = Sale::where('estado_venta_id', 2)
+        $salesQuery = Sale::where('estado_venta_id', 2)
             ->whereNull('auditoriaFechaEliminacion')
-            ->whereBetween('fecha_venta', [$inicio, $fin])
-            ->count();
+            ->whereBetween('fecha_venta', [$inicio, $fin]);
+
+        if (!auth()->user()->can('ver reporte general dashboard')) {
+            $salesQuery->where('usuario_id', auth()->id());
+        }
+
+        $this->cantidadVentas = $salesQuery->count();
+
 
         $this->cantidadProductosVendidos = SaleDetail::whereHas('sale', function ($query) use ($inicio, $fin) {
             $query->where('estado_venta_id', 2)
                 ->whereNull('auditoriaFechaEliminacion')
                 ->whereBetween('fecha_venta', [$inicio, $fin]);
+
+            if (!auth()->user()->can('ver reporte general dashboard')) {
+                $query->where('usuario_id', auth()->id());
+            }
         })->sum('cantidad');
 
-        $this->ingresosHoy = Sale::where('estado_venta_id', 2)
+
+        $queryIngresosHoy = Sale::where('estado_venta_id', 2)
             ->whereNull('auditoriaFechaEliminacion')
-            ->whereBetween('fecha_venta', [$inicio, $fin])
-            ->get()
+            ->whereBetween('fecha_venta', [$inicio, $fin]);
+
+        if (!auth()->user()->can('ver reporte general dashboard')) {
+            $queryIngresosHoy->where('usuario_id', auth()->id());
+        }
+
+        $this->ingresosHoy = $queryIngresosHoy->get()
             ->sum(fn ($venta) => $venta->total - $venta->descuento);
+
 
         $this->gananciasHoy = 0;
 
-        $ventas = Sale::with(['detalles.purchaseDetails'])
+        $queryGananciasHoy  = Sale::with(['detalles.purchaseDetails'])
             ->where('estado_venta_id', 2)
             ->whereNull('auditoriaFechaEliminacion')
-            ->whereBetween('fecha_venta', [$inicio, $fin])
-            ->get();
+            ->whereBetween('fecha_venta', [$inicio, $fin]);
+
+        if (!auth()->user()->can('ver reporte general dashboard')) {
+            $queryGananciasHoy ->where('usuario_id', auth()->id());
+        }
+
+        $ventas = $queryGananciasHoy ->get();
+
 
         foreach ($ventas as $venta) {
             $totalSubtotal = $venta->detalles->sum(fn ($detalle) => $detalle->subtotal ?: ($detalle->cantidad * $detalle->precio_unitario));
@@ -173,11 +196,17 @@ class Header extends Component
 
         $this->comprasHoy = 0;
 
-        $compras = Purchase::with(['detalles.losses'])
+// Construcción de la consulta
+        $queryComprasHoy = Purchase::with(['detalles.losses'])
             ->whereNull('auditoriaFechaEliminacion')
             ->whereBetween('fecha_compra', [$inicio, $fin])
-            ->whereIn('estado_compra_id', [2, 3])
-            ->get();
+            ->whereIn('estado_compra_id', [2, 3]);
+
+        if (!auth()->user()->can('ver reporte general dashboard')) {
+            $queryComprasHoy->where('usuario_id', auth()->id());
+        }
+
+        $compras = $queryComprasHoy->get(); // Ejecutamos la consulta luego de aplicar condiciones
 
         foreach ($compras as $compra) {
             foreach ($compra->detalles as $detalle) {
@@ -193,12 +222,12 @@ class Header extends Component
                     if ($perdida->tipo_id == 1 || $perdida->tipo_id == 3) {
                         $cantidad -= $perdida->cantidad_fallida;
                     }
-                    // tipo_id 2 (pérdida) no afecta directamente al descuento
                 }
 
                 $this->comprasHoy += max(0, $cantidad) * $precio;
             }
         }
+
 
 
         $this->capitalRealCompraStock = PurchaseDetail::whereNull('auditoriaFechaEliminacion')

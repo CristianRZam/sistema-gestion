@@ -63,6 +63,7 @@
             <td style="text-align: left !important;">{{ $row['nombre'] }}</td>
             <td style="text-align: left !important;">{{ $row['correo'] }}</td>
             <td>{{ $row['perfil'] }}</td>
+            <td>{{ $row['estado'] }}</td>
         </tr>
     @endforeach
     </tbody>

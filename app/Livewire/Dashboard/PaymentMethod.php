@@ -61,7 +61,13 @@ class PaymentMethod extends Component
             $ventas->whereBetween('fecha_venta', [$inicio, $fin]);
         }
 
+        if (!auth()->user()->can('ver reporte general dashboard')) {
+            $ventas->where('usuario_id', auth()->id()); // 👈 Aplica filtro si no tiene el permiso
+        }
+
         $ventas = $ventas->get();
+
+
         foreach ($ventas as $venta) {
             if (isset($conteo[$venta->metodo_pago_id])) {
                 $conteo[$venta->metodo_pago_id]++;

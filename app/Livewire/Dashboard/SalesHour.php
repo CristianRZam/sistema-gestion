@@ -44,10 +44,16 @@ class SalesHour extends Component
         $inicio = Carbon::parse($this->fechaInicio)->startOfDay();
         $fin = Carbon::parse($this->fechaFin)->endOfDay();
 
-        $ventas = Sale::where('estado_venta_id', 2)
+        $query = Sale::where('estado_venta_id', 2)
             ->whereNull('auditoriaFechaEliminacion')
-            ->whereBetween('fecha_venta', [$inicio, $fin])
-            ->get();
+            ->whereBetween('fecha_venta', [$inicio, $fin]);
+
+        // 🔒 Aplicar filtro si el usuario no tiene permiso
+        if (!auth()->user()->can('ver reporte general dashboard')) {
+            $query->where('usuario_id', auth()->id());
+        }
+
+        $ventas = $query->get();
 
         foreach ($ventas as $venta) {
             $hora = Carbon::parse($venta->fecha_venta)->format('H');
@@ -63,6 +69,7 @@ class SalesHour extends Component
             'ventas' => array_values($this->ventasPorHora),
         ]);
     }
+
 
     public function render()
     {

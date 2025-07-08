@@ -2,42 +2,44 @@
     <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Resumen General</h2>
 
     <!-- Filtro de fechas -->
-    <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 rounded-xl shadow p-4 mt-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <!-- Botones -->
-            <div class="flex flex-wrap gap-2">
-                @foreach (['hoy' => 'Hoy', 'semana' => 'Esta semana', 'mes' => 'Este mes', 'personalizado' => 'Personalizado'] as $clave => $texto)
-                    <button
-                        wire:click="$set('filtroFecha', '{{ $clave }}')"
-                        class="cursor-pointer px-4 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500
-            {{ $filtroFecha === $clave ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' : 'text-gray-700 dark:text-gray-200 bg-transparent' }}"
-                    >
-                        {{ $texto }}
-                    </button>
-                @endforeach
-            </div>
-
-            <!-- Rango personalizado -->
-            @if($filtroFecha === 'personalizado')
-                <div class="flex flex-col sm:flex-row gap-4 items-center mt-2 md:mt-0">
-                    <div class="flex flex-col">
-                        <label for="fechaInicio" class="text-sm text-gray-600 dark:text-gray-300 mb-1">Desde</label>
-                        <input type="date" wire:model.live="fechaInicio" id="fechaInicio"
-                               class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-white text-sm px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div class="flex flex-col">
-                        <label for="fechaFin" class="text-sm text-gray-600 dark:text-gray-300 mb-1">Hasta</label>
-                        <input type="date" wire:model.live="fechaFin" id="fechaFin"
-                               class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-white text-sm px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+    @can('ver filtros dashboard')
+        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 rounded-xl shadow p-4 mt-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Botones -->
+                <div class="flex flex-wrap gap-2">
+                    @foreach (['hoy' => 'Hoy', 'semana' => 'Esta semana', 'mes' => 'Este mes', 'personalizado' => 'Personalizado'] as $clave => $texto)
+                        <button
+                            wire:click="$set('filtroFecha', '{{ $clave }}')"
+                            class="cursor-pointer px-4 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500
+                {{ $filtroFecha === $clave ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' : 'text-gray-700 dark:text-gray-200 bg-transparent' }}"
+                        >
+                            {{ $texto }}
+                        </button>
+                    @endforeach
                 </div>
 
-                @if($fechaInicio && $fechaFin && \Carbon\Carbon::parse($fechaInicio)->gt(\Carbon\Carbon::parse($fechaFin)))
-                    <p class="text-red-500 text-sm mt-2">La fecha de inicio no puede ser mayor que la fecha de fin.</p>
+                <!-- Rango personalizado -->
+                @if($filtroFecha === 'personalizado')
+                    <div class="flex flex-col sm:flex-row gap-4 items-center mt-2 md:mt-0">
+                        <div class="flex flex-col">
+                            <label for="fechaInicio" class="text-sm text-gray-600 dark:text-gray-300 mb-1">Desde</label>
+                            <input type="date" wire:model.live="fechaInicio" id="fechaInicio"
+                                   class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-white text-sm px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="fechaFin" class="text-sm text-gray-600 dark:text-gray-300 mb-1">Hasta</label>
+                            <input type="date" wire:model.live="fechaFin" id="fechaFin"
+                                   class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-zinc-800 dark:text-white text-sm px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    @if($fechaInicio && $fechaFin && \Carbon\Carbon::parse($fechaInicio)->gt(\Carbon\Carbon::parse($fechaFin)))
+                        <p class="text-red-500 text-sm mt-2">La fecha de inicio no puede ser mayor que la fecha de fin.</p>
+                    @endif
                 @endif
-            @endif
+            </div>
         </div>
-    </div>
+    @endcan
 
 
 
@@ -105,73 +107,79 @@
         </div>
 
         <!-- Ganancias -->
-        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
-            <div class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8c-1.1 0-2 .9-2 2v4H8v2h2v2h2v-2h2v-2h-2v-4h2V8h-2z" />
-                </svg>
+        @can('ver ganancias de hoy dashboard')
+            <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+                <div class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8c-1.1 0-2 .9-2 2v4H8v2h2v2h2v-2h2v-2h-2v-4h2V8h-2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaGanancias }}</h4>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                        S/ {{ number_format($gananciasHoy, 2) }}
+                    </p>
+                </div>
             </div>
-            <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaGanancias }}</h4>
-                <p class="text-xl font-semibold text-gray-800 dark:text-white">
-                    S/ {{ number_format($gananciasHoy, 2) }}
-                </p>
-            </div>
-        </div>
+        @endcan
 
         <!-- Compras -->
-        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
-            <div class="bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
-                </svg>
+        @can('ver compras de hoy dashboard')
+            <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+                <div class="bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 3h18v4H3V3zm0 6h18v4H3V9zm0 6h18v4H3v-4z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaCompras }}</h4>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-white">S/ {{ number_format($comprasHoy, 2) }}</p>
+                </div>
             </div>
-            <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">{{ $this->etiquetaCompras }}</h4>
-                <p class="text-xl font-semibold text-gray-800 dark:text-white">S/ {{ number_format($comprasHoy, 2) }}</p>
-            </div>
-        </div>
-
+        @endcan
 
         <!-- Capital real en stock -->
-        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
-            <div class="bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 10h2l1 9h12l1-9h2M16 10V6a4 4 0 00-8 0v4" />
-                </svg>
+        @can('ver capital real en stock dashboard')
+            <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+                <div class="bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 10h2l1 9h12l1-9h2M16 10V6a4 4 0 00-8 0v4" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400">Capital real en stock</h4>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                        S/ {{ number_format($capitalRealCompraStock, 2) }}
+                    </p>
+                </div>
             </div>
-            <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">Capital real en stock</h4>
-                <p class="text-xl font-semibold text-gray-800 dark:text-white">
-                    S/ {{ number_format($capitalRealCompraStock, 2) }}
-                </p>
-            </div>
-        </div>
-
+        @endcan
 
 
         <!-- Valor estimado de ventas -->
-        <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
-            <div class="bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-300 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M5 13l4 4L19 7" />
-                </svg>
+        @can('ver valor venta stock dashboard')
+            <div class="bg-white dark:bg-zinc-900 border dark:border-gray-700 shadow rounded-xl p-4 flex items-center space-x-4">
+                <div class="bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-300 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400">Valor venta stock</h4>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                        S/ {{ number_format($valorVentaStock, 2) }}
+                    </p>
+                </div>
             </div>
-            <div>
-                <h4 class="text-sm text-gray-500 dark:text-gray-400">Valor venta stock</h4>
-                <p class="text-xl font-semibold text-gray-800 dark:text-white">
-                    S/ {{ number_format($valorVentaStock, 2) }}
-                </p>
-            </div>
-        </div>
+        @endcan
 
     </div>
 

@@ -13,6 +13,15 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
+        // DASHBOARD
+        Permission::create(['name' => 'ver reporte general dashboard']);
+        Permission::create(['name' => 'ver filtros dashboard']);
+
+        Permission::create(['name' => 'ver ganancias de hoy dashboard']);
+        Permission::create(['name' => 'ver compras de hoy dashboard']);
+        Permission::create(['name' => 'ver capital real en stock dashboard']);
+        Permission::create(['name' => 'ver valor venta stock dashboard']);
+
         // USUARIOS
         Permission::create(['name' => 'ver usuarios']);
         Permission::create(['name' => 'editar usuario']);
@@ -25,7 +34,8 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'exportar roles']);
 
         // PERMISOS
-        Permission::create(['name' => 'editar permisos']);
+        Permission::create(['name' => 'ver permisos']);
+        Permission::create(['name' => 'editar permiso']);
 
         // PARAMETROS
         Permission::create(['name' => 'ver parametros']);
@@ -34,13 +44,15 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'eliminar parametro']);
         Permission::create(['name' => 'exportar parametros']);
 
-        // CATEGORIAS
+        // PRODUCTOS
         Permission::create(['name' => 'ver productos']);
         Permission::create(['name' => 'crear producto']);
         Permission::create(['name' => 'editar producto']);
         Permission::create(['name' => 'eliminar producto']);
         Permission::create(['name' => 'exportar productos']);
         Permission::create(['name' => 'importar productos']);
+        Permission::create(['name' => 'descargar imagenes productos']);
+        Permission::create(['name' => 'descargar catalogo productos']);
 
         // CLIENTES
         Permission::create(['name' => 'ver clientes']);
