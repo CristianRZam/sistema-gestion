@@ -116,7 +116,7 @@ class Register extends Component
 
         if ($this->clienteEncontrado) {
             $this->dispatch('clienteSeleccionadoDesdeVenta', $this->clienteEncontrado->id);
-            $this->dispatch('cerrarModalCustomer');
+            $this->dispatch('cerrarModalCustomerSearch');
         } else {
             $this->addError('documento', 'Cliente no encontrado. Por favor completa el formulario para registrarlo.');
         }

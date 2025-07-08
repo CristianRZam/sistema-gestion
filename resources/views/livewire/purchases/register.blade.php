@@ -15,20 +15,25 @@
 
                 <!-- Información del cliente -->
                 <div class="relative flex border border-gray-300 dark:border-gray-700 border-l-0 rounded-lg bg-white dark:bg-zinc-900 overflow-hidden">
-
                     <!-- Botón de editar con ícono -->
-                    <div class="absolute top-2 right-2">
+                    <div class="absolute top-2 right-2 flex items-center gap-3">
                         <flux:modal.trigger name="register-supplier">
                             <button
-                                x-data=""
+                                class="text-blue-600 hover:text-blue-800 transition cursor-pointer"
                                 x-on:click.prevent="$dispatch('open-modal-supplier', { id: null, modo: 'compra' })"
                                 aria-label="{{ __('Editar proveedor') }}"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6 3 3-6 6H9v-3z" />
-                                </svg>
+                                <i class="fa-solid fa-pencil"></i>
                             </button>
                         </flux:modal.trigger>
+
+                        <button
+                            wire:click="eliminarProveedorSeleccionado"
+                            class="text-red-600 hover:text-red-800 transition cursor-pointer"
+                            aria-label="{{ __('Eliminar proveedor') }}"
+                        >
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
                     </div>
 
                     <!-- Franja izquierda intercalada, espaciada y con altura completa -->
@@ -204,7 +209,7 @@
                         class="w-full cursor-pointer"
                         variant="primary"
                     >
-                        {{ __('Completar compra') }}
+                        {{ __('Continuar compra') }}
                     </flux:button>
                 </div>
 
@@ -303,3 +308,12 @@
 
     </div>
 </section>
+<script>
+    if (!window._errorRegisterPurchase) {
+        window._errorRegisterPurchase = true;
+
+        window.addEventListener('errorRegisterPurchase', (event) => {
+            toastr.error(event.detail[0].mensaje);
+        });
+    }
+</script>

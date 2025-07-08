@@ -50,6 +50,13 @@ class Register extends Component
         }
     }
 
+    public function eliminarClienteSeleccionado()
+    {
+        $this->cliente_seleccionado = null;
+        $this->cliente_nombre = null; // por si estás usando este campo también
+    }
+
+
     public $producto_buscar = '';
     public $productosDisponibles = [];
 
@@ -243,6 +250,7 @@ class Register extends Component
 
         if (!$producto) {
             session()->flash('error', "Producto con código {$codigo} no encontrado.");
+            $this->dispatch('errorRegisterSale', ['mensaje' => "Producto con código {$codigo} no encontrado."]);
             return;
         }
 
@@ -259,7 +267,7 @@ class Register extends Component
             if ($this->productos[$index]['cantidad'] < $producto['stock']) {
                 $this->productos[$index]['cantidad']++;
             } else {
-                session()->flash('warning', "Stock máximo alcanzado para {$producto['nombre']}");
+                $this->dispatch('errorRegisterSale', ['mensaje' => "Stock máximo alcanzado para {$producto['nombre']}"]);
             }
         } else {
             $this->productos[] = [
@@ -295,12 +303,14 @@ class Register extends Component
     {
         if (empty($this->productos)) {
             $this->addError('productos', 'Debe agregar al menos un producto para registrar la venta.');
+            $this->dispatch('errorRegisterSale', ['mensaje' => "Debe agregar al menos un producto para registrar la venta."]);
             return;
         }
 
         foreach ($this->productos as $producto) {
             if ($producto['cantidad'] > $producto['stock']) {
                 $this->addError('stock', "El producto '{$producto['nombre']}' no tiene suficiente stock.");
+                $this->dispatch('errorRegisterSale', ['mensaje' => "El producto '{$producto['nombre']}' no tiene suficiente stock."]);
                 return;
             }
         }
@@ -386,6 +396,8 @@ class Register extends Component
             DB::rollBack();
             \Log::error('Error al registrar/editar venta: ' . $e->getMessage());
             $this->addError('productos', 'Ocurrió un error al registrar la venta.');
+            $this->dispatch('errorRegisterSale', ['mensaje' => "Ocurrió un error interno al registrar la venta."]);
+
         }
     }
 

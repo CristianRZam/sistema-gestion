@@ -20,6 +20,8 @@ use App\Livewire\Sales\Pay;
 use App\Exports\ParametersExcelExport;
 use App\Exports\ParametersPdfExport;
 use App\Http\Controllers\ParametroController;
+use App\Exports\PurchasesExcelExport;
+use App\Exports\PurchasesPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
@@ -173,13 +175,13 @@ Route::get('/comprobante/preview/{ventaId}', [Pay::class, 'vistaComprobantePrevi
 
 Route::middleware(['auth'])->group(function () {
     // Exportar Excel de ventas
-    Route::get('/purchases/exportar-excel', function () {
-        return Excel::download(new SalesExcelExport, 'ventas.xlsx');
+    Route::get('/purchases/exportar-excel', function (Request $request) {
+        return Excel::download(new PurchasesExcelExport($request), 'compras.xlsx');
     })->middleware('can:exportar compras')->name('purchases.exportar.excel');
 
     // Exportar PDF de ventas
-    Route::get('/purchases/exportar-pdf', function () {
-        return (new SalesPdfExport)->download('ventas.pdf');
+    Route::get('/purchases/exportar-pdf', function (Request $request) {
+        return (new PurchasesPdfExport($request))->download('compras.pdf');
     })->middleware('can:exportar compras')->name('purchases.exportar.pdf');
 
     // Lista de ventas

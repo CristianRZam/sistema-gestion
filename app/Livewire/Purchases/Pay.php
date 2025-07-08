@@ -125,8 +125,10 @@ class Pay extends Component
 
     public function guardar()
     {
+
         // Validar que se haya seleccionado un método de pago
         if (!$this->metodoPago) {
+            $this->dispatch('errorPayPurchase', ['mensaje' => "Debe seleccionar un método de pago."]);
             $this->addError('metodoPago', 'Debe seleccionar un método de pago.');
             return;
         }
@@ -142,6 +144,7 @@ class Pay extends Component
                 if (!$productoDB) {
                     DB::rollBack();
                     $this->addError('productos', 'Producto no encontrado.');
+                    $this->dispatch('errorPayPurchase', ['mensaje' => "Producto no encontrado."]);
                     return;
                 }
 
@@ -158,14 +161,17 @@ class Pay extends Component
             if (!$compra) {
                 DB::rollBack();
                 $this->addError('productos', 'Compra no encontrada.');
+                $this->dispatch('errorPayPurchase', ['mensaje' => "Error interno. Compra no encontrada."]);
                 return;
             }
 
-            $compra->estado_compra_id = $this->estadoCompra ; // Pagada
-            $compra->metodo_pago_id = $this->metodoPago;
-            if ($this->estadoCompra == 2) {
+
+            if ($this->estadoCompra == 2 || ($compra->estado_compra_id ==1 && $this->estadoCompra == 3)) {
                 $compra->fecha_compra = Carbon::now();
             }
+
+            $compra->estado_compra_id = $this->estadoCompra ;
+            $compra->metodo_pago_id = $this->metodoPago;
             $compra->auditoriaFechaModificacion = Carbon::now();
             $compra->auditoriaModificadoPor = auth()->id();
             $compra->save();
@@ -180,6 +186,7 @@ class Pay extends Component
             DB::rollBack();
             $this->addError('productos', 'Ocurrió un error al procesar el pago.'. $e->getMessage());
             \Log::error('Error al procesar pago: ' . $e->getMessage());
+            $this->dispatch('errorPayPurchase', ['mensaje' => "Error interno  al procesar la compra."]);
         }
     }
 
@@ -222,6 +229,7 @@ class Pay extends Component
             DB::rollBack();
             \Log::error('Error al eliminar la compra: ' . $e->getMessage());
             $this->addError('eliminacion', 'Ocurrió un error al intentar eliminar la compra.');
+            $this->dispatch('errorPayPurchase', ['mensaje' => "Error interno al intentar eliminar la compra."]);
         }
     }
 

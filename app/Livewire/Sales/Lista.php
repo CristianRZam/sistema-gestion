@@ -14,7 +14,6 @@ class Lista extends Component
     public $fechaDesdeFiltro = '';
     public $fechaHastaFiltro = '';
     public $estadoFiltro = [];
-
     public $usuarioFiltro = [];
     protected $paginationTheme = 'tailwind';
 

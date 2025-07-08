@@ -49,6 +49,11 @@ class Register extends Component
         }
     }
 
+    public function eliminarProveedorSeleccionado()
+    {
+        $this->proveedor_seleccionado = null;
+        $this->proveedor_nombre = null;
+    }
     public $producto_buscar = '';
     public $productosDisponibles = [];
 
@@ -252,6 +257,7 @@ class Register extends Component
 
         if (!$producto) {
             session()->flash('error', "Producto con código {$codigo} no encontrado.");
+            $this->dispatch('errorRegisterPurchase', ['mensaje' => "Producto con código {$codigo} no encontrado."]);
             return;
         }
 
@@ -310,6 +316,7 @@ class Register extends Component
     {
         if (empty($this->productos)) {
             $this->addError('productos', 'Debe agregar al menos un producto para registrar la compra.');
+            $this->dispatch('errorRegisterPurchase', ['mensaje' => "Debe agregar al menos un producto para registrar la compra."]);
             return;
         }
 
@@ -320,11 +327,13 @@ class Register extends Component
 
             if (!is_numeric($precio) || $precio < 0) {
                 $this->addError('productos', "El precio unitario de '{$producto['nombre']}' es inválido.");
+                $this->dispatch('errorRegisterPurchase', ['mensaje' => "El precio unitario de '{$producto['nombre']}' es inválido."]);
                 return;
             }
 
             if (!is_numeric($cantidad) || $cantidad < 1) {
                 $this->addError('productos', "La cantidad del producto '{$producto['nombre']}' debe ser al menos 1.");
+                $this->dispatch('errorRegisterPurchase', ['mensaje' => "La cantidad del producto '{$producto['nombre']}' debe ser al menos 1."]);
                 return;
             }
         }
@@ -416,6 +425,7 @@ class Register extends Component
             DB::rollBack();
             \Log::error('Error al registrar/editar compra: ' . $e->getMessage());
             $this->addError('productos', 'Ocurrió un error al registrar la compra.'.$e->getMessage());
+            $this->dispatch('errorRegisterPurchase', ['mensaje' => "Ocurrió un error al registrar la compra."]);
         }
     }
 

@@ -81,4 +81,12 @@
             toastr.success('Registro guardado.');
         });
     }
+
+    if (!window._cerrarModalCustomerSearch) {
+        window._cerrarModalCustomerSearch = true;
+
+        window.addEventListener('cerrarModalCustomerSearch', () => {
+            Flux.modal('register-customer').close();
+        });
+    }
 </script>

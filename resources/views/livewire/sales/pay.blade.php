@@ -178,10 +178,15 @@
 
             @can('pagar venta')
                 @if($estadoVenta == 1)
-                    <button wire:click="procesarPago"
-                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer">
-                        Pagar
-                    </button>
+                    <flux:modal.trigger name="confirm-pay-sale">
+                        <button
+                            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition cursor-pointer"
+                            x-data
+                            x-on:click.prevent="$dispatch('open-modal-pay-sale')"
+                        >
+                            Pagar
+                        </button>
+                    </flux:modal.trigger>
                 @endif
             @endcan
         </div>
@@ -211,12 +216,45 @@
         </form>
     </flux:modal>
 
+    <flux:modal name="confirm-pay-sale" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
+        <form wire:submit.prevent="procesarPago" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('¿Deseas confirmar el pago de esta venta?') }}</flux:heading>
+                <flux:subheading>
+                    {{ __('Una vez procesado el pago, no podrás modificar los productos ni el cliente. ¿Estás seguro de continuar?') }}
+                </flux:subheading>
+            </div>
+
+            <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                <flux:modal.close>
+                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                </flux:modal.close>
+
+                <flux:modal.close>
+                    <flux:button variant="danger" type="submit">{{ __('Continuar') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </form>
+    </flux:modal>
+
+
 
     <script>
-        window.addEventListener('open-modal-comprobante', () => {
-            console.log("hahaha")
-            Flux.modal('comprobante-preview').show();
-        });
+        if (!window._openModalComprobante) {
+            window._openModalComprobante = true;
+
+            window.addEventListener('open-modal-comprobante', () => {
+                Flux.modal('comprobante-preview').show();
+            });
+        }
+
+        if (!window._errorPaySale) {
+            window._errorPaySale = true;
+
+            window.addEventListener('errorPaySale', (event) => {
+                toastr.error(event.detail[0].mensaje);
+            });
+        }
     </script>
 
 </div>

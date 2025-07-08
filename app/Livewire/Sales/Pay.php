@@ -107,11 +107,13 @@ class Pay extends Component
     public function procesarPago()
     {
         if (!$this->metodoPago) {
+            $this->dispatch('errorPaySale', ['mensaje' => "Debe seleccionar un método de pago."]);
             $this->addError('metodoPago', 'Debe seleccionar un método de pago.');
             return;
         }
 
         if (!is_numeric($this->pago_con) || $this->pago_con < $this->totalConDescuento) {
+            $this->dispatch('errorPaySale', ['mensaje' => "El monto pagado debe ser mayor o igual al total con descuento."]);
             $this->addError('pago_con', 'El monto pagado debe ser mayor o igual al total con descuento.');
             return;
         }
@@ -122,6 +124,7 @@ class Pay extends Component
             $venta = Sale::find($this->ventaId);
             if (!$venta) {
                 DB::rollBack();
+                $this->dispatch('errorPaySale', ['mensaje' => "Error inesperado, venta no encontrada."]);
                 $this->addError('productos', 'Venta no encontrada.');
                 return;
             }
@@ -130,12 +133,14 @@ class Pay extends Component
                 $producto = Product::find($detalle->product_id);
                 if (!$producto) {
                     DB::rollBack();
+                    $this->dispatch('errorPaySale', ['mensaje' => "Error inesperado, producto no encontrado."]);
                     $this->addError('productos', 'Producto no encontrado.');
                     return;
                 }
 
                 if ($producto->stock < $detalle->cantidad) {
                     DB::rollBack();
+                    $this->dispatch('errorPaySale', ['mensaje' => "Stock insuficiente para '{$producto->nombre}'"]);
                     $this->addError('productos', "Stock insuficiente para '{$producto->nombre}'.");
                     return;
                 }
@@ -180,6 +185,7 @@ class Pay extends Component
 
                 if ($cantidadRestante > 0) {
                     DB::rollBack();
+                    $this->dispatch('errorPaySale', ['mensaje' => "No hay suficiente stock FIFO para '{$producto->nombre}'."]);
                     $this->addError('productos', "No hay suficiente stock FIFO para '{$producto->nombre}'.");
                     return;
                 }
@@ -205,7 +211,8 @@ class Pay extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->addError('productos', 'Error al procesar el pago. ' . $e->getMessage());
+            $this->dispatch('errorPaySale', ['mensaje' => "Error al procesar el pago."]);
+            $this->addError('productos', 'Error al procesar el pago.');
             \Log::error('Error al procesar pago: ' . $e->getMessage());
         }
     }
@@ -262,6 +269,7 @@ class Pay extends Component
             DB::rollBack();
             \Log::error('Error al anular la venta: ' . $e->getMessage());
             $this->addError('eliminacion', 'Ocurrió un error al intentar anular la venta.');
+            $this->dispatch('errorPaySale', ['mensaje' => "Ocurrió un error al intentar anular la venta."]);
         }
     }
 

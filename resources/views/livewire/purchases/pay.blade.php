@@ -266,9 +266,24 @@
 
 
     <script>
-        window.addEventListener('open-modal-comprobante', () => {
-            Flux.modal('comprobante-preview').show();
-        });
+
+        if (!window._openModalComprobante) {
+            window._openModalComprobante = true;
+
+            window.addEventListener('open-modal-comprobante', () => {
+                Flux.modal('comprobante-preview').show();
+            });
+        }
+
+        if (!window._errorPayPurchase) {
+            window._errorPayPurchase = true;
+
+            window.addEventListener('errorPayPurchase', (event) => {
+                toastr.error(event.detail[0].mensaje);
+            });
+        }
+
     </script>
 
+    </div>
 </div>
