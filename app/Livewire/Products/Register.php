@@ -39,7 +39,13 @@ class Register extends Component
         'imagen.max' => 'La imagen no debe superar los 2MB.',
     ];
 
-    protected $listeners = ['open-modal-product' => 'abrir'];
+    protected $listeners = ['open-modal-product' => 'abrir',
+        'setDescripcionSummernote'];
+
+    public function setDescripcionSummernote($data)
+    {
+        $this->descripcion = $data;
+    }
 
     public function mount()
     {
@@ -75,6 +81,11 @@ class Register extends Component
                 $this->codigo = $codigo;
             }
         }
+
+        $this->dispatch('inicializarDescripcion', [
+            'descripcion' => $this->descripcion,
+        ]);
+        $this->dispatch('abrirModalProduct');
     }
 
     public function updatedImagen()

@@ -163,6 +163,15 @@ select:focus[data-flux-control] {
 }
 
 
+/* Cuando Tailwind aplique la clase `dark` al <html> o <body>… */
+.dark .note-editor .note-editable {
+    color: #f1f5f9;
+}
+
+/* placeholder dark
+.dark .note-editor .note-placeholder {
+    color: rgba(241, 245, 249, 0.6);
+}
 
 
 /* app.css */

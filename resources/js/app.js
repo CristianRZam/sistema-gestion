@@ -4,6 +4,8 @@ import 'tippy.js/dist/tippy.css';
 
 window.tippy = tippy;
 
+import jquery from 'jquery';
+window.$ = window.jQuery = jquery;
 
 import toastr from 'toastr';
 import 'toastr/build/toastr.min.css';
@@ -67,3 +69,7 @@ if (localStorage.getItem('theme') === 'dark') {
 } else {
     document.documentElement.classList.remove('dark');
 }
+
+
+import 'summernote/dist/summernote-lite.min.css';
+import 'summernote/dist/summernote-lite.min.js';

@@ -32,12 +32,14 @@
         </div>
 
         <!-- Descripción (100%) -->
-        <flux:textarea
-            wire:model.defer="descripcion"
-            :label="__('Descripción')"
-            rows="5"
-            required
-        />
+        <div wire:ignore class="w-full">
+            <label for="descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {{ __('Descripción') }}
+            </label>
+            <textarea id="descripcion" class="w-full border rounded px-3 py-2 dark:bg-zinc-800 dark:text-white"
+                      x-ref="summernote">{{ $descripcion }}</textarea>
+        </div>
+
 
         <!-- Precio y Stock -->
         <div class="flex gap-4">
@@ -150,6 +152,42 @@
             }, 100);
         });
     }
+
+
+    if (!window._abrirModalProduct) {
+        window._abrirModalProduct = true;
+
+        window.addEventListener('abrirModalProduct', () => {
+            $('#descripcion').summernote('destroy');
+            $('#descripcion').summernote({
+                placeholder: 'Descripción',
+                tabsize: 2,
+                height: 100,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['height', ['height']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['codeview']]
+                ]
+            });
+
+            $('#descripcion').on('summernote.change', function(we, contents, $editable) {
+                Livewire.dispatch('setDescripcionSummernote', { data: contents });
+            });
+        });
+    }
+
+
+    if (!window._inicializarDescripcion) {
+        window._inicializarDescripcion = true;
+
+        window.addEventListener('inicializarDescripcion', event => {
+            setTimeout(() => {
+                $('#descripcion').summernote('code', event.detail[0].descripcion || '');
+            }, 100);
+        });
+    }
 </script>
-
-
