@@ -35,28 +35,18 @@
                     @can('ver productos')
                         <flux:navlist.item icon="cube" :href="route('products')" :current="request()->routeIs('products')" wire:navigate>{{ __('Producto') }}</flux:navlist.item>
                     @endcan
+                        <flux:navlist.item :href="route('products')" :current="request()->routeIs('products')" wire:navigate>
+                            <i class="fa-solid fa-bed mr-2"></i> {{ __('Habitación') }}
+                        </flux:navlist.item>
                     @can('ver clientes')
                         <flux:navlist.item icon="user" :href="route('customers')" :current="request()->routeIs('customers')" wire:navigate>{{ __('Cliente') }}</flux:navlist.item>
                     @endcan
                     @can('ver proveedores')
                         <flux:navlist.item icon="truck" :href="route('suppliers')" :current="request()->routeIs('suppliers')" wire:navigate>{{ __('Proveedor') }}</flux:navlist.item>
                     @endcan
+                    @can('ver parametros')
                         <flux:navlist.item icon="cog" :href="route('parameters')" :current="request()->routeIs('parameters')" wire:navigate>{{ __('Parametros') }}</flux:navlist.item>
-
-                       <!-- <flux:dropdown position="bottom" align="start">
-                        <flux:navlist.item icon="bars-3" icon-trailing="chevron-down">
-                            {{ __('Configuración') }}
-                        </flux:navlist.item>
-
-                        <flux:menu class="w-[220px]">
-                            <flux:menu.radio.group>
-                                <flux:menu.item icon="bars-2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Tipo de Producto') }}</flux:menu.item>
-                                @can('ver categorias')
-                                    <flux:menu.item icon="bars-2" :href="route('categories')" :current="request()->routeIs('categories')" wire:navigate>{{ __('Categoría') }}</flux:menu.item>
-                                @endcan
-                            </flux:menu.radio.group>
-                        </flux:menu>
-                    </flux:dropdown>-->
+                    @endcan
                 </flux:navlist.group>
 
                 <flux:navlist.group :heading="__('Operaciones')" class="grid">
