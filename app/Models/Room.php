@@ -30,7 +30,6 @@ class Room extends Model
     ];
 
     // Convertir las fechas automáticamente a objetos Date
-    // Convertir las fechas automáticamente a objetos Date
     protected $dates = [
         'auditoriaFechaCreacion',
         'auditoriaFechaModificacion',

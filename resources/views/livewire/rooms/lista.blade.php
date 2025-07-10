@@ -11,39 +11,44 @@
     <!-- Bototones alineados a la derecha -->
     <div class="mb-4">
         <div class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-4">
-            <a href="{{ route('rooms.exportar.pdf', [
-                    'tipo_ids' => $tipoFiltro,
-                    'piso_ids' => $pisoFiltro,
-                    'estado_ids' => $estadoFiltro,
-                ]) }}"
-               class="btn-exportar-pdf"
-               x-data
-               x-init="tippy($el, { content: 'Exportar PDF' })">
-                <i class="fas fa-file-pdf"></i>
-                <span>{{ __('Exportar') }}</span>
-            </a>
-            <a href="{{ route('rooms.exportar.excel', [
-                    'tipo_ids' => $tipoFiltro,
-                    'piso_ids' => $pisoFiltro,
-                    'estado_ids' => $estadoFiltro,
-                ]) }}"
-               class="btn-exportar-excel"
-               x-data
-               x-init="tippy($el, { content: 'Exportar Excel' })">
-                <i class="fas fa-file-excel"></i>
-                <span>{{ __('Exportar') }}</span>
-            </a>
+            @can('exportar habitaciones')
+                <a href="{{ route('rooms.exportar.pdf', [
+                        'tipo_ids' => $tipoFiltro,
+                        'piso_ids' => $pisoFiltro,
+                        'estado_ids' => $estadoFiltro,
+                    ]) }}"
+                   class="btn-exportar-pdf"
+                   x-data
+                   x-init="tippy($el, { content: 'Exportar PDF' })">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>{{ __('Exportar') }}</span>
+                </a>
+                <a href="{{ route('rooms.exportar.excel', [
+                        'tipo_ids' => $tipoFiltro,
+                        'piso_ids' => $pisoFiltro,
+                        'estado_ids' => $estadoFiltro,
+                    ]) }}"
+                   class="btn-exportar-excel"
+                   x-data
+                   x-init="tippy($el, { content: 'Exportar Excel' })">
+                    <i class="fas fa-file-excel"></i>
+                    <span>{{ __('Exportar') }}</span>
+                </a>
+            @endcan
 
-            <flux:modal.trigger name="register-room">
-                <button
-                    class="btn-nuevo"
-                    x-data
-                    x-init="tippy($el, { content: 'Nuevo Registro' })"
-                    x-on:click.prevent="$dispatch('open-modal-room')">
-                    <i class="fas fa-plus"></i>
-                    <span>{{ __('Nuevo') }}</span>
-                </button>
-            </flux:modal.trigger>
+            <!-- Botón Nuevo -->
+            @can('crear habitacion')
+                <flux:modal.trigger name="register-room">
+                    <button
+                        class="btn-nuevo"
+                        x-data
+                        x-init="tippy($el, { content: 'Nuevo Registro' })"
+                        x-on:click.prevent="$dispatch('open-modal-room')">
+                        <i class="fas fa-plus"></i>
+                        <span>{{ __('Nuevo') }}</span>
+                    </button>
+                </flux:modal.trigger>
+            @endcan
         </div>
     </div>
 
@@ -110,31 +115,33 @@
 
                         <td class="border p-2 text-center whitespace-nowrap">
                             <div class="flex justify-center gap-2">
-                                {{-- Botón Editar --}}
-                                <flux:modal.trigger name="register-room">
-                                    <button
-                                        class="btn-editar-table"
-                                        x-data
-                                        x-init="tippy($el, { content: 'Editar Registro' })"
-                                        x-on:click.prevent="$dispatch('open-modal-room', { id: {{ $habitacion->id }} })"
-                                    >
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </flux:modal.trigger>
+                                @can('editar habitacion')
+                                    {{-- Botón Editar --}}
+                                    <flux:modal.trigger name="register-room">
+                                        <button
+                                            class="btn-editar-table"
+                                            x-data
+                                            x-init="tippy($el, { content: 'Editar Registro' })"
+                                            x-on:click.prevent="$dispatch('open-modal-room', { id: {{ $habitacion->id }} })"
+                                        >
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                    </flux:modal.trigger>
 
-                                {{-- Botón Habilitar/Deshabilitar --}}
-                                <flux:modal.trigger name="confirm-room-disable">
-                                    <button
-                                        x-data
-                                        x-init="tippy($el, { content: '{{ $habitacion->estado_id != 3 ? 'Habilitado' : 'Deshabilitado' }}' })"
-                                        x-on:click.prevent="$dispatch('open-modal-room-disable', { id: {{ $habitacion->id }} })"
-                                        class="cursor-pointer {{ $habitacion->estado_id != 3
-            ? 'border border-green-500 text-green-500 hover:bg-green-500 hover:text-white'
-            : 'border border-red-500 text-red-500 hover:bg-red-500 hover:text-white' }} px-3 py-1.5 rounded transition"
-                                    >
-                                        {{ $habitacion->estado_id != 3 ? 'Habilitado' : 'Deshabilitado' }}
-                                    </button>
-                                </flux:modal.trigger>
+                                    {{-- Botón Habilitar/Deshabilitar --}}
+                                    <flux:modal.trigger name="confirm-room-disable">
+                                        <button
+                                            x-data
+                                            x-init="tippy($el, { content: '{{ $habitacion->estado_id != 3 ? 'Habilitado' : 'Deshabilitado' }}' })"
+                                            x-on:click.prevent="$dispatch('open-modal-room-disable', { id: {{ $habitacion->id }} })"
+                                            class="cursor-pointer {{ $habitacion->estado_id != 3
+                ? 'border border-green-500 text-green-500 hover:bg-green-500 hover:text-white'
+                : 'border border-red-500 text-red-500 hover:bg-red-500 hover:text-white' }} px-3 py-1.5 rounded transition"
+                                        >
+                                            {{ $habitacion->estado_id != 3 ? 'Habilitado' : 'Deshabilitado' }}
+                                        </button>
+                                    </flux:modal.trigger>
+                                @endcan
 
                             </div>
                         </td>

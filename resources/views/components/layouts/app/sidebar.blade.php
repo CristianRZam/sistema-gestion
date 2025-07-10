@@ -35,9 +35,16 @@
                     @can('ver productos')
                         <flux:navlist.item icon="cube" :href="route('products')" :current="request()->routeIs('products')" wire:navigate>{{ __('Producto') }}</flux:navlist.item>
                     @endcan
+                    @can('ver habitaciones')
                         <flux:navlist.item :href="route('rooms')" :current="request()->routeIs('rooms')" wire:navigate>
                             <i class="fa-solid fa-bed mr-2"></i> {{ __('Habitación') }}
                         </flux:navlist.item>
+                    @endcan
+                    @can('ver servicios')
+                        <flux:navlist.item :href="route('services')" :current="request()->routeIs('services')" wire:navigate>
+                            <i class="fa-solid fa-concierge-bell mr-2"></i> {{ __('Servicio') }}
+                        </flux:navlist.item>
+                    @endcan
                     @can('ver clientes')
                         <flux:navlist.item icon="user" :href="route('customers')" :current="request()->routeIs('customers')" wire:navigate>{{ __('Cliente') }}</flux:navlist.item>
                     @endcan
@@ -63,6 +70,9 @@
                         </flux:navlist.item>
                     @endcan
 
+                        <flux:navlist.item icon="calendar-days" :href="route('purchases')" :current="request()->routeIs('purchases*')" wire:navigate>
+                            {{ __('Reservas y Recepción') }}
+                        </flux:navlist.item>
                 </flux:navlist.group>
 
                 <flux:navlist.group :heading="__('Reportes')" class="grid">

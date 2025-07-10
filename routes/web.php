@@ -24,6 +24,8 @@ use App\Exports\PurchasesExcelExport;
 use App\Exports\PurchasesPdfExport;
 use App\Exports\RoomsExcelExport;
 use App\Exports\RoomsPdfExport;
+use App\Exports\ServicesExcelExport;
+use App\Exports\ServicesPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -228,14 +230,29 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
     // Ruta para exportar Excel de usuarios
     Route::get('/rooms/exportar-excel', function (Request $request) {
         return Excel::download(new RoomsExcelExport($request), 'rooms.xlsx');
-    })->middleware('can:exportar usuarios')->name('rooms.exportar.excel');
+    })->middleware('can:exportar habitaciones')->name('rooms.exportar.excel');
 
     // Ruta para exportar PDF de usuarios
     Route::get('/rooms/exportar-pdf', function (Request $request) {
         return (new RoomsPdfExport($request))->download('rooms.pdf');
-    })->middleware('can:exportar usuarios')->name('rooms.exportar.pdf');
+    })->middleware('can:exportar habitaciones')->name('rooms.exportar.pdf');
 
     // Rutas existentes
-    Volt::route('rooms', 'rooms.lista')->middleware('can:ver usuarios')->name('rooms');
+    Volt::route('rooms', 'rooms.lista')->middleware('can:ver habitaciones')->name('rooms');
+});
+
+Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
+    // Ruta para exportar Excel de usuarios
+    Route::get('/services/exportar-excel', function () {
+        return Excel::download(new ServicesExcelExport, 'services.xlsx');
+    })->middleware('can:exportar servicios')->name('services.exportar.excel');
+
+    // Ruta para exportar PDF de usuarios
+    Route::get('/services/exportar-pdf', function () {
+        return (new ServicesPdfExport)->download('services.pdf');
+    })->middleware('can:exportar servicios')->name('services.exportar.pdf');
+
+    // Rutas existentes
+    Volt::route('services', 'services.lista')->middleware('can:ver servicios')->name('services');
 });
 require __DIR__.'/auth.php';
