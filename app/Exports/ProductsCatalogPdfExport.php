@@ -74,6 +74,9 @@ class ProductsCatalogPdfExport
                     'nombre' => $producto->nombre,
                     'descripcion' => $producto->descripcion,
                     'precio' => number_format($producto->precio, 2),
+                    'precio_promocion'  => $producto->precio_promocion !== null
+                        ? number_format($producto->precio_promocion, 2)
+                        : null,
                     'categoria' => $categorias[$producto->categoria_id] ?? '-',
                     'imagen_url' => $base64Imagen,
                 ]);

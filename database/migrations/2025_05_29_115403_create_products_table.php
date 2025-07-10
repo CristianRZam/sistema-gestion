@@ -12,25 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->string('codigo')->unique(); // Código único del producto
-            $table->string('nombre'); // Nombre del producto
-            $table->text('descripcion')->nullable(); // Descripción del producto
-            $table->decimal('precio', 10, 2); // Precio del producto
-            $table->integer('stock')->default(0); // Stock del producto
-            $table->unsignedBigInteger('categoria_id'); // Categoria del producto (Relación lógica)
+            $table->id()->comment('Identificador único del producto');
+            $table->string('codigo')->unique()->comment('Código único del producto');
+            $table->string('nombre')->comment('Nombre del producto');
+            $table->text('descripcion')->nullable()->comment('Descripción del producto');
+            $table->decimal('precio', 10, 2)->comment('Precio normal del producto');
+            $table->decimal('precio_promocion', 10, 2)->nullable()->comment('Precio de promoción del producto, si aplica');
+            $table->integer('stock')->default(0)->comment('Cantidad de unidades en stock');
+            $table->unsignedBigInteger('categoria_id')->comment('Identificador de la categoría del producto');
 
             // Auditoría
-            $table->date('auditoriaFechaCreacion')->nullable(); // LocalDate auditoriaFechaCreacion
-            $table->string('auditoriaCreadoPor')->nullable(); // String auditoriaCreadoPor
-            $table->date('auditoriaFechaModificacion')->nullable(); // LocalDate auditoriaFechaModificacion
-            $table->string('auditoriaModificadoPor')->nullable(); // String auditoriaModificadoPor
-            $table->date('auditoriaFechaEliminacion')->nullable(); // LocalDate auditoriaFechaEliminacion
-            $table->string('auditoriaEliminadoPor')->nullable(); // String auditoriaEliminadoPor
-            // $table->timestamps(); // Si deseas controlar fechas de creación/actualización
+            $table->date('auditoriaFechaCreacion')->nullable()->comment('Fecha de creación (auditoría)');
+            $table->unsignedBigInteger('auditoriaCreadoPor')->nullable()->comment('Usuario que creó el registro (auditoría)');
+            $table->date('auditoriaFechaModificacion')->nullable()->comment('Fecha de última modificación (auditoría)');
+            $table->unsignedBigInteger('auditoriaModificadoPor')->nullable()->comment('Usuario que modificó el registro (auditoría)');
+            $table->date('auditoriaFechaEliminacion')->nullable()->comment('Fecha de eliminación (auditoría)');
+            $table->unsignedBigInteger('auditoriaEliminadoPor')->nullable()->comment('Usuario que eliminó el registro (auditoría)');
+
+            // Si deseas controlar fechas automáticas, descomenta:
+            // $table->timestamps()->comment('Fechas de creación y actualización automáticas');
         });
     }
-
 
     /**
      * Reverse the migrations.

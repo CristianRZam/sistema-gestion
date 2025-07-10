@@ -22,6 +22,8 @@ use App\Exports\ParametersPdfExport;
 use App\Http\Controllers\ParametroController;
 use App\Exports\PurchasesExcelExport;
 use App\Exports\PurchasesPdfExport;
+use App\Exports\RoomsExcelExport;
+use App\Exports\RoomsPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -218,4 +220,22 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
 
 Route::get('/parameters/dowloader/{codigoParametro}', [ParametroController::class, 'descargar'])->middleware(['auth', EnsureUserIsActive::class])->name('parametros.descargar');
 
+
+
+
+
+Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
+    // Ruta para exportar Excel de usuarios
+    Route::get('/rooms/exportar-excel', function (Request $request) {
+        return Excel::download(new RoomsExcelExport($request), 'rooms.xlsx');
+    })->middleware('can:exportar usuarios')->name('rooms.exportar.excel');
+
+    // Ruta para exportar PDF de usuarios
+    Route::get('/rooms/exportar-pdf', function (Request $request) {
+        return (new RoomsPdfExport($request))->download('rooms.pdf');
+    })->middleware('can:exportar usuarios')->name('rooms.exportar.pdf');
+
+    // Rutas existentes
+    Volt::route('rooms', 'rooms.lista')->middleware('can:ver usuarios')->name('rooms');
+});
 require __DIR__.'/auth.php';

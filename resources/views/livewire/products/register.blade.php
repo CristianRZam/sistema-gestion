@@ -53,6 +53,16 @@
                     required
                 />
             </div>
+
+            <div class="w-1/2">
+                <flux:input
+                    wire:model.defer="precio_promocion"
+                    :label="__('Precio promoción (S/)')"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                />
+            </div>
             <div class="w-1/2">
                 <flux:select
                     wire:model.defer="categoria"

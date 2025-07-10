@@ -35,7 +35,7 @@
                     @can('ver productos')
                         <flux:navlist.item icon="cube" :href="route('products')" :current="request()->routeIs('products')" wire:navigate>{{ __('Producto') }}</flux:navlist.item>
                     @endcan
-                        <flux:navlist.item :href="route('products')" :current="request()->routeIs('products')" wire:navigate>
+                        <flux:navlist.item :href="route('rooms')" :current="request()->routeIs('rooms')" wire:navigate>
                             <i class="fa-solid fa-bed mr-2"></i> {{ __('Habitación') }}
                         </flux:navlist.item>
                     @can('ver clientes')

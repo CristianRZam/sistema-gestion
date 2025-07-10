@@ -57,6 +57,9 @@ class ProductsPdfExport extends BasePdfExport
                     'descripcion' => $producto->descripcion,
                     'stock' => $producto->stock,
                     'precio' => number_format($producto->precio, 2),
+                    'precio_promocion'  => $producto->precio_promocion !== null
+                        ? number_format($producto->precio_promocion, 2)
+                        : null,
                     'categoria' => $categorias[$producto->categoria_id] ?? '-',
                 ];
             })

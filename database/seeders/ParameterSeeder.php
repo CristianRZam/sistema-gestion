@@ -547,5 +547,177 @@ class ParameterSeeder extends Seeder
                 'auditoriaEliminadoPor' => null,
             ],
         ]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /***************************/
+
+        // TIPOS DE HABITACIONES
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_HABITACION',
+                'nombre' => 'Doble',
+                'nombreCorto' => 'Doble',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_HABITACION',
+                'nombre' => 'Individual',
+                'nombreCorto' => 'Individual',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_HABITACION',
+                'nombre' => 'Matrimonial',
+                'nombreCorto' => 'Matrimonial',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+
+        // TIPOS DE HABITACIONES
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'PISO_HABITACION',
+                'nombre' => 'Primero',
+                'nombreCorto' => '1º',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'PISO_HABITACION',
+                'nombre' => 'Segundo',
+                'nombreCorto' => '2º',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'PISO_HABITACION',
+                'nombre' => 'Tercero',
+                'nombreCorto' => '3º',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+        // ESTADOS DE HABITACION
+        Parameter::insert([
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Check-out pendiente',
+                'nombreCorto' => 'Check-out pendiente',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Disponible',
+                'nombreCorto' => 'Disponible',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Inhabilitada',
+                'nombreCorto' => 'Inhabilitada',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 4,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Limpieza',
+                'nombreCorto' => 'Limpieza',
+                'orden' => 4,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 5,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Mantenimiento',
+                'nombreCorto' => 'Mantenimiento',
+                'orden' => 5,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 6,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Ocupada',
+                'nombreCorto' => 'Ocupada',
+                'orden' => 6,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 7,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_HABITACION',
+                'nombre' => 'Reservada',
+                'nombreCorto' => 'Reservada',
+                'orden' => 7,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
     }
 }

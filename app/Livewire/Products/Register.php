@@ -19,6 +19,7 @@ class Register extends Component
     public $nombre;
     public $descripcion;
     public $precio;
+    public $precio_promocion;
     public $categoria;
     public $categoriasDisponibles = [];
 
@@ -28,8 +29,9 @@ class Register extends Component
     protected $rules = [
         'codigo' => 'required|string|max:50',
         'nombre' => 'required|string|max:255',
-        'descripcion' => 'nullable|string|max:1000',
+        'descripcion' => 'nullable|string',
         'precio' => 'required|numeric|min:0',
+        'precio_promocion'   => 'nullable|numeric|min:0',
         'categoria' => 'required|integer',
     ];
 
@@ -68,6 +70,7 @@ class Register extends Component
                 $this->nombre = $producto->nombre;
                 $this->descripcion = $producto->descripcion;
                 $this->precio = $producto->precio;
+                $this->precio_promocion = $producto->precio_promocion;
                 $this->categoria = $producto->categoria_id;
 
                 $imagen = $producto->imagenes()->where('es_principal', true)->first();
@@ -76,7 +79,7 @@ class Register extends Component
                 }
             }
         } else {
-            $this->reset(['codigo', 'nombre', 'descripcion', 'precio', 'categoria']);
+            $this->reset(['codigo', 'nombre', 'descripcion', 'precio', 'precio_promocion', 'categoria']);
             if ($codigo) {
                 $this->codigo = $codigo;
             }
@@ -136,6 +139,9 @@ class Register extends Component
                     'nombre' => $this->nombre,
                     'descripcion' => $this->descripcion,
                     'precio' => $this->precio,
+                    'precio_promocion' => $this->precio_promocion !== ''
+                        ? $this->precio_promocion
+                        : null,
                     'categoria_id' => $this->categoria,
                     'auditoriaFechaModificacion' => Carbon::now(),
                     'auditoriaModificadoPor' => $userId,
@@ -147,6 +153,9 @@ class Register extends Component
                 'nombre' => $this->nombre,
                 'descripcion' => $this->descripcion,
                 'precio' => $this->precio,
+                'precio_promocion' => $this->precio_promocion !== ''
+                    ? $this->precio_promocion
+                    : null,
                 'stock' => 0,
                 'categoria_id' => $this->categoria,
                 'auditoriaFechaCreacion' => Carbon::now(),

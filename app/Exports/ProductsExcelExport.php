@@ -11,7 +11,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 class ProductsExcelExport extends BaseExcelExport implements FromCollection
 {
     protected string $reportTitle = 'Reporte de Productos';
-    protected array $headings = ['Nº', 'Código', 'Nombre', 'Descripción', 'Stock', 'Precio (S/)', 'Categoría'];
+    protected array $headings = ['Nº', 'Código', 'Nombre', 'Descripción', 'Stock', 'Precio (S/)', 'Precio Promoción (S/)', 'Categoría'];
 
     protected Request $request;
 
@@ -53,12 +53,15 @@ class ProductsExcelExport extends BaseExcelExport implements FromCollection
         // Construir colección para exportar
         return $query->get()->values()->map(function ($producto, $index) use ($categorias) {
             return [
-                $index + 1, // Nº
-                $producto->codigo,
-                $producto->nombre,
-                $producto->descripcion,
-                $producto->stock,
-                number_format($producto->precio, 2), // Precio (S/)
+                $index + 1,                               // Nº
+                $producto->codigo,                        // Código
+                $producto->nombre,                        // Nombre
+                $producto->descripcion,                   // Descripción
+                $producto->stock,                         // Stock
+                number_format($producto->precio, 2),      // Precio (S/)
+                $producto->precio_promocion !== null      // Precio Promoción
+                    ? number_format($producto->precio_promocion, 2)
+                    : '',
                 $categorias[$producto->categoria_id] ?? '-', // Categoría lógica
             ];
         });

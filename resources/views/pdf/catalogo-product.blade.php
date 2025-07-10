@@ -171,9 +171,15 @@
                         <strong class="text-sm text-gray-800">{{ $producto['nombre'] }}</strong><br>
                         <span class="text-xs text-gray-600">{{ $producto['descripcion'] }}</span>
                     </td>
+                    <td style="text-align: center;">
+                        @if(!empty($producto['precio_promocion']))
+                            <span style="text-decoration: line-through; font-size: 10px; color: #b8b8b8">S/ {{ $producto['precio'] }}</span><br>
+                            <span>S/ {{ $producto['precio_promocion'] }}</span>
+                        @else
+                            S/ {{ $producto['precio'] }}
+                        @endif
+                    </td>
 
-
-                    <td style="text-align: center;">S/ {{ $producto['precio'] }}</td>
                     <td style="text-align: center;">
                         @if (!empty($producto['imagen_url']))
                             <img src="{{ $producto['imagen_url'] }}" alt="Imagen" width="50">

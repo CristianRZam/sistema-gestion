@@ -4,22 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Room extends Model
 {
     // Laravel no manejará automáticamente created_at y updated_at
     public $timestamps = false;
-    protected $table = 'products';
+    protected $table = 'rooms';
 
 
     // Campos que se pueden llenar en masa
     protected $fillable = [
-        'codigo',
-        'nombre',
-        'descripcion',
+        'numero',
+        'tipo_id',
+        'piso_id',
+        'capacidad',
         'precio',
         'precio_promocion',
-        'stock',
-        'categoria_id',
+        'estado_id',
+        'descripcion',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',
@@ -36,14 +37,22 @@ class Product extends Model
         'auditoriaFechaEliminacion',
     ];
 
-    public function imagenes()
+    public function tipo()
     {
-        return $this->hasMany(ProductImage::class, 'product_id');
+        return $this->belongsTo(Parameter::class, 'tipo_id', 'idParametro')
+            ->where('codigoParametro', 'TIPO_HABITACION');
     }
 
-    public function imagenPrincipal()
+    public function piso()
     {
-        return $this->hasOne(ProductImage::class)->where('es_principal', true);
+        return $this->belongsTo(Parameter::class, 'piso_id', 'idParametro')
+            ->where('codigoParametro', 'PISO_HABITACION');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(Parameter::class, 'estado_id', 'idParametro')
+            ->where('codigoParametro', 'ESTADO_HABITACION');
     }
 
 }
