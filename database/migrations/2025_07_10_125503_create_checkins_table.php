@@ -12,9 +12,9 @@ return new class extends Migration
         Schema::create('checkins', function (Blueprint $table) {
             $table->id()->comment('ID único del checkin');
 
-            $table->foreignId('reservation_id')
-                ->constrained('reservations')
-                ->comment('Reserva asociada al check-in');
+            $table->foreignId('reservation_room_id')
+                ->constrained('reservation_rooms')
+                ->comment('Detalle de reserva asociada al check-in');
 
             $table->dateTime('fecha_checkin')
                 ->comment('Fecha y hora en que se realizó el check-in');

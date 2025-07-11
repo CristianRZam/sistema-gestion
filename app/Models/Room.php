@@ -54,4 +54,9 @@ class Room extends Model
             ->where('codigoParametro', 'ESTADO_HABITACION');
     }
 
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class, 'reservation_rooms', 'room_id', 'reservation_id');
+    }
+
 }

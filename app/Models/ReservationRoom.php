@@ -4,19 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+class ReservationRoom extends Model
 {
     // Laravel no manejará automáticamente created_at y updated_at
     public $timestamps = false;
-    protected $table = 'payments';
+    protected $table = 'rooms';
+
 
     // Campos que se pueden llenar en masa
     protected $fillable = [
         'reservation_id',
-        'monto_pagado',
-        'metodo_pago_id',
-        'estado_pago_id',
-        'fecha_pago',
+        'room_id',
+        'cantidad_personas',
+        'precio',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',
@@ -24,11 +24,9 @@ class Payment extends Model
         'auditoriaFechaEliminacion',
         'auditoriaEliminadoPor',
     ];
-
-    // Convertir las fechas automáticamente a objetos Date
-    protected $dates = [
-        'auditoriaFechaCreacion',
-        'auditoriaFechaModificacion',
-        'auditoriaFechaEliminacion',
+    protected $casts = [
+        'auditoriaFechaCreacion' => 'datetime',
+        'auditoriaFechaModificacion' => 'datetime',
+        'auditoriaFechaEliminacion' => 'datetime',
     ];
 }

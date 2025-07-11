@@ -69,10 +69,11 @@
                             {{ __('Compras') }}
                         </flux:navlist.item>
                     @endcan
-
-                        <flux:navlist.item icon="calendar-days" :href="route('purchases')" :current="request()->routeIs('purchases*')" wire:navigate>
+                    @can('ver reservas')
+                        <flux:navlist.item icon="calendar-days" :href="route('reservations')" :current="request()->routeIs('reservations*')" wire:navigate>
                             {{ __('Reservas y Recepción') }}
                         </flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
 
                 <flux:navlist.group :heading="__('Reportes')" class="grid">

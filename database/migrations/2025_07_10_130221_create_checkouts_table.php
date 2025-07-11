@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id()->comment('ID único del checkout');
 
             $table->foreignId('reservation_id')
-                ->constrained('reservations')
-                ->comment('Reserva asociada al check-out');
+                ->constrained('reservation_rooms')
+                ->comment('Detalle reserva asociada al check-out');
 
             $table->dateTime('fecha_checkout')
                 ->comment('Fecha y hora en que se realizó el check-out');

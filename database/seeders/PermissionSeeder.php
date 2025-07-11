@@ -101,9 +101,18 @@ class PermissionSeeder extends Seeder
         Permission::create(['name' => 'editar habitacion']);
         Permission::create(['name' => 'exportar habitaciones']);
 
+        // SERVICIOS
         Permission::create(['name' => 'ver servicios']);
         Permission::create(['name' => 'crear servicio']);
         Permission::create(['name' => 'editar servicio']);
         Permission::create(['name' => 'exportar servicios']);
+
+        // RESERVAS
+        Permission::create(['name' => 'ver reservas']);
+        Permission::create(['name' => 'crear reserva']);
+        Permission::create(['name' => 'editar reserva']);
+        Permission::create(['name' => 'pagar reserva']);
+        Permission::create(['name' => 'eliminar reserva']);
+        Permission::create(['name' => 'exportar reservas']);
     }
 }

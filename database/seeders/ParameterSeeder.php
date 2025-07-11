@@ -719,5 +719,77 @@ class ParameterSeeder extends Seeder
                 'auditoriaCreadoPor' => $userId,
             ],
         ]);
+
+        // ESTADOS DE RESERVA
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_RESERVA',
+                'nombre' => 'Cancelado',
+                'nombreCorto' => 'Cancelado',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_RESERVA',
+                'nombre' => 'Confirmado',
+                'nombreCorto' => 'Confirmado',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_RESERVA',
+                'nombre' => 'En progreso',
+                'nombreCorto' => 'En progreso',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 4,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_RESERVA',
+                'nombre' => 'Finalizado',
+                'nombreCorto' => 'Finalizado',
+                'orden' => 4,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 5,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_RESERVA',
+                'nombre' => 'No show',
+                'nombreCorto' => 'No show',
+                'orden' => 5,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 6,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_RESERVA',
+                'nombre' => 'Reservado',
+                'nombreCorto' => 'Reservado',
+                'orden' => 6,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+
     }
 }

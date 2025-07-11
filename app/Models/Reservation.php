@@ -13,12 +13,14 @@ class Reservation extends Model
     // Campos que se pueden llenar en masa
     protected $fillable = [
         'customer_id',
-        'room_id',
+        'fecha_reserva',
         'fecha_inicio',
         'fecha_fin',
         'estado_id',
+        'monto_total',
         'pagado',
         'notas',
+        'user_id',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',
@@ -33,4 +35,26 @@ class Reservation extends Model
         'auditoriaFechaModificacion',
         'auditoriaFechaEliminacion',
     ];
+
+    public function estado()
+    {
+        return $this->belongsTo(Parameter::class, 'estado_id', 'idParametro')
+            ->where('codigoParametro', 'ESTADO_RESERVA');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'reservation_rooms', 'reservation_id', 'room_id');
+    }
+
 }

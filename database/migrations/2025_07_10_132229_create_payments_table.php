@@ -9,53 +9,45 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->id()->comment('Identificador único del pago');; // ID único del pago
+            $table->id()->comment('Identificador único del pago');
 
+            // Relación con la reserva
             $table->foreignId('reservation_id')
                 ->constrained('reservations')
+                ->onDelete('cascade')
                 ->comment('Reserva asociada al pago');
 
-            $table->decimal('monto_total', 10, 2)
-                ->comment('Monto total pagado por la reserva');
+            // Monto pagado en esta transacción
+            $table->decimal('monto_pagado', 10, 2)
+                ->comment('Monto pagado en esta transacción');
 
-            $table->unsignedBigInteger('metodo_pago_id')
-                ->comment('Método de pago utilizado (efectivo, tarjeta, etc). Se relaciona lógicamente con tabla de parámetros');
-
+            // Estado del pago (pagado, pendiente, anulado, etc.)
             $table->unsignedBigInteger('estado_pago_id')
-                ->comment('Estado del pago (pagado, pendiente, anulado, etc). Se relaciona lógicamente con tabla de parámetros');
+                ->comment('Estado del pago. Relación lógica con parámetros');
 
+            // Método de pago (efectivo, tarjeta, transferencia, etc.)
+            $table->unsignedBigInteger('metodo_pago_id')
+                ->comment('Método de pago. Relación lógica con parámetros');
+
+            // Fecha y hora en que se registró el pago
             $table->dateTime('fecha_pago')
-                ->comment('Fecha y hora en que se realizó el pago');
+                ->comment('Fecha y hora del pago');
 
+            // Usuario que registró el pago (opcional)
             $table->foreignId('user_id')
                 ->nullable()
                 ->constrained('users')
-                ->comment('Usuario del sistema que registró el pago (por ejemplo, recepcionista)');
+                ->comment('Usuario del sistema que registró el pago');
 
             // Auditoría
-            $table->dateTime('auditoriaFechaCreacion')
-                ->nullable()
-                ->comment('Fecha de creación del registro');
+            $table->dateTime('auditoriaFechaCreacion')->nullable()->comment('Fecha de creación del registro');
+            $table->unsignedBigInteger('auditoriaCreadoPor')->nullable()->comment('Usuario que creó el registro');
 
-            $table->unsignedBigInteger('auditoriaCreadoPor')
-                ->nullable()
-                ->comment('Usuario que creó el registro');
+            $table->dateTime('auditoriaFechaModificacion')->nullable()->comment('Fecha de la última modificación');
+            $table->unsignedBigInteger('auditoriaModificadoPor')->nullable()->comment('Usuario que modificó el registro');
 
-            $table->dateTime('auditoriaFechaModificacion')
-                ->nullable()
-                ->comment('Fecha de la última modificación');
-
-            $table->unsignedBigInteger('auditoriaModificadoPor')
-                ->nullable()
-                ->comment('Usuario que modificó el registro');
-
-            $table->dateTime('auditoriaFechaEliminacion')
-                ->nullable()
-                ->comment('Fecha de eliminación lógica');
-
-            $table->unsignedBigInteger('auditoriaEliminadoPor')
-                ->nullable()
-                ->comment('Usuario que eliminó el registro');
+            $table->dateTime('auditoriaFechaEliminacion')->nullable()->comment('Fecha de eliminación lógica');
+            $table->unsignedBigInteger('auditoriaEliminadoPor')->nullable()->comment('Usuario que eliminó el registro');
         });
     }
 
