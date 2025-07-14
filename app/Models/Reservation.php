@@ -14,8 +14,6 @@ class Reservation extends Model
     protected $fillable = [
         'customer_id',
         'fecha_reserva',
-        'fecha_inicio',
-        'fecha_fin',
         'estado_id',
         'monto_total',
         'pagado',

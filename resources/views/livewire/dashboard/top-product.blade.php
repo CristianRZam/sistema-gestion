@@ -17,7 +17,7 @@
 
             // ✅ Crea el nuevo gráfico
             window.topProductosChart = new Chart(ctx, {
-                type: 'doughnut',
+                type: 'pie',
                 data: {
                     labels: labels,
                     datasets: [{

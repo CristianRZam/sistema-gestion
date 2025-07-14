@@ -55,10 +55,15 @@
 
 
     <!-- Habitaciones del piso activo -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
         @forelse($habitaciones as $habitacion)
-            <div class="border rounded-xl p-4 shadow-sm bg-white dark:bg-zinc-800 transition hover:shadow-md h-full flex flex-col justify-between">
-                <!-- Parte superior: Número y Tipo -->
+            <div
+                class="border rounded-xl p-4 shadow-sm bg-white dark:bg-zinc-800 transition hover:shadow-md h-full flex flex-col justify-between cursor-pointer
+        {{ $habitacion->estado_id === 1 ? 'hover:ring-2 hover:ring-blue-500' : 'opacity-60 pointer-events-none' }}"
+                wire:click="{{ $habitacion->estado_id === 1 ? "toggleSeleccion({$habitacion->id})" : '' }}"
+                style="{{ in_array($habitacion->id, $habitacionesSeleccionadas) ? 'border: 2px solid #2563eb;' : '' }}"
+            >
+                <!-- Parte superior -->
                 <div class="flex justify-between items-center mb-2">
                     <h3 class="text-lg font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                         <i class="fa-solid fa-door-open"></i>
@@ -70,13 +75,13 @@
                     </p>
                 </div>
 
-                <!-- Parte inferior: Estado y Precio -->
+                <!-- Parte inferior -->
                 <div class="flex justify-between items-center mt-4">
                     <p class="text-sm flex items-center gap-2">
                         <i class="fas {{ estadoIcono($habitacion->estado_id ?? '') }} {{ estadoColor($habitacion->estado_id ?? '') }}"></i>
                         <span class="font-bold text-gray-700 dark:text-gray-300">
-                        {{ $habitacion->estado_nombre ?? '-' }}
-                    </span>
+                    {{ $habitacion->estado_nombre ?? '-' }}
+                </span>
                     </p>
                     <p class="text-sm flex items-center gap-2 text-gray-700 dark:text-gray-200 font-semibold">
                         <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -89,8 +94,51 @@
                 No hay habitaciones registradas en este piso.
             </p>
         @endforelse
+
     </div>
 
+    <!-- Botón flotante: Continuar reserva -->
+    @if (!empty($habitacionesSeleccionadas))
+        <div class="fixed bottom-6 right-6 z-50">
+            <flux:modal.trigger name="confirm-continue-reservation">
+                <button
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full shadow-lg transition-all text-base font-semibold flex items-center gap-2"
+                >
+                    <i class="fa-solid fa-arrow-right"></i>
+                    Continuar reserva
+                </button>
+            </flux:modal.trigger>
+        </div>
+    @endif
 
+    <flux:modal name="confirm-continue-reservation" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
+        <form wire:submit.prevent="continuarReserva" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('¿Deseas confirmar reserva de habitaciones?') }}</flux:heading>
+                <flux:subheading>
+                    {{ __('Estás a punto de continuar con la reserva de las habitaciones seleccionadas. ¿Deseas confirmar esta acción?') }}
+                </flux:subheading>
+            </div>
+
+            <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                <flux:modal.close>
+                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                </flux:modal.close>
+
+                <flux:modal.close>
+                    <flux:button variant="danger" type="submit">{{ __('Confirmar') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </form>
+    </flux:modal>
 
 </div>
+<script>
+    if (!window._errorSelectorReservation) {
+        window._errorSelectorReservation = true;
+
+        window.addEventListener('errorSelectorReservation', (event) => {
+            toastr.error(event.detail[0].mensaje);
+        });
+    }
+</script>

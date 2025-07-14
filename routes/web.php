@@ -277,15 +277,11 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
         ->middleware('can:crear reserva')
         ->name('reservations.selector');
 
-    // Crear venta
-    Volt::route('reservations/add', 'sales.register')
-        ->middleware('can:crear venta')
-        ->name('reservations.register');
 
-    // Editar venta
-    Volt::route('reservations/edit/{id}', 'sales.register')
+    // registrar  reserva
+    Volt::route('reservations/add/{id}', 'reservations.register')
         ->middleware('can:editar venta')
-        ->name('reservations.edit');
+        ->name('reservations.register');
 
     // Registrar pago
     Volt::route('reservations/pay/{venta}', 'sales.pay')

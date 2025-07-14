@@ -11,30 +11,24 @@ return new class extends Migration
         Schema::create('reservations', function (Blueprint $table) {
             $table->id()->comment('ID único de la reserva');
 
-            // Relaciones
             $table->foreignId('customer_id')
+                ->nullable()
                 ->constrained('customers')
                 ->onDelete('cascade')
                 ->comment('Cliente que realiza la reserva');
 
-            $table->dateTime('fecha_reserva')->comment('Fecha y hora de la reserva');
-            $table->dateTime('fecha_inicio')->comment('Fecha y hora de inicio de la reserva');
-            $table->dateTime('fecha_fin')->comment('Fecha y hora de fin de la reserva');
 
-            // Estado de la reserva (reservado, cancelado, no show, etc.)
-            $table->unsignedBigInteger('estado_id')->comment('Estado lógico de la reserva (relación con parámetros)');
+            $table->dateTime('fecha_reserva')->nullable()->comment('Fecha y hora en que se registró la reserva');
 
-            $table->decimal('monto_total', 10, 2)->default(0)
-                ->comment('Monto total estimado de la reserva (precio de habitaciones, servicios, etc.)');
+            $table->unsignedBigInteger('estado_id')->comment('Estado lógico de la reserva (reservado, cancelado, etc.)');
 
-            // Información de pago
-            $table->boolean('pagado')->default(false)->comment('Indica si la reserva ha sido pagada');
+            $table->decimal('monto_total', 10, 2)->default(0)->comment('Monto total estimado');
 
-            // Notas u observaciones adicionales
-            $table->text('notas')->nullable()->comment('Notas adicionales sobre la reserva');
+            $table->boolean('pagado')->default(false)->comment('Indica si ha sido pagada');
 
-            $table->foreignId('user_id')
-                ->nullable()->comment('Usuario que registró la reserva');
+            $table->text('notas')->nullable()->comment('Notas adicionales');
+
+            $table->foreignId('user_id')->nullable()->comment('Usuario que registró');
 
             // Auditoría
             $table->dateTime('auditoriaFechaCreacion')->nullable()->comment('Fecha de creación del registro');

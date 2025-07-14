@@ -3,9 +3,12 @@
 namespace App\Livewire\Reservations;
 
 use App\Models\Reservation;
+use App\Models\ReservationRoom;
 use App\Models\Room;
 use App\Models\Parameter;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class RoomSelector extends Component
@@ -14,6 +17,17 @@ class RoomSelector extends Component
     public $fechaDesdeFiltro = '';
     public $fechaHastaFiltro = '';
     public $pisoActivo;
+    public $habitacionesSeleccionadas = [];
+
+
+    public function toggleSeleccion($habitacionId)
+    {
+        if (in_array($habitacionId, $this->habitacionesSeleccionadas)) {
+            $this->habitacionesSeleccionadas = array_diff($this->habitacionesSeleccionadas, [$habitacionId]);
+        } else {
+            $this->habitacionesSeleccionadas[] = $habitacionId;
+        }
+    }
 
     protected $listeners = [
         'filtrosActualizados' => 'actualizarFiltros',
@@ -41,6 +55,62 @@ class RoomSelector extends Component
     {
         $this->pisoActivo = $id;
     }
+
+    public function continuarReserva()
+    {
+        if (empty($this->habitacionesSeleccionadas)) {
+            $this->dispatch('errorSelectorReservation', ['mensaje' => "No hay habitaciones seleccionadas."]);
+            return;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $userId = Auth::id();
+            $now = Carbon::now();
+
+            // 1. Crear la reserva
+            $reserva = Reservation::create([
+                'estado_id' => 1, // Primer estado de borrador
+                'user_id' => $userId,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ]);
+
+            // 2. Convertir fechas
+            $fechaInicio = Carbon::parse($this->fechaDesdeFiltro)->startOfDay();
+            $fechaFin = Carbon::parse($this->fechaHastaFiltro)->endOfDay();
+
+            // 3. Insertar cada habitación seleccionada en reservation_rooms
+            foreach ($this->habitacionesSeleccionadas as $roomId) {
+                $habitacion = Room::findOrFail($roomId);
+
+                $precio = $habitacion->precio_promocion ?? $habitacion->precio;
+
+                ReservationRoom::create([
+                    'reservation_id' => $reserva->id,
+                    'room_id' => $habitacion->id,
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin,
+                    'cantidad_personas' => 1, // Puedes cambiarlo si hay una variable para personas
+                    'precio' => $precio,
+                    'auditoriaFechaCreacion' => $now,
+                    'auditoriaCreadoPor' => $userId,
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('reservations.register', ['id' => $reserva->id]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            $this->dispatch('errorSelectorReservation', ['mensaje' => 'Error al crear la reserva: ' . $e->getMessage()]);
+        }
+    }
+
+
     public function render()
     {
         $pisos = Parameter::where('codigoParametro', 'PISO_HABITACION')->orderBy('orden')->get();
@@ -56,8 +126,11 @@ class RoomSelector extends Component
                 ->get()
                 ->map(function ($habitacion) use ($desde, $hasta) {
 
-                    $reserva = Reservation::whereNull('auditoriaFechaEliminacion')
-                        ->whereHas('rooms', fn($q) => $q->where('room_id', $habitacion->id))
+                    // Buscar si hay una reserva activa en reservation_rooms
+                    $reservaRoom = ReservationRoom::whereHas('reservation', function ($q) {
+                        $q->whereNull('auditoriaFechaEliminacion');
+                    })
+                        ->where('room_id', $habitacion->id)
                         ->where(function ($query) use ($desde, $hasta) {
                             $query
                                 ->whereBetween('fecha_inicio', [$desde, $hasta])
@@ -70,21 +143,18 @@ class RoomSelector extends Component
                         ->orderBy('fecha_inicio')
                         ->first();
 
-                    // Si hay una reserva activa para esta habitación en ese rango
+                    // Evaluar estado de la habitación según su estado_id y la reserva encontrada
                     if ($habitacion->estado_id == 3) {
-                        // Inhabilitada siempre tiene prioridad
                         $habitacion->estado_nombre = 'Inhabilitada';
-                    } elseif ($reserva) {
-                        $habitacion->estado_id = $reserva->estado_id;
-                        $habitacion->estado_nombre = Parameter::find($reserva->estado_id)?->nombre ?? 'Desconocido';
+                    } elseif ($reservaRoom) {
+                        $habitacion->estado_id = $reservaRoom->reservation->estado_id;
+                        $habitacion->estado_nombre = Parameter::find($reservaRoom->reservation->estado_id)?->nombre ?? 'Desconocido';
                     } elseif ($habitacion->estado_id == 6) {
                         $habitacion->estado_nombre = 'Ocupada';
                     } else {
                         $habitacion->estado_id = 1;
                         $habitacion->estado_nombre = 'Disponible';
                     }
-
-
 
                     return $habitacion;
                 });
@@ -95,5 +165,6 @@ class RoomSelector extends Component
             'habitaciones' => $habitaciones,
         ]);
     }
+
 
 }

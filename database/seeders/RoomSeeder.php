@@ -45,7 +45,7 @@ class RoomSeeder extends Seeder
                 'capacidad' => fake()->numberBetween(1, 4),
                 'precio' => fake()->randomFloat(2, 80, 300),
                 'precio_promocion' => fake()->optional(0.5)->randomFloat(2, 60, 250),
-                'estado_id' => fake()->randomElement($estados),
+                'estado_id' => fake()->randomElement([1, 3]),
                 'descripcion' => fake()->optional()->sentence(8),
 
                 'auditoriaFechaCreacion' => $now,

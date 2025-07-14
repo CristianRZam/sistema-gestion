@@ -8,7 +8,7 @@ class ReservationRoom extends Model
 {
     // Laravel no manejará automáticamente created_at y updated_at
     public $timestamps = false;
-    protected $table = 'rooms';
+    protected $table = 'reservation_rooms';
 
 
     // Campos que se pueden llenar en masa
@@ -16,6 +16,8 @@ class ReservationRoom extends Model
         'reservation_id',
         'room_id',
         'cantidad_personas',
+        'fecha_inicio',
+        'fecha_fin',
         'precio',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
@@ -29,4 +31,16 @@ class ReservationRoom extends Model
         'auditoriaFechaModificacion' => 'datetime',
         'auditoriaFechaEliminacion' => 'datetime',
     ];
+
+    // app/Models/ReservationRoom.php
+    public function reservation()
+    {
+        return $this->belongsTo(Reservation::class);
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
+    }
+
 }

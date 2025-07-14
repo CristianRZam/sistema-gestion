@@ -33,6 +33,21 @@ class Header extends Component
     public function mount()
     {
         $this->updatedFiltroFecha($this->filtroFecha); // establece fechas iniciales y carga datos
+        $this->capitalRealCompraStock = PurchaseDetail::whereNull('auditoriaFechaEliminacion')
+            ->whereHas('product', fn ($q) => $q->whereNull('auditoriaFechaEliminacion'))
+            ->whereHas('purchase', function ($query) {
+                $query->whereNull('auditoriaFechaEliminacion')
+                    ->whereIn('estado_compra_id', [3]);
+            })
+            ->get()
+            ->sum(fn ($detalle) => $detalle->stock_restante * $detalle->precio_unitario);
+
+
+
+
+        $this->valorVentaStock = Product::whereNull('auditoriaFechaEliminacion')
+            ->get()
+            ->sum(fn ($producto) => $producto->stock * $producto->precio);
     }
 
     public function updated($propertyName)
@@ -227,24 +242,6 @@ class Header extends Component
                 $this->comprasHoy += max(0, $cantidad) * $precio;
             }
         }
-
-
-
-        $this->capitalRealCompraStock = PurchaseDetail::whereNull('auditoriaFechaEliminacion')
-            ->whereHas('product', fn ($q) => $q->whereNull('auditoriaFechaEliminacion'))
-            ->whereHas('purchase', function ($query) {
-                $query->whereNull('auditoriaFechaEliminacion')
-                    ->whereIn('estado_compra_id', [2, 3]);
-            })
-            ->get()
-            ->sum(fn ($detalle) => $detalle->stock_restante * $detalle->precio_unitario);
-
-
-
-
-        $this->valorVentaStock = Product::whereNull('auditoriaFechaEliminacion')
-            ->get()
-            ->sum(fn ($producto) => $producto->stock * $producto->precio);
 
 
         $this->dispatch('rangoFechasActualizado', [

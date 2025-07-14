@@ -70,7 +70,7 @@
                     <tr>
                         <td class="border p-2 text-center">{{ $loop->iteration + ($ventas->currentPage() - 1) * $ventas->perPage() }}</td>
                         <td class="border p-2 text-center">
-                            {{ $venta->fecha_venta ? $venta->fecha_venta->format('d/m/Y H:m') : '' }}
+                            {{ $venta->fecha_venta ? $venta->fecha_venta->format('d/m/Y H:m:s') : '' }}
                         </td>
                         <td class="border p-2">{{ $venta->customer?->nombre ?? '-' }}</td>
                         <td class="border p-2">{{ $venta->vendedor?->name ?? '-' }}</td>
