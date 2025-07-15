@@ -58,54 +58,215 @@
     @livewire('customers.register')
 
 
-    <!-- Detalles de habitaciones reservadas -->
     <div class="mt-8">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Habitaciones seleccionadas</h2>
 
-        <div class="overflow-auto rounded-md border border-gray-300 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                <thead class="bg-gray-100 dark:bg-zinc-800">
+        <div class="overflow-auto rounded-md border border-gray-200 dark:border-gray-700">
+            <table class="min-w-full table-auto border-collapse text-sm">
+                <thead>
                 <tr>
-                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-300">N°</th>
-                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Habitación</th>
-                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Fecha inicio</th>
-                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Fecha fin</th>
-                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Personas</th>
-                    <th class="px-4 py-2 text-left font-medium text-gray-600 dark:text-gray-300">Precio</th>
+                    <th class="border p-2">#</th>
+                    <th class="border p-2">Habitación</th>
+                    <th class="border p-2">Fecha inicio</th>
+                    <th class="border p-2">Fecha fin</th>
+                    <th class="border p-2">Personas</th>
+                    <th class="border p-2">Precio x día</th>
+                    <th class="border p-2">Subtotal</th>
+                    <th class="border p-2">Acciones</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                <tbody>
+                @php $total = 0; @endphp
+
                 @foreach($detallesHabitaciones as $index => $detalle)
+                    @php
+                        $subtotal = $detalle['subtotal'] ?? 0;
+                        $total += $subtotal;
+                    @endphp
+
+                        <!-- Fila principal -->
                     <tr>
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-300">{{ $index + 1 }}</td>
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-300">
-                            {{ $detalle['room']['numero'] ?? '---' }}
+                        <td class="border p-2 text-center">{{ $index + 1 }}</td>
+                        <td class="border p-2 text-center">{{ $detalle['room']['numero'] ?? '---' }}</td>
+
+                        @php
+                            $fechaInicio = \Carbon\Carbon::parse($detalle['fecha_inicio']);
+                            $hoy = \Carbon\Carbon::today();
+                            $deshabilitarFechaInicio = $fechaInicio->lt($hoy);
+                        @endphp
+
+                        <td class="border p-2 text-center">
+                            <input
+                                type="date"
+                                min="{{ date('Y-m-d') }}"
+                                wire:model.live="detallesHabitaciones.{{ $index }}.fecha_inicio"
+                                class="form-input w-full text-sm"
+                                @if($deshabilitarFechaInicio) disabled @endif
+                            />
                         </td>
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-300">
-                            {{ \Carbon\Carbon::parse($detalle['fecha_inicio'])->format('d/m/Y H:i') }}
+
+
+                        <td class="border p-2 text-center">
+                            <input
+                                type="date"
+                                min="{{ date('Y-m-d') }}"
+                                wire:model.live="detallesHabitaciones.{{ $index }}.fecha_fin"
+                                class="form-input w-full text-sm"
+                            />
                         </td>
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-300">
-                            {{ \Carbon\Carbon::parse($detalle['fecha_fin'])->format('d/m/Y H:i') }}
+
+                        <td class="border p-2 text-center">
+                            <input type="number" min="1"
+                                   wire:model.defer="detallesHabitaciones.{{ $index }}.cantidad_personas"
+                                   class="form-input w-16 text-sm text-center" />
                         </td>
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-300">
-                            {{ $detalle['cantidad_personas'] }}
+
+                        <td class="border p-2 text-center">
+                            S/ {{ number_format($detalle['precio'] ?? 0, 2) }}
                         </td>
-                        <td class="px-4 py-2 text-gray-700 dark:text-gray-300">
-                            S/ {{ number_format($detalle['precio'], 2) }}
+
+                        <td class="border p-2 text-center font-semibold text-green-700 dark:text-green-400">
+                            S/ {{ number_format($subtotal, 2) }}
+                        </td>
+
+                        <td class="border p-2 text-center">
+                            <div class="flex flex-col items-center gap-2">
+                                <div class="flex gap-3">
+                                    <flux:modal.trigger name="confirm-update-detail">
+                                        <button wire:click.prevent="abrirConfirmacionDetalle({{ $detalle['id'] }})" class="btn-nuevo-table" title="Guardar cambios">
+                                            <i class="fa-regular fa-floppy-disk text-xl"></i>
+                                        </button>
+                                    </flux:modal.trigger>
+
+                                    <button wire:click="eliminarDetalle({{ $detalle['id'] }})" class="btn-delete-table" title="Eliminar fila">
+                                        <i class="fa-regular fa-trash-can text-xl"></i>
+                                    </button>
+                                </div>
+
+                                <div class="flex gap-2 mt-1">
+                                    <button wire:click="checkIn({{ $detalle['id'] }})" class="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded cursor-pointer">
+                                        <i class="fa-solid fa-door-open mr-1"></i> Check-in
+                                    </button>
+                                    <button wire:click="checkOut({{ $detalle['id'] }})" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded cursor-pointer">
+                                        <i class="fa-solid fa-door-closed mr-1"></i> Check-out
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Fila expandible -->
+                    <tr>
+                        <td colspan="8" class="border px-4 py-3 bg-gray-50 dark:bg-zinc-900">
+                            <div class="flex justify-between items-center mb-3">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Detalles de habitación {{ $detalle['room']['numero'] ?? '---' }}
+                            </span>
+                                <button wire:click="toggleServicios({{ $detalle['id'] }})" class="btn-nuevo">
+                                    <i class="fa-solid fa-chevron-{{ $mostrarServicios[$detalle['id']] ?? false ? 'up' : 'down' }} mr-1"></i>
+                                    {{ $mostrarServicios[$detalle['id']] ?? false ? 'Ocultar servicios y productos' : 'Ver servicios y productos' }}
+                                </button>
+                            </div>
+
+                            @if($mostrarServicios[$detalle['id']] ?? false)
+                                <div class="space-y-4">
+                                    <!-- Servicios -->
+                                    <div>
+                                        <h4 class="font-semibold text-gray-600 dark:text-gray-400 mb-1">Servicios:</h4>
+                                        <ul class="list-disc ml-5 text-sm text-gray-700 dark:text-gray-300">
+                                            @forelse($detalle['servicios'] ?? [] as $servicio)
+                                                <li>{{ $servicio['nombre'] }} - S/ {{ number_format($servicio['precio'], 2) }}</li>
+                                            @empty
+                                                <li>No hay servicios registrados</li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+
+                                    <!-- Productos -->
+                                    <div>
+                                        <h4 class="font-semibold text-gray-600 dark:text-gray-400 mb-1">Productos:</h4>
+                                        <ul class="list-disc ml-5 text-sm text-gray-700 dark:text-gray-300">
+                                            @forelse($detalle['productos'] ?? [] as $producto)
+                                                <li>{{ $producto['nombre'] }} (x{{ $producto['cantidad'] }}) - S/ {{ number_format($producto['total'], 2) }}</li>
+                                            @empty
+                                                <li>No hay productos registrados</li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+
+                                    <div class="flex justify-end gap-3">
+                                        <button wire:click="agregarServicio({{ $detalle['id'] }})" class="btn-nuevo">
+                                            <i class="fa-solid fa-plus-circle mr-1"></i> Agregar servicio
+                                        </button>
+                                        <button wire:click="agregarProducto({{ $detalle['id'] }})" class="btn-nuevo">
+                                            <i class="fa-solid fa-box mr-1"></i> Agregar producto
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
 
                 @if(empty($detallesHabitaciones))
                     <tr>
-                        <td colspan="6" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                            No hay habitaciones registradas en esta reserva.
-                        </td>
+                        <td colspan="8" class="border p-2 text-center">No hay habitaciones registradas en esta reserva.</td>
                     </tr>
                 @endif
                 </tbody>
+
+                @if(!empty($detallesHabitaciones))
+                    <tfoot class="bg-gray-100 dark:bg-zinc-800 font-semibold">
+                    <tr>
+                        <td colspan="6" class="border p-2 text-center">Total:</td>
+                        <td class="border p-2 text-center text-green-700 dark:text-green-400">
+                            S/ {{ number_format($total, 2) }}
+                        </td>
+                        <td class="border p-2 text-center"></td>
+                    </tr>
+                    </tfoot>
+                @endif
             </table>
         </div>
     </div>
 
+    <flux:modal name="confirm-update-detail" focusable class="max-w-lg">
+        <form wire:submit.prevent="guardarDetalle" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('¿Deseas modificar los detalles de esta reserva?') }}</flux:heading>
+                <flux:subheading>
+                    {{ __('Esta acción actualizará la información de la habitación seleccionada. ¿Estás seguro de continuar?') }}
+                </flux:subheading>
+            </div>
+
+            <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                <flux:modal.close>
+                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                </flux:modal.close>
+
+                <flux:modal.close>
+                    <flux:button variant="danger" type="submit">{{ __('Continuar') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        </form>
+    </flux:modal>
+
+
 </div>
+<script>
+    if (!window._errorRegisterReservation) {
+        window._errorRegisterReservation = true;
+
+        window.addEventListener('errorRegisterReservation', (event) => {
+            toastr.error(event.detail[0].mensaje);
+        });
+    }
+
+    if (!window._successRegisterReservation) {
+        window._successRegisterReservation = true;
+
+        window.addEventListener('successRegisterReservation', (event) => {
+            toastr.success(event.detail[0].mensaje);
+        });
+    }
+</script>

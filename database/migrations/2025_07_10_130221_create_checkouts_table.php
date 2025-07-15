@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('checkouts', function (Blueprint $table) {
             $table->id()->comment('ID único del checkout');
 
-            $table->foreignId('reservation_id')
+            $table->foreignId('reservation__room_id')
                 ->constrained('reservation_rooms')
                 ->comment('Detalle reserva asociada al check-out');
 

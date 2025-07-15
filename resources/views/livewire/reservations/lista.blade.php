@@ -80,7 +80,7 @@
                         <td class="border p-2 text-center">
                             @php
                                 $estado = $reserva->estado?->nombre ?? 'Desconocido';
-                                $color = match($venta->estado_id) {
+                                $color = match($reserva->estado_id) {
                                     1 => 'bg-yellow-500 text-white', // Pendiente
                                     2 => 'bg-green-600 text-white',  // Pagada
                                     3 => 'bg-red-600 text-white',    // Anulada
@@ -99,7 +99,7 @@
                             @if ($reserva->estado_id === 1)
                                 {{-- Venta pendiente --}}
                                 @can('ver venta')
-                                    <a href="{{ route('reservations.pay', $reserva->id) }}"
+                                    <a href="{{ route('reservations.register', $reserva->id) }}"
                                        class="border border-yellow-500 text-yellow-500 px-3 py-1 rounded hover:bg-yellow-500 hover:text-white cursor-pointer">
                                         Continuar
                                     </a>
