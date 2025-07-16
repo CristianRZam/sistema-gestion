@@ -12,7 +12,7 @@ class Checkin extends Model
 
     // Campos que se pueden llenar en masa
     protected $fillable = [
-        'reservation_id',
+        'reservation_room_id',
         'fecha_checkin',
         'user_id',
         'auditoriaFechaCreacion',

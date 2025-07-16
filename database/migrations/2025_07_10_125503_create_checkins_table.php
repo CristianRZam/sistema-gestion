@@ -21,7 +21,6 @@ return new class extends Migration
 
             $table->foreignId('user_id')
                 ->nullable()
-                ->constrained('users')
                 ->comment('Usuario que registró el check-in (puede ser recepcionista)');
 
             // Auditoría

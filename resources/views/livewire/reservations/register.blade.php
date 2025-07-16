@@ -132,26 +132,83 @@
                         <td class="border p-2 text-center">
                             <div class="flex flex-col items-center gap-2">
                                 <div class="flex gap-3">
-                                    <flux:modal.trigger name="confirm-update-detail">
+                                    <!-- Botón guardar -->
+                                    <flux:modal.trigger name="confirm-update-detail-{{ $detalle['id'] }}">
                                         <button wire:click.prevent="abrirConfirmacionDetalle({{ $detalle['id'] }})" class="btn-nuevo-table" title="Guardar cambios">
                                             <i class="fa-regular fa-floppy-disk text-xl"></i>
                                         </button>
                                     </flux:modal.trigger>
 
-                                    <button wire:click="eliminarDetalle({{ $detalle['id'] }})" class="btn-delete-table" title="Eliminar fila">
-                                        <i class="fa-regular fa-trash-can text-xl"></i>
-                                    </button>
+                                    <!-- Botón eliminar -->
+                                    <flux:modal.trigger name="confirm-delete-detail-{{ $detalle['id'] }}">
+                                        <button wire:click.prevent="abrirConfirmacionEliminacion({{ $detalle['id'] }})" class="btn-delete-table" title="Eliminar fila">
+                                            <i class="fa-regular fa-trash-can text-xl"></i>
+                                        </button>
+                                    </flux:modal.trigger>
                                 </div>
 
                                 <div class="flex gap-2 mt-1">
-                                    <button wire:click="checkIn({{ $detalle['id'] }})" class="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded cursor-pointer">
-                                        <i class="fa-solid fa-door-open mr-1"></i> Check-in
-                                    </button>
-                                    <button wire:click="checkOut({{ $detalle['id'] }})" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded cursor-pointer">
-                                        <i class="fa-solid fa-door-closed mr-1"></i> Check-out
-                                    </button>
+                                    <!-- Botón check-in -->
+                                    <flux:modal.trigger name="register-check">
+                                        <button
+                                            x-on:click.prevent="$dispatch('open-modal-check', { id: {{ $detalle['id'] }}, tipo: 'check-in' })"
+                                            class="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded cursor-pointer"
+                                        >
+                                            <i class="fa-solid fa-door-open mr-1"></i> Check-in
+                                        </button>
+                                    </flux:modal.trigger>
+
+                                    <!-- Botón check-out -->
+                                    <flux:modal.trigger name="register-check">
+                                        <button
+                                            x-on:click.prevent="$dispatch('open-modal-check', { id: {{ $detalle['id'] }}, tipo: 'check-out' })"
+                                            class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded cursor-pointer"
+                                        >
+                                            <i class="fa-solid fa-door-closed mr-1"></i> Check-out
+                                        </button>
+                                    </flux:modal.trigger>
                                 </div>
                             </div>
+
+                            <!-- Modal confirmar guardar -->
+                            <flux:modal name="confirm-update-detail-{{ $detalle['id'] }}" focusable class="max-w-lg">
+                                <form wire:submit.prevent="guardarDetalle" class="space-y-6">
+                                    <div>
+                                        <flux:heading size="lg">{{ __('¿Deseas modificar los detalles de esta reserva?') }}</flux:heading>
+                                        <flux:subheading>
+                                            {{ __('Esta acción actualizará la información de la habitación seleccionada. ¿Estás seguro de continuar?') }}
+                                        </flux:subheading>
+                                    </div>
+                                    <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                                        <flux:modal.close>
+                                            <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                                        </flux:modal.close>
+                                        <flux:modal.close>
+                                            <flux:button variant="danger" type="submit">{{ __('Continuar') }}</flux:button>
+                                        </flux:modal.close>
+                                    </div>
+                                </form>
+                            </flux:modal>
+
+                            <!-- Modal confirmar eliminar -->
+                            <flux:modal name="confirm-delete-detail-{{ $detalle['id'] }}" focusable class="max-w-lg">
+                                <form wire:submit.prevent="confirmarEliminarDetalle" class="space-y-6">
+                                    <div>
+                                        <flux:heading size="lg">{{ __('¿Deseas eliminar este detalle?') }}</flux:heading>
+                                        <flux:subheading>
+                                            {{ __('Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar este detalle de la reserva?') }}
+                                        </flux:subheading>
+                                    </div>
+                                    <div class="flex justify-end space-x-2 rtl:space-x-reverse">
+                                        <flux:modal.close>
+                                            <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
+                                        </flux:modal.close>
+                                        <flux:modal.close>
+                                            <flux:button variant="danger" type="submit">{{ __('Eliminar') }}</flux:button>
+                                        </flux:modal.close>
+                                    </div>
+                                </form>
+                            </flux:modal>
                         </td>
                     </tr>
 
@@ -230,27 +287,7 @@
         </div>
     </div>
 
-    <flux:modal name="confirm-update-detail" focusable class="max-w-lg">
-        <form wire:submit.prevent="guardarDetalle" class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('¿Deseas modificar los detalles de esta reserva?') }}</flux:heading>
-                <flux:subheading>
-                    {{ __('Esta acción actualizará la información de la habitación seleccionada. ¿Estás seguro de continuar?') }}
-                </flux:subheading>
-            </div>
-
-            <div class="flex justify-end space-x-2 rtl:space-x-reverse">
-                <flux:modal.close>
-                    <flux:button variant="filled">{{ __('Cancelar') }}</flux:button>
-                </flux:modal.close>
-
-                <flux:modal.close>
-                    <flux:button variant="danger" type="submit">{{ __('Continuar') }}</flux:button>
-                </flux:modal.close>
-            </div>
-        </form>
-    </flux:modal>
-
+    @livewire('reservations.register-check')
 
 </div>
 <script>

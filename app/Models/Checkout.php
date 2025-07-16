@@ -12,7 +12,7 @@ class Checkout extends Model
 
     // Campos que se pueden llenar en masa
     protected $fillable = [
-        'reservation_id',
+        'reservation_room_id',
         'fecha_checkout',
         'user_id',
         'auditoriaFechaCreacion',

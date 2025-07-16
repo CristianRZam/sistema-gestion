@@ -25,6 +25,7 @@ class Register extends Component
 
         $this->detallesHabitaciones = ReservationRoom::with('room')
             ->where('reservation_id', $this->reservationId)
+            ->whereNull('auditoriaFechaEliminacion') // Solo detalles activos
             ->get()
             ->map(function ($detalle) {
                 return [
@@ -78,13 +79,6 @@ class Register extends Component
     }
 
 
-    public $detalleAConfirmar = null;
-    public function abrirConfirmacionDetalle($detalleId)
-    {
-        $this->detalleAConfirmar = $detalleId;
-    }
-
-
     public function cargarClienteDesdeModal($clienteId)
     {
         $cliente = Customer::find($clienteId);
@@ -106,6 +100,60 @@ class Register extends Component
     {
         $this->cliente_seleccionado = null;
         $this->cliente_nombre = null; // por si estás usando este campo también
+    }
+
+    public $detalleAConfirmar = null;
+    public function abrirConfirmacionDetalle($detalleId)
+    {
+        $this->detalleAConfirmar = $detalleId;
+    }
+
+    public $detalleAEliminarId = null;
+
+    public function abrirConfirmacionEliminacion($id)
+    {
+        $this->detalleAEliminarId = $id;
+    }
+
+    public function confirmarEliminarDetalle()
+    {
+        $detalleId = $this->detalleAEliminarId;
+
+        $detalleKey = collect($this->detallesHabitaciones)->search(fn($item) => $item['id'] === $detalleId);
+
+        if ($detalleKey === false) {
+            $this->dispatch('errorRegisterReservation', ['mensaje' => "No se encontró el detalle."]);
+            return;
+        }
+
+        $detalle = ReservationRoom::find($detalleId);
+
+        if ($detalle) {
+            // Eliminar lógicamente
+            $detalle->auditoriaFechaEliminacion = Carbon::now();
+            $detalle->auditoriaEliminadoPor = Auth::id();
+            $detalle->save();
+
+            // Eliminar del arreglo local
+            unset($this->detallesHabitaciones[$detalleKey]);
+            $this->detallesHabitaciones = array_values($this->detallesHabitaciones); // Reindexar
+
+            // Recalcular monto total
+            $this->montoTotal = collect($this->detallesHabitaciones)->sum('subtotal');
+
+            // Actualizar el total de la reserva en la base de datos
+            $reserva = Reservation::find($this->reservationId);
+            if ($reserva) {
+                $reserva->monto_total = $this->montoTotal;
+                $reserva->auditoriaFechaModificacion = Carbon::now();
+                $reserva->auditoriaModificadoPor = Auth::id();
+                $reserva->save();
+            }
+
+            $this->dispatch('successRegisterReservation', ['mensaje' => "Detalle eliminado correctamente."]);
+        } else {
+            $this->dispatch('errorRegisterReservation', ['mensaje' => "No se encontró la reserva asociada."]);
+        }
     }
 
     public function guardarDetalle()
@@ -175,6 +223,7 @@ class Register extends Component
 
         $conflictos = ReservationRoom::where('room_id', $roomId)
             ->where('id', '!=', $detalleId)
+            ->whereNull('auditoriaFechaEliminacion') // ⬅️ Excluir eliminados lógicamente
             ->whereHas('reservation', function ($query) {
                 $query->whereIn('estado_id', [3, 4, 6]); // Confirmado, En progreso, No show
             })
@@ -188,6 +237,7 @@ class Register extends Component
                     });
             })
             ->exists();
+
 
         if ($conflictos) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "Conflicto: La habitación ya está reservada en esas fechas."]);
