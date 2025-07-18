@@ -289,4 +289,34 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
         ->name('reservations.pay');
 });
 
+Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
+    // Exportar Excel de ventas
+    Route::get('/order-services/exportar-excel', function (Request $request) {
+        return Excel::download(new SalesExcelExport($request), 'reservaciones.xlsx');
+    })->middleware('can:exportar ventas')->name('order-services.exportar.excel');
+
+    // Exportar PDF de ventas
+    Route::get('/order-services/exportar-pdf', function (Request $request) {
+        return (new SalesPdfExport($request))->download('reservaciones.pdf');
+    })->middleware('can:exportar ventas')->name('order-services.exportar.pdf');
+
+    // Lista de ventas
+    Volt::route('order-services', 'order-services.lista')
+        ->middleware('can:ver reservas')
+        ->name('order-services');
+
+    // selector de habitacines
+
+
+    // registrar  reserva
+    Volt::route('order-services/add', 'order-services.register')
+        ->middleware('can:editar venta')
+        ->name('order-services.register');
+
+    // Registrar pago
+    Volt::route('order-services/pay/{orden}', 'order-services.pay')
+        ->middleware('can:pagar venta') // O crea 'pagar venta' si quieres más granularidad
+        ->name('order-services.pay');
+});
+
 require __DIR__.'/auth.php';

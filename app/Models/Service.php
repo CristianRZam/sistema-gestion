@@ -30,4 +30,9 @@ class Service extends Model
         'auditoriaFechaModificacion',
         'auditoriaFechaEliminacion',
     ];
+
+    public function imagenes()
+    {
+        return $this->hasMany(ServiceImage::class, 'service_id');
+    }
 }

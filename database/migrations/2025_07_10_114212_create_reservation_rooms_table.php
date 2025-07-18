@@ -27,6 +27,7 @@ return new class extends Migration
 
             $table->integer('cantidad_personas')->default(1);
             $table->decimal('precio', 10, 2)->comment('Precio específico por habitación');
+            $table->decimal('subtotal', 10, 2)->comment('Subtotal calculado');
 
 
             // Auditoría

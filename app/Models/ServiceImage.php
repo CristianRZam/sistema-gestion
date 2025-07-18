@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductImage extends Model
+class ServiceImage extends Model
 {
     // Desactiva timestamps automáticos (created_at y updated_at)
     public $timestamps = false;
     // 📝 Campos que se pueden asignar de forma masiva (mass assignment)
     protected $fillable = [
-        'product_id',                // ID del producto asociado
+        'service_id',                // ID del producto asociado
         'imagen_url',               // Ruta o URL de la imagen
         'es_principal',             // Indica si la imagen es principal
 
@@ -24,11 +24,11 @@ class ProductImage extends Model
     ];
 
     /**
-     * 🔗 Relación: Una imagen pertenece a un producto.
+     * 🔗 Relación: Una imagen pertenece a un servicio.
      */
-    public function producto()
+    public function servicio()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Service::class, 'service_id');
     }
 
     protected $casts = [

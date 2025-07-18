@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_images', function (Blueprint $table) {
-            $table->id()->comment('Clave primaria de imagenes de producto');
+        Schema::create('service_images', function (Blueprint $table) {
+            $table->id()->comment('Clave primaria de imagenes de servicio');
 
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade')->comment('Clave foránea al producto');
+            $table->foreignId('service_id')->constrained('services')->onDelete('cascade')->comment('Clave foránea al producto');
             $table->string('imagen_url')->comment('Ruta o URL de la imagen del producto');
             $table->boolean('es_principal')->default(false)->comment('Indica si es la imagen principal');
 
@@ -33,7 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Elimina la tabla si existe, permitiendo reversión de la migración
-        Schema::dropIfExists('product_images');
+        Schema::dropIfExists('service_images');
     }
 };

@@ -11,20 +11,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_images', function (Blueprint $table) {
-            $table->id()->comment('Clave primaria de imagenes de producto');
+        Schema::create('detail_order_services', function (Blueprint $table) {
+            $table->id()->comment('ID del detalle de orden de servicio');
 
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade')->comment('Clave foránea al producto');
-            $table->string('imagen_url')->comment('Ruta o URL de la imagen del producto');
-            $table->boolean('es_principal')->default(false)->comment('Indica si es la imagen principal');
+            $table->unsignedBigInteger('order_service_id')->comment('ID de la orden de servicio');
+            $table->unsignedBigInteger('service_id')->comment('ID del servicio solicitado');
 
-            // Campos de auditoría (opcional, si no se usan timestamps automáticos)
+            $table->integer('cantidad')->default(1)->comment('Cantidad solicitada');
+            $table->decimal('precio_unitario', 10, 2)->comment('Precio unitario del servicio');
+            $table->decimal('subtotal', 10, 2)->comment('Subtotal calculado');
+
+            // Foreign keys
+            $table->foreign('order_service_id')
+                ->references('id')->on('order_services')
+                ->onDelete('cascade');
+
+            $table->foreign('service_id')
+                ->references('id')->on('services')
+                ->onDelete('restrict');
+
+            // Auditoría
             $table->dateTime('auditoriaFechaCreacion')->nullable()->comment('Fecha de creación');
             $table->unsignedBigInteger('auditoriaCreadoPor')->nullable()->comment('Usuario que creó');
             $table->dateTime('auditoriaFechaModificacion')->nullable()->comment('Fecha de modificación');
             $table->unsignedBigInteger('auditoriaModificadoPor')->nullable()->comment('Usuario que modificó');
             $table->dateTime('auditoriaFechaEliminacion')->nullable()->comment('Eliminación lógica');
             $table->unsignedBigInteger('auditoriaEliminadoPor')->nullable()->comment('Usuario que eliminó');
+
         });
     }
 
@@ -33,7 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Elimina la tabla si existe, permitiendo reversión de la migración
-        Schema::dropIfExists('product_images');
+        Schema::dropIfExists('detail_order_services');
     }
 };

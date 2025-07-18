@@ -4,20 +4,32 @@ namespace App\Livewire\Services;
 
 
 use App\Models\Service;
+use App\Models\ServiceImage;
 use Carbon\Carbon;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\FileNotPreviewableException;
+use Livewire\WithFileUploads;
 
 class Register extends Component
 {
+    use WithFileUploads;
     public $serviceId = null;
     public $nombre;
     public $precio;
     public $descripcion;
+    public $imagen;
+    public $imagenActualUrl;
 
     protected $rules = [
         'nombre' => 'required|string|max:255',
         'precio' => 'required|numeric|min:0',
         'descripcion' => 'nullable|string',
+    ];
+
+    protected $messages = [
+        'imagen.image' => 'El archivo debe ser una imagen.',
+        'imagen.mimes' => 'La imagen debe ser de tipo: jpg, jpeg, png o webp.',
+        'imagen.max' => 'La imagen no debe superar los 2MB.',
     ];
 
     protected $listeners = ['open-modal-service' => 'abrir',
@@ -39,6 +51,11 @@ class Register extends Component
                 $this->nombre = $servicio->nombre;
                 $this->precio = $servicio->precio;
                 $this->descripcion = $servicio->descripcion;
+
+                $imagen = $servicio->imagenes()->where('es_principal', true)->first();
+                if ($imagen) {
+                    $this->imagenActualUrl = asset('storage/' . $imagen->imagen_url);
+                }
             }
         } else {
             $this->reset(['nombre', 'precio', 'descripcion']);
@@ -51,6 +68,30 @@ class Register extends Component
         $this->dispatch('abrirModalService');
     }
 
+    public function updatedImagen()
+    {
+        if (!$this->imagen->isValid()) {
+            $this->addError('imagen', 'El archivo no es válido.');
+            return;
+        }
+
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        $mimeType = $this->imagen->getMimeType();
+
+        if (!in_array($mimeType, $allowedMimeTypes)) {
+            $this->addError('imagen', 'El archivo seleccionado no es una imagen válida.');
+        }
+    }
+
+    public function getImagenPreviewUrlProperty()
+    {
+        try {
+            return $this->imagen ? $this->imagen->temporaryUrl() : null;
+        } catch (FileNotPreviewableException $e) {
+            return null;
+        }
+    }
+
     public function guardar()
     {
         $this->validate([
@@ -61,6 +102,7 @@ class Register extends Component
                 : array_merge($this->rules, [
                     'nombre' => 'required|string|max:255|unique:services,nombre',
                 ])),
+            'imagen' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
         $userId = auth()->id();
@@ -86,6 +128,28 @@ class Register extends Component
             ]);
         }
 
+        if ($this->imagen) {
+            $anterior = $service->imagenes()->where('es_principal', true)->first();
+            $nuevoPath = $this->imagen->store('servicios', 'public');
+
+            if ($anterior) {
+                \Storage::disk('public')->delete($anterior->imagen_url);
+
+                $anterior->update([
+                    'imagen_url' => $nuevoPath,
+                    'auditoriaFechaModificacion' => now(),
+                    'auditoriaModificadoPor' => $userId,
+                ]);
+            } else {
+                ServiceImage::create([
+                    'service_id' => $service->id,
+                    'imagen_url' => $nuevoPath,
+                    'es_principal' => true,
+                    'auditoriaFechaCreacion' => now(),
+                    'auditoriaCreadoPor' => $userId,
+                ]);
+            }
+        }
 
         $this->dispatch('actualiza-lista-servicio');
         $this->dispatch('cerrarModalService');

@@ -65,4 +65,10 @@ class Sale extends Model
         'auditoriaFechaEliminacion' => 'date',
         'fecha_venta'=>'datetime',
     ];
+
+    public function pagos()
+    {
+        return $this->morphMany(Payment::class, 'pagable');
+    }
+
 }

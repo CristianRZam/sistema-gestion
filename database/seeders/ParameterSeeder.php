@@ -802,5 +802,54 @@ class ParameterSeeder extends Seeder
         ]);
 
 
+        // ESTADOS DE ORDEN DE SERVICIOS
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_ORDEN_SERVICIO',
+                'nombre' => 'Cancelado',
+                'nombreCorto' => 'Cancelado',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_ORDEN_SERVICIO',
+                'nombre' => 'Completado',
+                'nombreCorto' => 'Completado',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_ORDEN_SERVICIO',
+                'nombre' => 'En proceso',
+                'nombreCorto' => 'Proceso',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 4,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_ORDEN_SERVICIO',
+                'nombre' => 'Pendiente',
+                'nombreCorto' => 'Pendiente',
+                'orden' => 4,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+
     }
 }

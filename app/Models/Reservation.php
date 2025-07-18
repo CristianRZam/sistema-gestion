@@ -55,4 +55,9 @@ class Reservation extends Model
         return $this->belongsToMany(Room::class, 'reservation_rooms', 'reservation_id', 'room_id');
     }
 
+    public function pagos()
+    {
+        return $this->morphMany(Payment::class, 'pagable');
+    }
+
 }

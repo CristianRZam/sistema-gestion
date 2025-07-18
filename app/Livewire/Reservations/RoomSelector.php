@@ -71,29 +71,35 @@ class RoomSelector extends Component
 
             // 1. Crear la reserva
             $reserva = Reservation::create([
-                'estado_id' => 1, // Primer estado de borrador
+                'estado_id' => 1, // Primer estado: borrador
                 'user_id' => $userId,
                 'auditoriaFechaCreacion' => $now,
                 'auditoriaCreadoPor' => $userId,
             ]);
 
-            // 2. Convertir fechas
+            // 2. Fechas
             $fechaInicio = Carbon::parse($this->fechaDesdeFiltro)->startOfDay();
-            $fechaFin = Carbon::parse($this->fechaHastaFiltro)->endOfDay();
+            $fechaFin = Carbon::parse($this->fechaHastaFiltro)->startOfDay();
 
-            // 3. Insertar cada habitación seleccionada en reservation_rooms
+            // Calcular días (mínimo 1)
+            $dias = $fechaInicio->diffInDays($fechaFin);
+            if ($dias < 1) $dias = 1;
+
+            // 3. Crear cada detalle de habitación
             foreach ($this->habitacionesSeleccionadas as $roomId) {
                 $habitacion = Room::findOrFail($roomId);
 
                 $precio = $habitacion->precio_promocion ?? $habitacion->precio;
+                $subtotal = $precio * $dias;
 
                 ReservationRoom::create([
                     'reservation_id' => $reserva->id,
                     'room_id' => $habitacion->id,
                     'fecha_inicio' => $fechaInicio,
                     'fecha_fin' => $fechaFin,
-                    'cantidad_personas' => 1, // Puedes cambiarlo si hay una variable para personas
+                    'cantidad_personas' => 1,
                     'precio' => $precio,
+                    'subtotal' => $subtotal,
                     'auditoriaFechaCreacion' => $now,
                     'auditoriaCreadoPor' => $userId,
                 ]);
@@ -105,10 +111,10 @@ class RoomSelector extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             $this->dispatch('errorSelectorReservation', ['mensaje' => 'Error al crear la reserva: ' . $e->getMessage()]);
         }
     }
+
 
 
     public function render()

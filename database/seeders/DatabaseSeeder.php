@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ParameterSeeder::class,
             //ProductSeeder::class,
-            RoomSeeder::class,
+            //RoomSeeder::class,
         ]);
     }
 }

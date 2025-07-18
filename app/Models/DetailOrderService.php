@@ -4,21 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ReservationRoom extends Model
+class DetailOrderService extends Model
 {
-    // Laravel no manejará automáticamente created_at y updated_at
+    // Inhabilitar created_at y updated_at
     public $timestamps = false;
-    protected $table = 'reservation_rooms';
 
+    protected $table = 'detail_order_services';
 
-    // Campos que se pueden llenar en masa
     protected $fillable = [
-        'reservation_id',
-        'room_id',
-        'cantidad_personas',
-        'fecha_inicio',
-        'fecha_fin',
-        'precio',
+        'order_service_id',
+        'service_id',
+        'descuento',
+        'cantidad',
+        'precio_unitario',
         'subtotal',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
@@ -27,21 +25,16 @@ class ReservationRoom extends Model
         'auditoriaFechaEliminacion',
         'auditoriaEliminadoPor',
     ];
+
+    // Convertir las fechas automáticamente a objetos Date
     protected $casts = [
         'auditoriaFechaCreacion' => 'datetime',
         'auditoriaFechaModificacion' => 'datetime',
         'auditoriaFechaEliminacion' => 'datetime',
     ];
 
-    // app/Models/ReservationRoom.php
-    public function reservation()
+    public function servicio()
     {
-        return $this->belongsTo(Reservation::class);
+        return $this->belongsTo(Service::class);
     }
-
-    public function room()
-    {
-        return $this->belongsTo(Room::class);
-    }
-
 }

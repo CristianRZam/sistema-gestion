@@ -12,7 +12,8 @@ class Payment extends Model
 
     // Campos que se pueden llenar en masa
     protected $fillable = [
-        'reservation_id',
+        'pagable_id',
+        'pagable_type',
         'monto_pagado',
         'metodo_pago_id',
         'estado_pago_id',
@@ -31,4 +32,21 @@ class Payment extends Model
         'auditoriaFechaModificacion',
         'auditoriaFechaEliminacion',
     ];
+
+    public function pagable()
+    {
+        return $this->morphTo();
+    }
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function metodoPago()
+    {
+        return $this->belongsTo(Parameter::class, 'metodo_pago_id', 'idParametro')
+            ->where('codigoParametro', 'METODO_PAGO');
+    }
+
+
 }

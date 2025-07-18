@@ -35,7 +35,7 @@ class Register extends Component
                     'fecha_fin' => Carbon::parse($detalle->fecha_fin)->format('Y-m-d'),
                     'cantidad_personas' => $detalle->cantidad_personas,
                     'precio' => $detalle->precio,
-                    'subtotal' => 0,
+                    'subtotal' => $detalle->subtotal ?? 0,
                     'servicios' => [],
                     'productos' => [],
                 ];
@@ -168,7 +168,6 @@ class Register extends Component
 
         $datos = $this->detallesHabitaciones[$detalleKey];
 
-        // Validaciones básicas
         if (empty($datos['fecha_inicio']) || empty($datos['fecha_fin'])) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "Debe ingresar ambas fechas."]);
             return;
@@ -183,13 +182,11 @@ class Register extends Component
         $fechaFin = Carbon::parse($datos['fecha_fin'])->startOfDay();
         $hoy = Carbon::now()->startOfDay();
 
-        // Validación: inicio <= fin
         if ($fechaInicio->gt($fechaFin)) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "La fecha de inicio no puede ser mayor que la fecha de fin."]);
             return;
         }
 
-        // Cargar el detalle original
         $detalleBD = ReservationRoom::find($detalleId);
         if (!$detalleBD) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "No se encontró la reserva en base de datos."]);
@@ -202,19 +199,16 @@ class Register extends Component
         $fechaInicioModificada = !$fechaInicio->equalTo($fechaInicioOriginal);
         $fechaFinModificada = !$fechaFin->equalTo($fechaFinOriginal);
 
-        // ✅ Nueva validación fuerte: No permitir modificar la fecha de inicio si ya pasó o es hoy
         if ($fechaInicioModificada && $fechaInicioOriginal->lte($hoy)) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "No se puede modificar la fecha de inicio porque ya ha comenzado o está en curso."]);
             return;
         }
 
-        // Validación: si la fecha fue modificada, no puede ser menor a hoy
         if (($fechaInicioModificada && $fechaInicio->lt($hoy)) || ($fechaFinModificada && $fechaFin->lt($hoy))) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "Las fechas modificadas no pueden ser anteriores a hoy."]);
             return;
         }
 
-        // Verificar disponibilidad de habitación
         $roomId = $datos['room']['id'] ?? null;
         if (!$roomId) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "No se identificó la habitación."]);
@@ -223,9 +217,9 @@ class Register extends Component
 
         $conflictos = ReservationRoom::where('room_id', $roomId)
             ->where('id', '!=', $detalleId)
-            ->whereNull('auditoriaFechaEliminacion') // ⬅️ Excluir eliminados lógicamente
+            ->whereNull('auditoriaFechaEliminacion')
             ->whereHas('reservation', function ($query) {
-                $query->whereIn('estado_id', [3, 4, 6]); // Confirmado, En progreso, No show
+                $query->whereIn('estado_id', [3, 4, 6]);
             })
             ->where(function ($query) use ($fechaInicio, $fechaFin) {
                 $query
@@ -238,45 +232,37 @@ class Register extends Component
             })
             ->exists();
 
-
         if ($conflictos) {
             $this->dispatch('errorRegisterReservation', ['mensaje' => "Conflicto: La habitación ya está reservada en esas fechas."]);
             return;
         }
 
-        $detalle = ReservationRoom::find($detalleId);
+        $dias = $fechaInicio->diffInDays($fechaFin);
+        if ($dias < 1) $dias = 1;
 
-        if ($detalle) {
-            $detalle->fecha_inicio = $datos['fecha_inicio'];
-            $detalle->fecha_fin = $datos['fecha_fin'];
-            $detalle->cantidad_personas = $datos['cantidad_personas'];
-            $detalle->auditoriaFechaModificacion = Carbon::now();
-            $detalle->auditoriaModificadoPor = Auth::id();
-            $detalle->save();
+        $subtotal = $detalleBD->precio * $dias;
 
-            // Recalcular el subtotal y actualizar en el array local también
-            $inicio = Carbon::parse($datos['fecha_inicio'])->startOfDay();
-            $fin = Carbon::parse($datos['fecha_fin'])->startOfDay();
-            $dias = $inicio->diffInDays($fin);
-            if ($dias < 1) $dias = 1;
+        $detalleBD->fecha_inicio = $datos['fecha_inicio'];
+        $detalleBD->fecha_fin = $datos['fecha_fin'];
+        $detalleBD->cantidad_personas = $datos['cantidad_personas'];
+        $detalleBD->subtotal = $subtotal;
+        $detalleBD->auditoriaFechaModificacion = Carbon::now();
+        $detalleBD->auditoriaModificadoPor = Auth::id();
+        $detalleBD->save();
 
-            $subtotal = $detalle->precio * $dias;
-            $this->detallesHabitaciones[$detalleKey]['subtotal'] = $subtotal;
+        $this->detallesHabitaciones[$detalleKey]['subtotal'] = $subtotal;
 
-            $this->montoTotal = collect($this->detallesHabitaciones)->sum('subtotal');
+        $this->montoTotal = collect($this->detallesHabitaciones)->sum('subtotal');
 
-            $reserva = Reservation::find($this->reservationId);
-            if ($reserva) {
-                $reserva->monto_total = $this->montoTotal;
-                $reserva->auditoriaFechaModificacion = Carbon::now();
-                $reserva->auditoriaModificadoPor = Auth::id();
-                $reserva->save();
-            }
-
-            $this->dispatch('successRegisterReservation', ['mensaje' => "Detalle guardado correctamente."]);
-        } else {
-            $this->dispatch('errorRegisterReservation', ['mensaje' => "No se encontró la reserva asociada."]);
+        $reserva = Reservation::find($this->reservationId);
+        if ($reserva) {
+            $reserva->monto_total = $this->montoTotal;
+            $reserva->auditoriaFechaModificacion = Carbon::now();
+            $reserva->auditoriaModificadoPor = Auth::id();
+            $reserva->save();
         }
+
+        $this->dispatch('successRegisterReservation', ['mensaje' => "Detalle guardado correctamente."]);
     }
 
     public function render()
