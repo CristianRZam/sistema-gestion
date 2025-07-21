@@ -49,13 +49,54 @@
     </div>
 
     {{-- Resumen de totales --}}
-    <div class="text-right space-y-1 text-gray-800 dark:text-gray-100">
-        <div>Subtotal: <strong>S/ {{ number_format($orden->total, 2) }}</strong></div>
-        <div>Descuento: <strong>S/ {{ number_format($orden->descuento, 2) }}</strong></div>
-        <div>Total a pagar: <strong class="text-green-600 dark:text-green-400">S/ {{ number_format($orden->total - $orden->descuento, 2) }}</strong></div>
-        <div>Pagado: <strong class="text-blue-600 dark:text-blue-400">S/ {{ number_format($totalPagado, 2) }}</strong></div>
-        <div>Restante: <strong class="text-red-600 dark:text-red-400">S/ {{ number_format($orden->total - $orden->descuento - $totalPagado, 2) }}</strong></div>
+    <div class="text-right space-y-2 text-gray-800 dark:text-gray-100">
+
+        {{-- Subtotal --}}
+        <div>Subtotal:
+            <strong>S/ {{ number_format($orden->total, 2) }}</strong>
+        </div>
+
+        {{-- Descuento --}}
+        <div class="text-left md:text-right">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descuento (S/)</label>
+            @if(($orden->total - $totalPagado) > 0)
+                <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    wire:model.live.debounce="descuentoInput"
+                    class="mt-1 w-full md:w-48 text-right rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-zinc-800 dark:text-white"
+                    placeholder="0.00"
+                />
+            @else
+                <div class="text-green-600 dark:text-green-400 font-semibold">
+                    S/ {{ number_format($orden->descuento, 2) }}
+                </div>
+            @endif
+        </div>
+
+        {{-- Total a pagar --}}
+        <div>Total a pagar:
+            <strong class="text-green-600 dark:text-green-400">
+                S/ {{ number_format($orden->total - $orden->descuento, 2) }}
+            </strong>
+        </div>
+
+        {{-- Pagado --}}
+        <div>Pagado:
+            <strong class="text-blue-600 dark:text-blue-400">
+                S/ {{ number_format($totalPagado, 2) }}
+            </strong>
+        </div>
+
+        {{-- Restante --}}
+        <div>Restante:
+            <strong class="text-red-600 dark:text-red-400">
+                S/ {{ number_format($orden->total - $orden->descuento - $totalPagado, 2) }}
+            </strong>
+        </div>
     </div>
+
 
     {{-- Formulario de nuevo pago --}}
     <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -92,9 +133,11 @@
             </div>
         </div>
 
-        <div class="text-right mt-2 text-green-600 dark:text-green-400">
-            Vuelto: S/ {{ number_format($vuelto, 2) }}
-        </div>
+        @if(($orden->total - $orden->descuento - $totalPagado) > 0)
+            <div class="text-right mt-2 text-green-600 dark:text-green-400">
+                Vuelto: S/ {{ number_format($vuelto, 2) }}
+            </div>
+        @endif
 
         <div class="text-right mt-4">
             @if(($orden->total - $orden->descuento - $totalPagado) > 0)
@@ -124,6 +167,7 @@
                     <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300">Fecha</th>
                     <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300">Método</th>
                     <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300">Monto</th>
+                    <th class="py-2 px-4 text-sm text-gray-600 dark:text-gray-300 text-center">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -137,6 +181,15 @@
                         </td>
                         <td class="py-2 px-4 text-gray-800 dark:text-gray-100">
                             S/ {{ number_format($p->monto_pagado, 2) }}
+                        </td>
+                        <td class="py-2 px-4 text-center">
+                            <button
+                                wire:click="eliminarPago({{ $p->id }})"
+                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-600 text-sm cursor-pointer"
+                                onclick="return confirm('¿Estás seguro de eliminar este pago?')"
+                            >
+                                Eliminar
+                            </button>
                         </td>
                     </tr>
                 @endforeach

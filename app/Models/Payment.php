@@ -48,5 +48,12 @@ class Payment extends Model
             ->where('codigoParametro', 'METODO_PAGO');
     }
 
+    // Solo traer los que no están eliminados
+    protected static function booted()
+    {
+        static::addGlobalScope('no_eliminado', function ($builder) {
+            $builder->whereNull('auditoriaFechaEliminacion');
+        });
+    }
 
 }

@@ -12,11 +12,11 @@ use Livewire\Component;
 class Pay extends Component
 {
     public $orden;
-    public $pagos; // colección de modelos
+    public $pagos;
     public $metodoPago = '';
     public $pago_con = 0;
+    public float $descuentoInput = 0;
 
-    // Mantener listener para el dispatch de Livewire 3.x
     protected $listeners = ['refreshComponent' => '$refresh'];
 
     public function mount($orden)
@@ -27,8 +27,30 @@ class Pay extends Component
             'pagos.metodoPago'
         ])->findOrFail($orden);
 
-        $this->pagos = $this->orden->pagos; // colección con relación cargada
+        $this->pagos = $this->orden->pagos;
+        $this->descuentoInput = $this->orden->descuento ?? 0;
     }
+
+    public function updatedDescuentoInput($value)
+    {
+        $valor = is_numeric($value) ? floatval($value) : 0;
+
+        // El máximo descuento es lo que falta pagar, sin tomar en cuenta el descuento actual
+        $faltanteReal = max(0, $this->orden->total - $this->totalPagado);
+
+        if ($valor > $faltanteReal) {
+            $valor = $faltanteReal;
+        }
+
+        $this->descuentoInput = $valor;
+
+        $this->orden->update([
+            'descuento' => $valor
+        ]);
+
+        $this->orden->refresh();
+    }
+
 
     public function getTotalPagadoProperty()
     {
@@ -37,8 +59,9 @@ class Pay extends Component
 
     public function getVueltoProperty()
     {
-        return max(0, $this->pago_con - ($this->orden->total - $this->orden->descuento - $this->totalPagado));
+        return max(0, floatval($this->pago_con ?? 0) - ($this->orden->total - $this->orden->descuento - $this->totalPagado));
     }
+
 
     public function getMetodosPagoProperty()
     {
@@ -75,19 +98,43 @@ class Pay extends Component
             'auditoriaCreadoPor'     => Auth::id(),
         ]);
 
-        // Refrescar modelo completo y obtener pagos actualizados
         $this->orden->refresh();
         $this->pagos = $this->orden->pagos()->with('metodoPago')->get();
 
-        // Actualizar si está totalmente pagado
         if ($this->totalPagado >= $totalDeuda) {
-            $this->orden->update(['pagado' => true]);
+            $this->orden->update([
+                'pagado' => true,
+                'estado_id' => 2,
+            ]);
         }
 
         $this->reset(['pago_con', 'metodoPago']);
         session()->flash('success', 'Pago registrado correctamente.');
+        $this->dispatch('refreshComponent');
+    }
 
-        // Este dispatch seguirá funcionando si otros componentes escuchan el evento
+    public function eliminarPago($pagoId)
+    {
+        $pago = Payment::findOrFail($pagoId);
+        $pago->update([
+            'auditoriaFechaEliminacion' => Carbon::now(),
+            'auditoriaEliminadoPor'     => Auth::id(),
+        ]);
+
+        $this->orden->refresh();
+        $this->pagos = $this->orden->pagos()->with('metodoPago')->get();
+
+        // Recalcular si la orden ya no está pagada
+        $totalDeuda = $this->orden->total - $this->orden->descuento;
+
+        if ($this->totalPagado < $totalDeuda) {
+            $this->orden->update([
+                'pagado' => false,
+                'estado_id' => 1, // O el estado correspondiente a "pendiente"
+            ]);
+        }
+
+        session()->flash('success', 'Pago eliminado correctamente.');
         $this->dispatch('refreshComponent');
     }
 

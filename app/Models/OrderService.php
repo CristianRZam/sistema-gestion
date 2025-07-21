@@ -19,6 +19,7 @@ class OrderService extends Model
         'total',
         'estado_id',
         'usuario_id',
+        'pagado',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',
@@ -32,6 +33,7 @@ class OrderService extends Model
         'auditoriaFechaCreacion' => 'datetime',
         'auditoriaFechaModificacion' => 'datetime',
         'auditoriaFechaEliminacion' => 'datetime',
+        'fecha' => 'datetime',
     ];
 
     // Relación con el cliente

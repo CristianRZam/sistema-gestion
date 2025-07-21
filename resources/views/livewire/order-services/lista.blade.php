@@ -57,7 +57,7 @@
                     <th class="border p-2">Nº</th>
                     <th class="border p-2">Fecha</th>
                     <th class="border p-2">Cliente</th>
-                    <th class="border p-2">Usuario vendedor</th>
+                    <th class="border p-2">Usuario encargado</th>
                     <th class="border p-2">Total</th>
                     <th class="border p-2">Estado</th>
                     <th class="border p-2">Acciones</th>
@@ -71,14 +71,14 @@
                             {{ $servicio->fecha ? $servicio->fecha->format('d/m/Y H:m:s') : '' }}
                         </td>
                         <td class="border p-2">{{ $servicio->customer?->nombre ?? '-' }}</td>
-                        <td class="border p-2">{{ $servicio->vendedor?->name ?? '-' }}</td>
+                        <td class="border p-2">{{ $servicio->encargado?->name ?? '-' }}</td>
                         <td class="border p-2 text-center">
                             S/ {{ number_format($servicio->total - $servicio->descuento, 2) }}
                         </td>
                         <td class="border p-2 text-center">
                             @php
                                 $estado = $servicio->estado?->nombre ?? 'Desconocido';
-                                $color = match($venta->estado_id) {
+                                $color = match($servicio->estado_id) {
                                     1 => 'bg-yellow-500 text-white', // Pendiente
                                     2 => 'bg-green-600 text-white',  // Pagada
                                     3 => 'bg-red-600 text-white',    // Anulada
@@ -102,10 +102,10 @@
                                         Continuar
                                     </a>
                                 @endcan
-                            @elseif ($servicio->estado_id === 2 || $servicio->estado_id === 3)
+                            @elseif ($servicio->estado_id === 2)
                                 {{-- Venta pagada --}}
                                 @can('ver venta')
-                                    <a href="{{ route('sales.pay', $servicio->id) }}"
+                                    <a href="{{ route('order-services.pay', $servicio->id) }}"
                                        class="border border-blue-500 text-blue-500 px-3 py-1 rounded hover:bg-blue-500 hover:text-white mr-2 cursor-pointer">
                                         Ver
                                     </a>

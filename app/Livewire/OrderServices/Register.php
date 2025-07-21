@@ -267,8 +267,9 @@ class Register extends Component
                 $orden = OrderService::create([
                     'customer_id' => $this->cliente_seleccionado['id'] ?? null,
                     'usuario_id' => auth()->id(),
+                    'fecha' => Carbon::now(),
                     'total' => $this->total ?? 0,
-                    'estado_id' => 1,
+                    'estado_id' => 4,
                     'auditoriaFechaCreacion' => Carbon::now(),
                     'auditoriaCreadoPor' => auth()->id(),
                 ]);

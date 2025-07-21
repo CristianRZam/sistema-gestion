@@ -35,6 +35,7 @@ class DetailOrderService extends Model
 
     public function servicio()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class, 'service_id');
     }
+
 }
