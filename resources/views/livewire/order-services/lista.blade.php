@@ -94,10 +94,10 @@
                         <td class="border p-2 text-center">
                             {{-- Botón "Ver" disponible siempre si el usuario tiene permiso --}}
                             {{-- Acciones según estado_venta_id --}}
-                            @if ($servicio->estado_id === 1)
+                            @if ($servicio->estado_id === 4)
                                 {{-- Venta pendiente --}}
                                 @can('ver venta')
-                                    <a href="{{ route('sales.pay', $servicio->id) }}"
+                                    <a href="{{ route('order-services.pay', $servicio->id) }}"
                                        class="border border-yellow-500 text-yellow-500 px-3 py-1 rounded hover:bg-yellow-500 hover:text-white cursor-pointer">
                                         Continuar
                                     </a>

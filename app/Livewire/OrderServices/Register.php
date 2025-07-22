@@ -64,7 +64,7 @@ class Register extends Component
         if ($id !== null) {
             $orderServiceModel = OrderService::findOrFail($id);
 
-            if ($orderServiceModel->estado_id != 1) {
+            if ($orderServiceModel->estado_id == 2) {
                 session()->flash('error', 'La orden ya fue pagada y no se puede editar.');
                 redirect()->route('order-services');
                 return;

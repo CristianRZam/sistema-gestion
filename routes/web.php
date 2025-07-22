@@ -305,18 +305,24 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
         ->middleware('can:ver reservas')
         ->name('order-services');
 
-    // selector de habitacines
-
 
     // registrar  reserva
     Volt::route('order-services/add', 'order-services.register')
         ->middleware('can:editar venta')
         ->name('order-services.register');
 
+    // Editar venta
+    Volt::route('order-services/edit/{id}', 'order-services.register')
+        ->middleware('can:editar compra')
+        ->name('order-services.edit');
+
+
     // Registrar pago
     Volt::route('order-services/pay/{orden}', 'order-services.pay')
         ->middleware('can:pagar venta') // O crea 'pagar venta' si quieres más granularidad
         ->name('order-services.pay');
 });
+
+Route::get('/comprobante-service/preview/{ordenId}', [\App\Livewire\OrderServices\Pay::class, 'vistaComprobantePreview'])->name('comprobante-servicio.preview');
 
 require __DIR__.'/auth.php';

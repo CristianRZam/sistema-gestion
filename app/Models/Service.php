@@ -35,4 +35,9 @@ class Service extends Model
     {
         return $this->hasMany(ServiceImage::class, 'service_id');
     }
+
+    public function imagenPrincipal()
+    {
+        return $this->hasOne(ServiceImage::class)->where('es_principal', true);
+    }
 }

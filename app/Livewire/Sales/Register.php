@@ -283,10 +283,6 @@ class Register extends Component
         $this->calcularTotal();
     }
 
-
-
-
-
     public function updatedProductos()
     {
         $this->calcularTotal();
