@@ -57,21 +57,25 @@ class Register extends Component
 
     public $servicio_buscar = '';
     public $serviciosDisponibles = [];
-
+    public bool $esGeneradoPorReserva = false;
 
     public function mount($id = null)
     {
         if ($id !== null) {
-            $orderServiceModel = OrderService::findOrFail($id);
+            $orderServiceModel = OrderService::with(['pagos' => function ($q) {
+                $q->whereNull('auditoriaFechaEliminacion');
+            }])->findOrFail($id);
 
-            if ($orderServiceModel->estado_id == 2) {
-                session()->flash('error', 'La orden ya fue pagada y no se puede editar.');
+            // Bloquear si ya fue pagada o tiene al menos un pago
+            if ($orderServiceModel->estado_id == 2 || $orderServiceModel->pagos->isNotEmpty()) {
+                session()->flash('error', 'La orden ya tiene pagos registrados y no se puede editar.');
                 redirect()->route('order-services');
                 return;
             }
 
             $this->orderServiceId = $id;
             $this->cargarOrdenExistente($id);
+            $this->esGeneradoPorReserva = !is_null($orderServiceModel->reservation_room_id);
         }
 
         $this->serviciosDisponibles = DB::table('services as s')
@@ -94,11 +98,9 @@ class Register extends Component
             })
             ->toArray();
 
-
-
-
         $this->calcularTotal();
     }
+
 
     public function cargarOrdenExistente($id)
     {
@@ -181,7 +183,7 @@ class Register extends Component
                     'nombre' => $servicio['nombre'],
                     'precio' => $servicio['precio'],
                     'cantidad' => 1,
-                    'imagen' => $producto['imagen'] ?? null,
+                    'imagen' => $servicio['imagen'] ?? null,
                 ];
             }
 
@@ -269,6 +271,7 @@ class Register extends Component
                     'usuario_id' => auth()->id(),
                     'fecha' => Carbon::now(),
                     'total' => $this->total ?? 0,
+                    'modo_pago_id' => 1,
                     'estado_id' => 4,
                     'auditoriaFechaCreacion' => Carbon::now(),
                     'auditoriaCreadoPor' => auth()->id(),
@@ -300,36 +303,49 @@ class Register extends Component
         }
     }
 
-
-
-
     public $servicio_buscar_filtro = '';
 
     public function getServiciosDisponiblesFiltradosProperty()
     {
-        $busqueda = strtolower($this->servicio_buscar_filtro);
+        $query = DB::table('services as s')
+            ->leftJoin('service_images as si', function ($join) {
+                $join->on('s.id', '=', 'si.service_id')
+                    ->where('si.es_principal', '=', true);
+            })
+            ->where('s.activo', true)
+            ->whereNull('s.auditoriaFechaEliminacion');
 
-        $serviciosFiltrados = empty($busqueda)
-            ? collect($this->serviciosDisponibles)
-            : collect($this->serviciosDisponibles)->filter(function ($p) use ($busqueda) {
-                // Convertir todos los campos a texto y comparar
-                $nombre = strtolower($p['nombre'] ?? '');
-                $descripcion = strtolower($p['descripcion'] ?? '');
-
-                return str_contains($nombre, $busqueda)
-                    || str_contains($descripcion, $busqueda);
+        if (!empty($this->servicio_buscar_filtro)) {
+            $busqueda = '%' . strtolower($this->servicio_buscar_filtro) . '%';
+            $query->where(function ($q) use ($busqueda) {
+                $q->whereRaw('LOWER(s.nombre) LIKE ?', [$busqueda])
+                    ->orWhereRaw('LOWER(s.descripcion) LIKE ?', [$busqueda]);
             });
+        }
 
-        $total = $serviciosFiltrados->count();
-        $inicio = ($this->pagina - 1) * $this->porPagina;
+        $total = $query->count();
+
+        $servicios = $query
+            ->select(
+                's.id',
+                's.nombre',
+                's.precio',
+                's.descripcion',
+                'si.imagen_url as imagen'
+            )
+            ->offset(($this->pagina - 1) * $this->porPagina)
+            ->limit($this->porPagina)
+            ->get()
+            ->map(function ($item) {
+                return (array) $item;
+            })
+            ->toArray();
 
         return [
-            'items' => $serviciosFiltrados->slice($inicio, $this->porPagina)->values()->all(),
+            'items' => $servicios,
             'total' => $total,
         ];
     }
-
-
 
 
     public function irAPagina($pagina)

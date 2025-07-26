@@ -136,15 +136,61 @@
 
                 </div>
 
-                <!-- Paginación dinámica Livewire -->
-                <div class="mt-4 flex justify-center items-center space-x-2">
-                    @for($i = 1; $i <= $totalPaginas; $i++)
+                <!-- Paginación mejorada -->
+                <div class="mt-6 flex flex-wrap justify-center items-center gap-1 text-sm">
+
+                    <!-- Botón anterior -->
+                    <button
+                        wire:click="irAPagina({{ max(1, $pagina - 1) }})"
+                        class="px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+                        @if($pagina === 1) disabled @endif
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    @php
+                        $rango = 2; // cantidad de páginas a mostrar a los lados
+                        $inicio = max(1, $pagina - $rango);
+                        $fin = min($totalPaginas, $pagina + $rango);
+                    @endphp
+
+                    @if($inicio > 1)
+                        <button wire:click="irAPagina(1)"
+                                class="cursor-pointer px-3 py-1 rounded border border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                            1
+                        </button>
+                        @if($inicio > 2)
+                            <span class="px-2">...</span>
+                        @endif
+                    @endif
+
+                    @for($i = $inicio; $i <= $fin; $i++)
                         <button wire:click="irAPagina({{ $i }})"
-                                class="px-3 py-1 rounded cursor-pointer {{ $i == $pagina ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                                class="cursor-pointer px-3 py-1 rounded {{ $i == $pagina ? 'bg-blue-600  text-white' : 'border border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                             {{ $i }}
                         </button>
                     @endfor
+
+                    @if($fin < $totalPaginas)
+                        @if($fin < $totalPaginas - 1)
+                            <span class="px-2">...</span>
+                        @endif
+                        <button wire:click="irAPagina({{ $totalPaginas }})"
+                                class="px-3 py-1 rounded border border-gray-300 text-gray-700 cursor-pointer dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {{ $totalPaginas }}
+                        </button>
+                    @endif
+
+                    <!-- Botón siguiente -->
+                    <button
+                        wire:click="irAPagina({{ min($totalPaginas, $pagina + 1) }})"
+                        class="px-2 py-1 rounded border border-gray-300 text-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+                        @if($pagina === $totalPaginas) disabled @endif
+                    >
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
+
             @else
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No se encontraron productos.') }}</p>
             @endif

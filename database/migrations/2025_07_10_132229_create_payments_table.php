@@ -17,6 +17,9 @@ return new class extends Migration
 
             // Monto pagado en esta transacción
             $table->decimal('monto_pagado', 10, 2)->comment('Monto pagado en esta transacción');
+            $table->decimal('monto_entregado', 10, 2)->nullable()->comment('Monto que entregó el cliente');
+            $table->decimal('vuelto', 10, 2)->nullable()->comment('Vuelto que se devolvió al cliente');
+
 
             // Estado del pago (pagado, pendiente, anulado, etc.)
             $table->unsignedBigInteger('estado_pago_id')->comment('Estado del pago. Relación lógica con parámetros');

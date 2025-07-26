@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             ParameterSeeder::class,
-            //ProductSeeder::class,
+            ProductSeeder::class,
             RoomSeeder::class,
         ]);
     }

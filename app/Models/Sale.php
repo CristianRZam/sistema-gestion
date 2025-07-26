@@ -15,14 +15,14 @@ class Sale extends Model
     // Campos asignables masivamente
     protected $fillable = [
         'customer_id',
+        'reservation_room_id',
         'usuario_id',
         'fecha_venta',
         'total',
         'descuento',
-        'pago_con',
-        'vuelto',
-        'metodo_pago_id',
         'estado_venta_id',
+        'pagado',
+        'modo_pago_id',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',
@@ -54,6 +54,11 @@ class Sale extends Model
     {
         return $this->belongsTo(Parameter::class, 'estado_venta_id', 'idParametro')
             ->where('codigoParametro', 'ESTADO_VENTA');
+    }
+
+    public function reservationRoom()
+    {
+        return $this->belongsTo(ReservationRoom::class);
     }
 
     /**

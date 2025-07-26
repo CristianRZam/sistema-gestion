@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0)->comment('Total de la orden');
             $table->unsignedBigInteger('estado_id')->default(1)->comment("Estado: pendiente, completado, cancelado");
             $table->boolean('pagado')->default(false)->comment('Indica si ha sido pagada');
+            $table->unsignedBigInteger('modo_pago_id')->default(1)->comment('Indica el modo de pago: completo o en partes');
             // Usuario (vendedor) que realizó la venta (relación lógica, sin clave foránea)
             $table->unsignedBigInteger('usuario_id')->nullable();
 

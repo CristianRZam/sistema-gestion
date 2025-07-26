@@ -15,29 +15,31 @@
 
                 <!-- Información del cliente -->
                 <div class="relative flex border border-gray-300 dark:border-gray-700 border-l-0 rounded-lg bg-white dark:bg-zinc-900 overflow-hidden">
-                    <!-- Botón de editar con ícono -->
-                    <div class="absolute top-2 right-2 flex items-center gap-3">
-                        {{-- Botón Editar Cliente --}}
-                        <flux:modal.trigger name="register-customer">
+
+                    <!-- Botón de editar y eliminar cliente -->
+                    @if(!$esGeneradoPorReserva)
+                        <div class="absolute top-2 right-2 flex items-center gap-3">
+                            {{-- Botón Editar Cliente --}}
+                            <flux:modal.trigger name="register-customer">
+                                <button
+                                    class="text-blue-600 hover:text-blue-800 transition cursor-pointer"
+                                    x-on:click.prevent="$dispatch('open-modal-customer', { id: null, modo: 'venta' })"
+                                    aria-label="{{ __('Editar cliente') }}"
+                                >
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                            </flux:modal.trigger>
+
+                            {{-- Botón Eliminar Cliente --}}
                             <button
-                                class="text-blue-600 hover:text-blue-800 transition cursor-pointer"
-                                x-on:click.prevent="$dispatch('open-modal-customer', { id: null, modo: 'venta' })"
-                                aria-label="{{ __('Editar cliente') }}"
+                                wire:click="eliminarClienteSeleccionado"
+                                class="text-red-600 hover:text-red-800 transition cursor-pointer"
+                                aria-label="{{ __('Eliminar cliente') }}"
                             >
-                                <i class="fa-solid fa-pencil"></i>
+                                <i class="fa-solid fa-trash-can"></i>
                             </button>
-                        </flux:modal.trigger>
-
-                        {{-- Botón Eliminar Cliente --}}
-                        <button
-                            wire:click="eliminarClienteSeleccionado"
-                            class="text-red-600 hover:text-red-800 transition cursor-pointer"
-                            aria-label="{{ __('Eliminar cliente') }}"
-                        >
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-
+                        </div>
+                    @endif
 
                     <!-- Franja izquierda intercalada, espaciada y con altura completa -->
                     <div class="w-1 flex flex-col justify-between py-0">
@@ -58,8 +60,15 @@
                         <p class="text-gray-700 dark:text-gray-300">
                             <strong>{{ __('Dirección:') }}</strong> {{ $cliente_seleccionado['direccion'] ?? '---' }}
                         </p>
+
+                        @if($esGeneradoPorReserva)
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                                * El cliente no puede modificarse porque esta orden proviene de una reserva.
+                            </p>
+                        @endif
                     </div>
                 </div>
+
 
                 <flux:input
                     wire:model.defer="servicio_buscar"
@@ -133,17 +142,62 @@
 
                 </div>
 
-                <!-- Paginación dinámica Livewire -->
-                <div class="mt-4 flex justify-center items-center space-x-2">
-                    @for($i = 1; $i <= $totalPaginas; $i++)
+                <!-- Paginación mejorada -->
+                <div class="mt-6 flex flex-wrap justify-center items-center gap-1 text-sm">
+
+                    <!-- Botón anterior -->
+                    <button
+                        wire:click="irAPagina({{ max(1, $pagina - 1) }})"
+                        class="px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+                        @if($pagina === 1) disabled @endif
+                    >
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+
+                    @php
+                        $rango = 2; // cantidad de páginas a mostrar a los lados
+                        $inicio = max(1, $pagina - $rango);
+                        $fin = min($totalPaginas, $pagina + $rango);
+                    @endphp
+
+                    @if($inicio > 1)
+                        <button wire:click="irAPagina(1)"
+                                class="cursor-pointer px-3 py-1 rounded border border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                            1
+                        </button>
+                        @if($inicio > 2)
+                            <span class="px-2">...</span>
+                        @endif
+                    @endif
+
+                    @for($i = $inicio; $i <= $fin; $i++)
                         <button wire:click="irAPagina({{ $i }})"
-                                class="px-3 py-1 rounded cursor-pointer {{ $i == $pagina ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">
+                                class="cursor-pointer px-3 py-1 rounded {{ $i == $pagina ? 'bg-blue-600  text-white' : 'border border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                             {{ $i }}
                         </button>
                     @endfor
+
+                    @if($fin < $totalPaginas)
+                        @if($fin < $totalPaginas - 1)
+                            <span class="px-2">...</span>
+                        @endif
+                        <button wire:click="irAPagina({{ $totalPaginas }})"
+                                class="px-3 py-1 rounded border border-gray-300 text-gray-700 cursor-pointer dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {{ $totalPaginas }}
+                        </button>
+                    @endif
+
+                    <!-- Botón siguiente -->
+                    <button
+                        wire:click="irAPagina({{ min($totalPaginas, $pagina + 1) }})"
+                        class="px-2 py-1 rounded border border-gray-300 text-gray-600 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
+                        @if($pagina === $totalPaginas) disabled @endif
+                    >
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             @else
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('No se encontraron servicios.') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-4">{{ __('No se encontraron servicios.') }}</p>
             @endif
         </div>
 

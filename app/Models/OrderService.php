@@ -17,6 +17,7 @@ class OrderService extends Model
         'fecha',
         'descuento',
         'total',
+        'modo_pago_id',
         'estado_id',
         'usuario_id',
         'pagado',
@@ -63,6 +64,11 @@ class OrderService extends Model
     public function pagos()
     {
         return $this->morphMany(Payment::class, 'pagable');
+    }
+
+    public function reservationRoom()
+    {
+        return $this->belongsTo(ReservationRoom::class);
     }
 
 }

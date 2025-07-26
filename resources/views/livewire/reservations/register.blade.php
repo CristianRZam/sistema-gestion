@@ -87,7 +87,15 @@
                         <!-- Fila principal -->
                     <tr>
                         <td class="border p-2 text-center">{{ $index + 1 }}</td>
-                        <td class="border p-2 text-center">{{ $detalle['room']['numero'] ?? '---' }}</td>
+                        <td class="border p-2 text-center">
+                            {{ $detalle['room']['numero'] ?? '---' }}
+                            <br>
+                            <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
+                                {{ $detalle['room']['tipo_nombre'] ?? 'Tipo no definido' }}
+                            </span>
+
+                        </td>
+
 
                         @php
                             $fechaInicio = \Carbon\Carbon::parse($detalle['fecha_inicio']);
@@ -226,41 +234,148 @@
                             </div>
 
                             @if($mostrarServicios[$detalle['id']] ?? false)
-                                <div class="space-y-4">
-                                    <!-- Servicios -->
-                                    <div>
-                                        <h4 class="font-semibold text-gray-600 dark:text-gray-400 mb-1">Servicios:</h4>
-                                        <ul class="list-disc ml-5 text-sm text-gray-700 dark:text-gray-300">
-                                            @forelse($detalle['servicios'] ?? [] as $servicio)
-                                                <li>{{ $servicio['nombre'] }} - S/ {{ number_format($servicio['precio'], 2) }}</li>
+                                <div class="space-y-6 mt-4">
+                                    <!-- Órdenes de servicio -->
+                                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700">
+                                        <h4 class="text-sm font-semibold text-gray-800 dark:text-white mb-3">Órdenes de servicio</h4>
+
+                                        <div class="space-y-2">
+                                            @php
+                                                $totalOrdenes = 0;
+                                            @endphp
+
+                                            @forelse($detalle['ordenes_servicio'] as $orden)
+                                                @php
+                                                    $esCancelado = $orden['estado_id'] == 1;
+                                                    $totalOrden = max(0, $orden['total'] - ($orden['descuento'] ?? 0));
+
+                                                    if (!$esCancelado) {
+                                                        $totalOrdenes += $totalOrden;
+                                                    }
+                                                @endphp
+
+                                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm">
+                                                    <div class="flex items-center gap-2">
+                                                        <!-- Botón eliminar o bloqueado (ultracompacto y centrado) -->
+                                                        {{--
+                                                        @if($orden['cantidad_detalles'] === 0)
+                                                            <!-- Mostrar botón activo si la orden no tiene detalles -->
+                                                            <button
+                                                                wire:click="eliminarOrden({{ $orden['id'] }})"
+                                                                title="Eliminar orden vacía"
+                                                                class="w-4 h-4 flex items-center justify-center border border-red-500 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition cursor-pointer"
+                                                            >
+                                                                <i class="fa-solid fa-xmark text-[10px] leading-none"></i>
+                                                            </button>
+                                                        @else
+                                                            <!-- Botón deshabilitado si la orden tiene detalles (no se puede eliminar) -->
+                                                            <button
+                                                                disabled
+                                                                title="Orden con detalles – no se puede eliminar"
+                                                                class="w-4 h-4 flex items-center justify-center border border-gray-400 text-gray-400 rounded-full bg-gray-100 cursor-not-allowed"
+                                                            >
+                                                                <i class="fa-solid fa-xmark text-[10px] leading-none"></i>
+                                                            </button>
+                                                        @endif
+                                                        --}}
+
+
+                                                        <!-- Texto orden -->
+                                                        <div class="space-y-1 sm:space-y-0 sm:space-x-2">
+                                                            <a href="{{ route('order-services.pay', ['orden' => $orden['id']]) }}"
+                                                               class="text-blue-600 dark:text-blue-400 font-medium hover:underline block sm:inline">
+                                                                Orden #{{ $orden['id'] }} – {{ $orden['fecha'] }}
+                                                            </a>
+
+                                                            <span class="text-gray-600 dark:text-gray-300">
+                                                                Total: S/ {{ number_format($totalOrden, 2) }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Estado -->
+                                                    <div class="flex items-center justify-start sm:justify-end mt-2 sm:mt-0">
+                                                        <span class="inline-block bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 text-xs px-3 py-1 rounded-full">
+                                                            {{ $orden['estado_nombre'] }}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             @empty
-                                                <li>No hay servicios registrados</li>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">No hay órdenes de servicio registradas</div>
                                             @endforelse
-                                        </ul>
+                                        </div>
+
+
+                                        <div class="mt-4 border-t pt-3 text-sm font-semibold text-right text-gray-700 dark:text-gray-200">
+                                            Total de todas las órdenes válidas: <span class="text-blue-600 dark:text-blue-400">S/ {{ number_format($totalOrdenes, 2) }}</span>
+                                        </div>
                                     </div>
 
                                     <!-- Productos -->
-                                    <div>
-                                        <h4 class="font-semibold text-gray-600 dark:text-gray-400 mb-1">Productos:</h4>
-                                        <ul class="list-disc ml-5 text-sm text-gray-700 dark:text-gray-300">
-                                            @forelse($detalle['productos'] ?? [] as $producto)
-                                                <li>{{ $producto['nombre'] }} (x{{ $producto['cantidad'] }}) - S/ {{ number_format($producto['total'], 2) }}</li>
+                                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700">
+                                        <h4 class="text-sm font-semibold text-gray-800 dark:text-white mb-3">Productos vendidos</h4>
+
+                                        <div class="space-y-2">
+                                            @php
+                                                $totalVentas = 0;
+                                            @endphp
+
+                                            @forelse($detalle['productos'] as $venta)
+                                                @php
+                                                    $totalVenta = collect($venta['detalles'])->sum('subtotal');
+                                                    $totalVentas += $totalVenta;
+                                                    $esCancelado = $venta['estado_venta_id'] == 3;
+                                                @endphp
+
+                                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="space-y-1 sm:space-y-0 sm:space-x-2">
+                                                            <a href="{{ route('sales.pay', ['venta' => $venta['id']]) }}"
+                                                               class="text-blue-600 dark:text-blue-400 font-medium hover:underline block sm:inline">
+                                                                Venta #{{ $venta['id'] }} – {{ $venta['fecha'] }}
+                                                            </a>
+                                                            <span class="text-gray-600 dark:text-gray-300">
+                            Total: S/ {{ number_format($totalVenta, 2) }}
+                        </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Estado -->
+                                                    <div class="flex items-center justify-start sm:justify-end mt-2 sm:mt-0">
+                    <span class="inline-block bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 text-xs px-3 py-1 rounded-full">
+                        {{ $venta['estado_nombre'] ?? 'Sin estado' }}
+                    </span>
+                                                    </div>
+                                                </div>
                                             @empty
-                                                <li>No hay productos registrados</li>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">No hay ventas registradas</div>
                                             @endforelse
-                                        </ul>
+                                        </div>
+
+                                        <div class="mt-4 border-t pt-3 text-sm font-semibold text-right text-gray-700 dark:text-gray-200">
+                                            Total de todas las ventas válidas: <span class="text-blue-600 dark:text-blue-400">S/ {{ number_format($totalVentas, 2) }}</span>
+                                        </div>
                                     </div>
 
-                                    <div class="flex justify-end gap-3">
-                                        <button wire:click="agregarServicio({{ $detalle['id'] }})" class="btn-nuevo">
-                                            <i class="fa-solid fa-plus-circle mr-1"></i> Agregar servicio
+
+                                    <!-- Botones -->
+                                    <div class="flex flex-col sm:flex-row justify-end gap-3">
+                                        <button wire:click="agregarServicio({{ $detalle['id'] }})"
+                                                class="flex items-center justify-center px-4 py-2 text-sm font-medium border border-blue-600 text-blue-600 bg-transparent
+                                                    hover:bg-blue-600 hover:text-white rounded-full transition cursor-pointer">
+                                            <i class="fa-solid fa-plus-circle mr-2"></i> Agregar servicio
                                         </button>
-                                        <button wire:click="agregarProducto({{ $detalle['id'] }})" class="btn-nuevo">
-                                            <i class="fa-solid fa-box mr-1"></i> Agregar producto
+
+                                        <button wire:click="agregarProducto({{ $detalle['id'] }})"
+                                                class="flex items-center justify-center px-4 py-2 text-sm font-medium border border-green-600 text-green-600 bg-transparent
+                                                    hover:bg-green-600 hover:text-white rounded-full transition cursor-pointer">
+                                            <i class="fa-solid fa-box mr-2"></i> Agregar producto
                                         </button>
                                     </div>
+
                                 </div>
                             @endif
+
                         </td>
                     </tr>
                 @endforeach
@@ -290,6 +405,7 @@
     @livewire('reservations.register-check')
 
 </div>
+
 <script>
     if (!window._errorRegisterReservation) {
         window._errorRegisterReservation = true;

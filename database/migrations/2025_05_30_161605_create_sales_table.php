@@ -17,6 +17,8 @@ return new class extends Migration
             // Cliente asociado a la venta
             $table->unsignedBigInteger('customer_id')->nullable();
 
+            $table->unsignedBigInteger('reservation_room_id')->nullable()->comment('ID del detalle de habitación asociado (relación lógica)');
+
             // Usuario (vendedor) que realizó la venta (relación lógica, sin clave foránea)
             $table->unsignedBigInteger('usuario_id')->nullable();
 
@@ -24,22 +26,16 @@ return new class extends Migration
             $table->dateTime('fecha_venta')->nullable();
 
             // Total de la venta
-            $table->decimal('total', 10, 2);
+            $table->decimal('total', 10, 2)->default(0)->comment('Total de la venta');
 
             // Descuento de la venta
             $table->decimal('descuento', 10, 2)->default(0);
 
-            // Método de pago (opcional)
-            $table->unsignedBigInteger('metodo_pago_id')->nullable();
-
-            // Monto con el que pagó el cliente
-            $table->decimal('pago_con', 10, 2)->nullable();
-
-            // Vuelto entregado al cliente
-            $table->decimal('vuelto', 10, 2)->default(0);
-
             // Estado de la venta (ej. completada, anulada)
             $table->unsignedBigInteger('estado_venta_id')->nullable();
+
+            $table->boolean('pagado')->default(false)->comment('Indica si ha sido pagada');
+            $table->unsignedBigInteger('modo_pago_id')->default(1)->comment('Indica el modo de pago: completo o en partes');
 
             // Auditoría
             $table->date('auditoriaFechaCreacion')->nullable();

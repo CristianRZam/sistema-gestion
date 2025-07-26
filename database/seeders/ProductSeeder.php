@@ -22,7 +22,6 @@ class ProductSeeder extends Seeder
                 'nombre' => 'Producto ' . $i,
                 'descripcion' => 'Descripción del producto ' . $i,
                 'precio' => mt_rand(1000, 50000) / 100,
-                'stock' => mt_rand(0, 100),
                 'categoria_id' => $categorias[array_rand($categorias)],
                 'auditoriaFechaCreacion' => $now,
                 'auditoriaCreadoPor' => $userId,

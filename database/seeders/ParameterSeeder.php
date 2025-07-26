@@ -851,5 +851,70 @@ class ParameterSeeder extends Seeder
         ]);
 
 
+        // Modos de pago
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'MODO_PAGO',
+                'nombre' => 'Pago completo',
+                'nombreCorto' => 'Completo',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'MODO_PAGO',
+                'nombre' => 'Pago en partes',
+                'nombreCorto' => 'Parcial',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+
+        // Estado de pago
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PAGO',
+                'nombre' => 'Completado',
+                'nombreCorto' => 'Completado',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PAGO',
+                'nombre' => 'Pendiente de aprobación',
+                'nombreCorto' => 'Pendiente',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PAGO',
+                'nombre' => 'Anulado',
+                'nombreCorto' => 'Anulado',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+
     }
 }

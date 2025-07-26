@@ -44,4 +44,16 @@ class ReservationRoom extends Model
         return $this->belongsTo(Room::class);
     }
 
+    public function ordenesServicio()
+    {
+        return $this->hasMany(OrderService::class, 'reservation_room_id')
+            ->whereNull('auditoriaFechaEliminacion');
+    }
+
+    public function ventas()
+    {
+        return $this->hasMany(Sale::class, 'reservation_room_id')
+            ->whereNull('auditoriaFechaEliminacion');
+    }
+
 }

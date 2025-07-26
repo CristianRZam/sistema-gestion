@@ -15,9 +15,12 @@ class Payment extends Model
         'pagable_id',
         'pagable_type',
         'monto_pagado',
+        'monto_entregado',
+        'vuelto',
         'metodo_pago_id',
         'estado_pago_id',
         'fecha_pago',
+        'user_id',
         'auditoriaFechaCreacion',
         'auditoriaCreadoPor',
         'auditoriaFechaModificacion',
@@ -37,9 +40,9 @@ class Payment extends Model
     {
         return $this->morphTo();
     }
-    public function usuario()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'usuario_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function metodoPago()
@@ -48,6 +51,11 @@ class Payment extends Model
             ->where('codigoParametro', 'METODO_PAGO');
     }
 
+    public function estadoPago()
+    {
+        return $this->belongsTo(Parameter::class, 'estado_pago_id', 'idParametro')
+            ->where('codigoParametro', 'ESTADO_PAGO');
+    }
     // Solo traer los que no están eliminados
     protected static function booted()
     {
@@ -55,5 +63,7 @@ class Payment extends Model
             $builder->whereNull('auditoriaFechaEliminacion');
         });
     }
+
+
 
 }

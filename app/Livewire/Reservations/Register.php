@@ -3,8 +3,10 @@
 namespace App\Livewire\Reservations;
 
 use App\Models\Customer;
+use App\Models\OrderService;
 use App\Models\Reservation;
 use App\Models\ReservationRoom;
+use App\Models\Sale;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -23,27 +25,68 @@ class Register extends Component
     {
         $this->reservationId = $id;
 
-        $this->detallesHabitaciones = ReservationRoom::with('room')
+        $this->detallesHabitaciones = ReservationRoom::with(['room.tipo', 'ordenesServicio.estado', 'ventas'])
             ->where('reservation_id', $this->reservationId)
-            ->whereNull('auditoriaFechaEliminacion') // Solo detalles activos
+            ->whereNull('auditoriaFechaEliminacion')
             ->get()
             ->map(function ($detalle) {
+                $room = $detalle->room;
+                $roomArray = $room->toArray();
+                $roomArray['tipo_nombre'] = $room->tipo?->nombre ?? '---';
+
                 return [
                     'id' => $detalle->id,
-                    'room' => $detalle->room->toArray(),
+                    'room' => $roomArray,
                     'fecha_inicio' => Carbon::parse($detalle->fecha_inicio)->format('Y-m-d'),
                     'fecha_fin' => Carbon::parse($detalle->fecha_fin)->format('Y-m-d'),
                     'cantidad_personas' => $detalle->cantidad_personas,
                     'precio' => $detalle->precio,
                     'subtotal' => $detalle->subtotal ?? 0,
                     'servicios' => [],
-                    'productos' => [],
+                    'ordenes_servicio' => $detalle->ordenesServicio->map(function ($orden) {
+                        return [
+                            'id' => $orden->id,
+                            'fecha' => $orden->fecha->format('Y-m-d H:i'),
+                            'estado_id' => $orden->estado_id,
+                            'estado_nombre' => $orden->estado->nombre ?? 'Sin estado',
+                            'total' => max(0, $orden->total - $orden->descuento),
+                            'pagado' => $orden->pagado,
+                            'cantidad_detalles' => $orden->detalles()->count(),
+                        ];
+                    })->toArray(),
+                    'productos' => $detalle->ventas
+                        ->where('estado_venta_id', '!=', 3)
+                        ->map(function ($venta) {
+                            return [
+                                'id' => $venta->id,
+                                'fecha' => optional($venta->created_at)->format('Y-m-d H:i'),
+                                'estado_venta_id' => $venta->estado_venta_id,
+                                'estado_nombre' => $venta->estadoVenta->nombre ?? 'Sin estado',
+                                'detalles' => $venta->detalles
+                                    ->whereNull('auditoriaFechaEliminacion')
+                                    ->map(function ($detalle) {
+                                        return [
+                                            'producto_id' => $detalle->product_id,
+                                            'nombre' => $detalle->product?->nombre ?? 'Producto eliminado',
+                                            'cantidad' => $detalle->cantidad,
+                                            'precio_unitario' => $detalle->precio_unitario,
+                                            'subtotal' => $detalle->subtotal,
+                                        ];
+                                    })->toArray(),
+                            ];
+                        })
+                        ->values()
+                        ->toArray(),
+
                 ];
             })
             ->toArray();
 
+
         $this->updatedDetallesHabitaciones();
     }
+
+
 
 
     protected $listeners = [
@@ -264,6 +307,44 @@ class Register extends Component
 
         $this->dispatch('successRegisterReservation', ['mensaje' => "Detalle guardado correctamente."]);
     }
+
+
+    public function agregarServicio($servicioId)
+    {
+        $clienteId = $this->cliente_seleccionado['id'] ?? null;
+
+        // Crear la orden
+        $orden = OrderService::create([
+            'customer_id'             => $clienteId,
+            'reservation_room_id'     => $servicioId,
+            'fecha'                   => Carbon::now(),
+            'estado_id'               => 4,
+            'usuario_id'              => Auth::id(),
+            'auditoriaFechaCreacion'  => Carbon::now(),
+            'auditoriaCreadoPor'      => Auth::id(),
+        ]);
+
+        return redirect()->route('order-services.edit', ['id' => $orden->id]);
+    }
+
+    public function agregarProducto($servicioId)
+    {
+        $clienteId = $this->cliente_seleccionado['id'] ?? null;
+
+        // Crear la orden
+        $venta = Sale::create([
+            'customer_id'             => $clienteId,
+            'reservation_room_id'     => $servicioId,
+            'fecha_venta'                   => Carbon::now(),
+            'estado_venta_id'               => 1,
+            'usuario_id'              => Auth::id(),
+            'auditoriaFechaCreacion'  => Carbon::now(),
+            'auditoriaCreadoPor'      => Auth::id(),
+        ]);
+
+        return redirect()->route('sales.edit', ['id' => $venta->id]);
+    }
+
 
     public function render()
     {

@@ -59,55 +59,30 @@ class Register extends Component
 
     public $producto_buscar = '';
     public $productosDisponibles = [];
-
+    public bool $esGeneradoPorReserva = false;
 
     public function mount($id = null)
     {
         if ($id !== null) {
-            $ventaModel = Sale::findOrFail($id);
+            $ventaModel = Sale::with(['pagos' => function ($q) {
+                $q->whereNull('auditoriaFechaEliminacion');
+            }])->findOrFail($id);
 
-            if ($ventaModel->estado_venta_id != 1) {
-                session()->flash('error', 'La venta ya fue pagada y no se puede editar.');
+            // Bloquear si ya fue pagada o si ya tiene al menos un pago
+            if ($ventaModel->estado_venta_id === 3 || $ventaModel->pagado || $ventaModel->pagos->isNotEmpty()) {
+                session()->flash('error', 'La venta ya tiene pagos registrados y no se puede editar.');
                 redirect()->route('sales');
                 return;
             }
 
             $this->ventaId = $id;
             $this->cargarVentaExistente($id);
+            $this->esGeneradoPorReserva = !is_null($ventaModel->reservation_room_id);
         }
-
-        $this->productosDisponibles = DB::table('products as p')
-            ->leftJoin('parameters as c', function ($join) {
-                $join->on('p.categoria_id', '=', 'c.idParametro')
-                    ->where('c.tipo', '=', 'CATEGORIA');
-            })
-            ->leftJoin('product_images as pi', function ($join) {
-                $join->on('p.id', '=', 'pi.product_id')
-                    ->where('pi.es_principal', '=', true);
-            })
-            ->where('p.stock', '>', 0)
-            ->whereNull('p.auditoriaFechaEliminacion')
-            ->select(
-                'p.id',
-                'p.codigo',
-                'p.nombre',
-                'p.precio',
-                'p.descripcion',
-                'p.stock',
-                'p.categoria_id',
-                'c.nombre as categoria_nombre',
-                'pi.imagen_url as imagen',
-            )
-            ->get()
-            ->map(function ($item) {
-                return (array) $item;
-            })
-            ->toArray();
-
-
 
         $this->calcularTotal();
     }
+
 
     public function cargarVentaExistente($id)
     {
@@ -127,6 +102,7 @@ class Register extends Component
 
         $detalles = SaleDetail::with(['product.imagenPrincipal'])
             ->where('sale_id', $id)
+            ->whereNull('sale_details.auditoriaFechaEliminacion')
             ->get();
 
 
@@ -206,9 +182,33 @@ class Register extends Component
 
     public function agregarProducto($productoId)
     {
-        $producto = collect($this->productosDisponibles)->firstWhere('id', $productoId);
+        $producto = DB::table('products as p')
+            ->leftJoin('parameters as c', function ($join) {
+                $join->on('p.categoria_id', '=', 'c.idParametro')
+                    ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
+            })
+            ->where('p.id', $productoId)
+            ->whereNull('p.auditoriaFechaEliminacion')
+            ->select(
+                'p.id',
+                'p.codigo',
+                'p.nombre',
+                'p.precio',
+                'p.descripcion',
+                'p.stock',
+                'p.categoria_id',
+                'c.nombre as categoria_nombre',
+                'pi.imagen_url as imagen'
+            )
+            ->first();
 
         if ($producto) {
+            $producto = (array) $producto;
+
             $foundIndex = null;
 
             foreach ($this->productos as $index => $p) {
@@ -237,16 +237,41 @@ class Register extends Component
         }
     }
 
+
     public string $codigoEscaneadoVenta = '';
 
     public function agregarProductoPorCodigo()
     {
         $codigo = trim($this->codigoEscaneadoVenta);
-        $this->codigoEscaneadoVenta = ''; // limpia después de usar
+        $this->codigoEscaneadoVenta = '';
 
         if (empty($codigo)) return;
 
-        $producto = collect($this->productosDisponibles)->firstWhere('codigo', $codigo);
+        // Buscar en la BD directamente por código
+        $producto = DB::table('products as p')
+            ->leftJoin('parameters as c', function ($join) {
+                $join->on('p.categoria_id', '=', 'c.idParametro')
+                    ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
+            })
+            ->where('p.codigo', $codigo)
+            ->where('p.stock', '>', 0)
+            ->whereNull('p.auditoriaFechaEliminacion')
+            ->select(
+                'p.id',
+                'p.codigo',
+                'p.nombre',
+                'p.precio',
+                'p.descripcion',
+                'p.stock',
+                'p.categoria_id',
+                'c.nombre as categoria_nombre',
+                'pi.imagen_url as imagen'
+            )
+            ->first();
 
         if (!$producto) {
             session()->flash('error', "Producto con código {$codigo} no encontrado.");
@@ -254,7 +279,9 @@ class Register extends Component
             return;
         }
 
-        // Busca si ya está en el carrito
+        $producto = (array) $producto;
+
+        // Buscar si ya está en el carrito
         $index = null;
         foreach ($this->productos as $i => $p) {
             if ($p['id'] === $producto['id']) {
@@ -273,7 +300,7 @@ class Register extends Component
             $this->productos[] = [
                 'id' => $producto['id'],
                 'nombre' => $producto['nombre'],
-                'precio' => $producto['precio'],
+                'precio_unitario' => $producto['precio'], // ✅ clave corregida
                 'cantidad' => 1,
                 'stock' => $producto['stock'],
                 'imagen' => $producto['imagen'] ?? null,
@@ -303,6 +330,7 @@ class Register extends Component
             return;
         }
 
+        // Validar stock
         foreach ($this->productos as $producto) {
             if ($producto['cantidad'] > $producto['stock']) {
                 $this->addError('stock', "El producto '{$producto['nombre']}' no tiene suficiente stock.");
@@ -315,77 +343,93 @@ class Register extends Component
 
         try {
             if ($this->ventaId) {
-                // Actualizar venta existente
+                // --- ACTUALIZAR VENTA EXISTENTE ---
                 $venta = Sale::findOrFail($this->ventaId);
-                $venta->customer_id = $this->cliente_seleccionado['id'] ?? null;
-                $venta->total = $this->total ?? 0;
+                $venta->customer_id              = $this->cliente_seleccionado['id'] ?? null;
+                $venta->total                    = $this->total ?? 0;
                 $venta->auditoriaFechaModificacion = Carbon::now();
-                $venta->auditoriaModificadoPor = auth()->id();
+                $venta->auditoriaModificadoPor     = auth()->id();
                 $venta->save();
 
-                $detallesActuales = SaleDetail::where('sale_id', $venta->id)->get()->keyBy('product_id');
+                // Obtener detalles actuales y mapear por product_id
+                $detallesActuales = SaleDetail::where('sale_id', $venta->id)
+                    ->whereNull('auditoriaFechaEliminacion')
+                    ->get()
+                    ->keyBy('product_id');
                 $idsEnNuevaVenta = [];
 
+                // Crear o actualizar detalles según el array $this->productos
                 foreach ($this->productos as $producto) {
                     $idsEnNuevaVenta[] = $producto['id'];
 
                     if ($detallesActuales->has($producto['id'])) {
                         // Actualizar detalle existente
                         $detalle = $detallesActuales[$producto['id']];
-                        $detalle->cantidad = $producto['cantidad'];
-                        $detalle->precio_unitario = $producto['precio'];
-                        $detalle->subtotal = $producto['cantidad'] * $producto['precio'];
+                        $detalle->cantidad              = $producto['cantidad'];
+                        $detalle->precio_unitario       = $producto['precio'];
+                        $detalle->subtotal              = $producto['cantidad'] * $producto['precio'];
                         $detalle->auditoriaFechaModificacion = Carbon::now();
-                        $detalle->auditoriaModificadoPor = auth()->id();
+                        $detalle->auditoriaModificadoPor     = auth()->id();
                         $detalle->save();
                     } else {
                         // Crear nuevo detalle
                         SaleDetail::create([
-                            'sale_id' => $venta->id,
-                            'product_id' => $producto['id'],
-                            'cantidad' => $producto['cantidad'],
-                            'precio_unitario' => $producto['precio'],
-                            'subtotal' => $producto['cantidad'] * $producto['precio'],
+                            'sale_id'             => $venta->id,
+                            'product_id'          => $producto['id'],
+                            'cantidad'            => $producto['cantidad'],
+                            'precio_unitario'     => $producto['precio'],
+                            'subtotal'            => $producto['cantidad'] * $producto['precio'],
                             'auditoriaFechaCreacion' => Carbon::now(),
-                            'auditoriaCreadoPor' => auth()->id(),
+                            'auditoriaCreadoPor'     => auth()->id(),
                         ]);
                     }
                 }
 
-                // Eliminar detalles que ya no están
+                // --- ELIMINACIÓN LÓGICA de detalles y pivotes que ya no están ---
                 foreach ($detallesActuales as $productId => $detalle) {
                     if (!in_array($productId, $idsEnNuevaVenta)) {
-                        DB::table('purchase_sale_details')->where('sale_detail_id', $detalle->id)->delete();
-                        $detalle->delete();
+                        // Pivote purchase_sale_details
+                        \App\Models\PurchaseSaleDetail::where('sale_detail_id', $detalle->id)
+                            ->update([
+                                'auditoriaFechaEliminacion' => Carbon::now(),
+                                'auditoriaEliminadoPor'     => auth()->id(),
+                            ]);
+
+                        // Marca el detalle como eliminado
+                        $detalle->auditoriaFechaEliminacion = Carbon::now();
+                        $detalle->auditoriaEliminadoPor     = auth()->id();
+                        $detalle->save();
                     }
                 }
 
             } else {
-                // Nueva venta
+                // --- NUEVA VENTA ---
                 $venta = Sale::create([
-                    'customer_id' => $this->cliente_seleccionado['id'] ?? null,
-                    'usuario_id' => auth()->id(),
-                    'total' => $this->total ?? 0,
-                    'estado_venta_id' => 1,
+                    'customer_id'          => $this->cliente_seleccionado['id'] ?? null,
+                    'usuario_id'           => auth()->id(),
+                    'total'                => $this->total ?? 0,
+                    'estado_venta_id'      => 1,
                     'auditoriaFechaCreacion' => Carbon::now(),
-                    'auditoriaCreadoPor' => auth()->id(),
+                    'auditoriaCreadoPor'     => auth()->id(),
                 ]);
 
+                // Crear detalles
                 foreach ($this->productos as $producto) {
                     SaleDetail::create([
-                        'sale_id' => $venta->id,
-                        'product_id' => $producto['id'],
-                        'cantidad' => $producto['cantidad'],
-                        'precio_unitario' => $producto['precio'],
-                        'subtotal' => $producto['cantidad'] * $producto['precio'],
+                        'sale_id'             => $venta->id,
+                        'product_id'          => $producto['id'],
+                        'cantidad'            => $producto['cantidad'],
+                        'precio_unitario'     => $producto['precio'],
+                        'subtotal'            => $producto['cantidad'] * $producto['precio'],
                         'auditoriaFechaCreacion' => Carbon::now(),
-                        'auditoriaCreadoPor' => auth()->id(),
+                        'auditoriaCreadoPor'     => auth()->id(),
                     ]);
                 }
             }
 
             DB::commit();
 
+            // Redirigir al pago
             return redirect()->route('sales.pay', ['venta' => $venta->id]);
 
         } catch (\Exception $e) {
@@ -393,9 +437,9 @@ class Register extends Component
             \Log::error('Error al registrar/editar venta: ' . $e->getMessage());
             $this->addError('productos', 'Ocurrió un error al registrar la venta.');
             $this->dispatch('errorRegisterSale', ['mensaje' => "Ocurrió un error interno al registrar la venta."]);
-
         }
     }
+
 
 
 
@@ -406,27 +450,53 @@ class Register extends Component
     {
         $busqueda = strtolower($this->producto_buscar_filtro);
 
-        $productosFiltrados = empty($busqueda)
-            ? collect($this->productosDisponibles)
-            : collect($this->productosDisponibles)->filter(function ($p) use ($busqueda) {
-                // Convertir todos los campos a texto y comparar
-                $nombre = strtolower($p['nombre'] ?? '');
-                $descripcion = strtolower($p['descripcion'] ?? '');
-                $categoria = strtolower($p['categoria_nombre'] ?? ''); // ← Aquí la corrección
+        $query = DB::table('products as p')
+            ->leftJoin('parameters as c', function ($join) {
+                $join->on('p.categoria_id', '=', 'c.idParametro')
+                    ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
+            })
+            ->where('p.stock', '>', 0)
+            ->whereNull('p.auditoriaFechaEliminacion');
 
-                return str_contains($nombre, $busqueda)
-                    || str_contains($descripcion, $busqueda)
-                    || str_contains($categoria, $busqueda);
+        if (!empty($busqueda)) {
+            $query->where(function ($q) use ($busqueda) {
+                $q->whereRaw('LOWER(p.nombre) LIKE ?', ["%{$busqueda}%"])
+                    ->orWhereRaw('LOWER(p.descripcion) LIKE ?', ["%{$busqueda}%"])
+                    ->orWhereRaw('LOWER(c.nombre) LIKE ?', ["%{$busqueda}%"]);
             });
+        }
 
-        $total = $productosFiltrados->count();
-        $inicio = ($this->pagina - 1) * $this->porPagina;
+        $total = $query->count();
+
+        $items = $query->select(
+            'p.id',
+            'p.codigo',
+            'p.nombre',
+            'p.precio',
+            'p.descripcion',
+            'p.stock',
+            'p.categoria_id',
+            'c.nombre as categoria_nombre',
+            'pi.imagen_url as imagen',
+        )
+            ->offset(($this->pagina - 1) * $this->porPagina)
+            ->limit($this->porPagina)
+            ->get()
+            ->map(function ($item) {
+                return (array) $item;
+            })
+            ->toArray();
 
         return [
-            'items' => $productosFiltrados->slice($inicio, $this->porPagina)->values()->all(),
+            'items' => $items,
             'total' => $total,
         ];
     }
+
 
 
 

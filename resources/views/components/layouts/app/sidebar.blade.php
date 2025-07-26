@@ -76,7 +76,7 @@
                     @endcan
                     @can('ver reservas')
                         <flux:navlist.item :href="route('order-services')" :current="request()->routeIs('order-services*')" wire:navigate>
-                            <i class="fa-solid fa-clipboard-list mr-2"></i> {{ __('Atención de servicios') }}
+                            <i class="fa-regular fa-clipboard mr-4"></i> {{ __('Atención de servicios') }}
                         </flux:navlist.item>
                     @endcan
                 </flux:navlist.group>

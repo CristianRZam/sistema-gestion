@@ -73,34 +73,6 @@ class Register extends Component
             $this->cargarCompraExistente($id);
         }
 
-        $this->productosDisponibles = DB::table('products as p')
-            ->leftJoin('parameters as c', function ($join) {
-                $join->on('p.categoria_id', '=', 'c.idParametro')
-                    ->where('c.tipo', '=', 'CATEGORIA');
-            })
-            ->leftJoin('product_images as pi', function ($join) {
-                $join->on('p.id', '=', 'pi.product_id')
-                    ->where('pi.es_principal', '=', true);
-            })
-            ->whereNull('p.auditoriaFechaEliminacion')
-            ->select(
-                'p.id',
-                'p.codigo',
-                'p.nombre',
-                'p.precio',
-                'p.descripcion',
-                'p.stock',
-                'p.categoria_id',
-                'c.nombre as categoria_nombre',
-                'pi.imagen_url as imagen',
-            )
-            ->get()
-            ->map(function ($item) {
-                return (array) $item;
-            })
-            ->toArray();
-
-
 
         $this->calcularTotal();
     }
@@ -211,9 +183,33 @@ class Register extends Component
 
     public function agregarProducto($productoId)
     {
-        $producto = collect($this->productosDisponibles)->firstWhere('id', $productoId);
+        $producto = DB::table('products as p')
+            ->leftJoin('parameters as c', function ($join) {
+                $join->on('p.categoria_id', '=', 'c.idParametro')
+                    ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
+            })
+            ->where('p.id', $productoId)
+            ->whereNull('p.auditoriaFechaEliminacion')
+            ->select(
+                'p.id',
+                'p.codigo',
+                'p.nombre',
+                'p.precio',
+                'p.descripcion',
+                'p.stock',
+                'p.categoria_id',
+                'c.nombre as categoria_nombre',
+                'pi.imagen_url as imagen'
+            )
+            ->first();
 
         if ($producto) {
+            $producto = (array) $producto;
+
             $foundIndex = null;
 
             foreach ($this->productos as $index => $p) {
@@ -224,16 +220,16 @@ class Register extends Component
             }
 
             if ($foundIndex !== null) {
-                // Aumentar cantidad sin validar stock
+                // Aumentar cantidad sin validar stock (en compras)
                 $this->productos[$foundIndex]['cantidad']++;
             } else {
-                // Agregar nuevo producto al carrito
+                // Agregar nuevo producto al carrito de compras
                 $this->productos[] = [
                     'id' => $producto['id'],
                     'nombre' => $producto['nombre'],
-                    'precio_unitario' => null, // se debe ingresar manualmente
+                    'precio_unitario' => null, // el usuario lo ingresará manualmente
                     'cantidad' => 1,
-                    'stock' => $producto['stock'], // opcional, puedes quitarlo si no se usa
+                    'stock' => $producto['stock'], // opcional
                     'imagen' => $producto['imagen'] ?? null,
                 ];
             }
@@ -244,16 +240,39 @@ class Register extends Component
 
 
 
+
     public string $codigoEscaneadoVenta = '';
 
     public function agregarProductoPorCodigo()
     {
         $codigo = trim($this->codigoEscaneadoVenta);
-        $this->codigoEscaneadoVenta = ''; // limpia después de usar
+        $this->codigoEscaneadoVenta = ''; // limpiar input después de usar
 
         if (empty($codigo)) return;
 
-        $producto = collect($this->productosDisponibles)->firstWhere('codigo', $codigo);
+        $producto = DB::table('products as p')
+            ->leftJoin('parameters as c', function ($join) {
+                $join->on('p.categoria_id', '=', 'c.idParametro')
+                    ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
+            })
+            ->where('p.codigo', $codigo)
+            ->whereNull('p.auditoriaFechaEliminacion')
+            ->select(
+                'p.id',
+                'p.codigo',
+                'p.nombre',
+                'p.precio',
+                'p.descripcion',
+                'p.stock',
+                'p.categoria_id',
+                'c.nombre as categoria_nombre',
+                'pi.imagen_url as imagen'
+            )
+            ->first();
 
         if (!$producto) {
             session()->flash('error', "Producto con código {$codigo} no encontrado.");
@@ -261,7 +280,9 @@ class Register extends Component
             return;
         }
 
-        // Busca si ya está en el carrito
+        $producto = (array) $producto;
+
+        // Verifica si ya está en el carrito
         $index = null;
         foreach ($this->productos as $i => $p) {
             if ($p['id'] === $producto['id']) {
@@ -271,22 +292,21 @@ class Register extends Component
         }
 
         if ($index !== null) {
-            // Ya está en el carrito, simplemente aumenta la cantidad
             $this->productos[$index]['cantidad']++;
         } else {
-            // Nuevo producto agregado al carrito
             $this->productos[] = [
                 'id' => $producto['id'],
                 'nombre' => $producto['nombre'],
-                'precio_unitario' => null, // ← se debe ingresar manualmente
+                'precio_unitario' => null, // Se debe ingresar manualmente
                 'cantidad' => 1,
-                'stock' => $producto['stock'], // se puede conservar pero ya no se usa para validar
+                'stock' => $producto['stock'],
                 'imagen' => $producto['imagen'] ?? null,
             ];
         }
 
         $this->calcularTotal();
     }
+
 
 
 
@@ -434,29 +454,55 @@ class Register extends Component
 
     public function getProductosDisponiblesFiltradosProperty()
     {
-        $busqueda = strtolower($this->producto_buscar_filtro);
+        $query = DB::table('products as p')
+            ->leftJoin('parameters as c', function ($join) {
+                $join->on('p.categoria_id', '=', 'c.idParametro')
+                    ->where('c.tipo', '=', 'CATEGORIA');
+            })
+            ->leftJoin('product_images as pi', function ($join) {
+                $join->on('p.id', '=', 'pi.product_id')
+                    ->where('pi.es_principal', '=', true);
+            })
+            ->whereNull('p.auditoriaFechaEliminacion');
 
-        $productosFiltrados = empty($busqueda)
-            ? collect($this->productosDisponibles)
-            : collect($this->productosDisponibles)->filter(function ($p) use ($busqueda) {
-                // Convertir todos los campos a texto y comparar
-                $nombre = strtolower($p['nombre'] ?? '');
-                $descripcion = strtolower($p['descripcion'] ?? '');
-                $categoria = strtolower($p['categoria_nombre'] ?? ''); // ← Aquí la corrección
-
-                return str_contains($nombre, $busqueda)
-                    || str_contains($descripcion, $busqueda)
-                    || str_contains($categoria, $busqueda);
+        if (!empty($this->producto_buscar_filtro)) {
+            $busqueda = '%' . strtolower($this->producto_buscar_filtro) . '%';
+            $query->where(function ($q) use ($busqueda) {
+                $q->whereRaw('LOWER(p.nombre) LIKE ?', [$busqueda])
+                    ->orWhereRaw('LOWER(p.descripcion) LIKE ?', [$busqueda])
+                    ->orWhereRaw('LOWER(c.nombre) LIKE ?', [$busqueda]);
             });
+        }
 
-        $total = $productosFiltrados->count();
-        $inicio = ($this->pagina - 1) * $this->porPagina;
+        $total = $query->count();
+
+        $productos = $query
+            ->select(
+                'p.id',
+                'p.codigo',
+                'p.nombre',
+                'p.precio',
+                'p.descripcion',
+                'p.stock',
+                'p.categoria_id',
+                'c.nombre as categoria_nombre',
+                'pi.imagen_url as imagen'
+            )
+            ->offset(($this->pagina - 1) * $this->porPagina)
+            ->limit($this->porPagina)
+            ->get()
+            ->map(function ($item) {
+                return (array) $item;
+            })
+            ->toArray();
 
         return [
-            'items' => $productosFiltrados->slice($inicio, $this->porPagina)->values()->all(),
+            'items' => $productos,
             'total' => $total,
         ];
     }
+
+
 
     public function irAPagina($pagina)
     {
