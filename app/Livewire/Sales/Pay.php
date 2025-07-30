@@ -322,7 +322,7 @@ class Pay extends Component
             if ($nuevoTotalPagado >= $totalDeuda) {
                 $this->venta->update([
                     'pagado'      => true,
-                    'estado_id'   => 2, // Completada
+                    'estado_venta_id'   => 2, // Completada
                     'fecha_venta' => now(),
                 ]);
                 $this->iframeSrc = route('comprobante.preview', ['ventaId' => $this->venta->id]) . '?t=' . now()->timestamp;
@@ -331,7 +331,7 @@ class Pay extends Component
             } else {
                 $this->venta->update([
                     'pagado'    => false,
-                    'estado_id' => 1, // Pendiente
+                    'estado_venta_id' => 1, // Pendiente
                 ]);
             }
 

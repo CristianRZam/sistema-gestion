@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Dashboard;
 
-use App\Models\Sale;
+use App\Models\Payment;
 use App\Models\Parameter;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -52,17 +52,18 @@ class PaymentMethod extends Component
             $montosTotales[$metodo->idParametro] = 0;
         }
 
-        $ventas = Sale::where('estado_venta_id', 2)
+        $ventas = Payment::where('estado_pago_id', 1)
+            ->where('pagable_type', 'App\Models\Sale')
             ->whereNull('auditoriaFechaEliminacion');
 
         if ($this->fechaInicio && $this->fechaFin) {
             $inicio = Carbon::parse($this->fechaInicio)->startOfDay();
             $fin = Carbon::parse($this->fechaFin)->endOfDay();
-            $ventas->whereBetween('fecha_venta', [$inicio, $fin]);
+            $ventas->whereBetween('fecha_pago', [$inicio, $fin]);
         }
 
         if (!auth()->user()->can('ver reporte general dashboard')) {
-            $ventas->where('usuario_id', auth()->id()); // 👈 Aplica filtro si no tiene el permiso
+            $ventas->where('user_id', auth()->id()); // 👈 Aplica filtro si no tiene el permiso
         }
 
         $ventas = $ventas->get();
@@ -71,7 +72,7 @@ class PaymentMethod extends Component
         foreach ($ventas as $venta) {
             if (isset($conteo[$venta->metodo_pago_id])) {
                 $conteo[$venta->metodo_pago_id]++;
-                $monto = ($venta->total ?? 0) - ($venta->descuento ?? 0);
+                $monto = ($venta->monto_pagado ?? 0);
                 $montosTotales[$venta->metodo_pago_id] += $monto;
             }
         }
