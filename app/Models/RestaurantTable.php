@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RestaurantTable extends Model
 {
@@ -36,4 +37,10 @@ class RestaurantTable extends Model
         'auditoriaFechaModificacion' => 'datetime',
         'auditoriaFechaEliminacion' => 'datetime',
     ];
+
+    public function piso()
+    {
+        return $this->belongsTo(Parameter::class, 'piso_id', 'idParametro')
+            ->where('codigoParametro', 'PISO_RESTAURANTE');
+    }
 }

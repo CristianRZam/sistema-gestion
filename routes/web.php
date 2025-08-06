@@ -349,5 +349,25 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
 });
 
 
+Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
+    // Ruta para exportar Excel de productos
+    Route::get('/tables/exportar-excel', function (Request $request) {
+        return Excel::download(new DishesExcelExport($request), 'platillos.xlsx');
+    })->middleware('can:exportar productos')->name('tables.exportar.excel');
+
+    // Ruta para exportar PDF de categorías
+    Route::get('/tables/exportar-pdf', function (Request $request) {
+        return (new DishesPdfExport($request))->download('platillos.pdf');
+    })->middleware('can:exportar productos')->name('tables.exportar.pdf');
+
+    Route::get('/tables/exportar-menu-pdf', function (Request $request) {
+        return (new DishesMenuPdfExport($request))->download('catalogo-productos.pdf');
+    })->middleware('can:descargar catalogo productos')->name('tables.carta-menu.pdf');
+
+    // Rutas existentes
+    Volt::route('tables', 'tables.lista')->middleware('can:ver productos')->name('tables');
+});
+
+
 
 require __DIR__.'/auth.php';

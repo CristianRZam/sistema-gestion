@@ -1047,5 +1047,42 @@ class ParameterSeeder extends Seeder
             ],
         ]);
 
+        // === PISOS PARA RESTAURANTE ===
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'PISO_RESTAURANTE',
+                'nombre' => '1º',
+                'nombreCorto' => '1º',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'PISO_RESTAURANTE',
+                'nombre' => '2º',
+                'nombreCorto' => '2º',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'PISO_RESTAURANTE',
+                'nombre' => '3º',
+                'nombreCorto' => '3º',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
     }
 }
