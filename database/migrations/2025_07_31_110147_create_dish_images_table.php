@@ -6,16 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('service_images', function (Blueprint $table) {
-            $table->id()->comment('Clave primaria de imagenes de servicio');
-
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade')->comment('Clave foránea al producto');
-            $table->string('imagen_url')->comment('Ruta o URL de la imagen del servicio');
+        Schema::create('dish_images', function (Blueprint $table) {
+            $table->id()->comment('Identificador único de la imagen platillo');;
+            $table->foreignId('dish_id')->constrained('dishes')->onDelete('cascade')->comment('Clave foránea del platillo');
+            $table->string('imagen_url')->comment('Ruta o URL de la imagen del platillo');
             $table->boolean('es_principal')->default(false)->comment('Indica si es la imagen principal');
 
             // Campos de auditoría (opcional, si no se usan timestamps automáticos)
@@ -28,11 +24,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('service_images');
+        Schema::dropIfExists('dish_images');
     }
 };

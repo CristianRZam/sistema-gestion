@@ -26,6 +26,9 @@ use App\Exports\RoomsExcelExport;
 use App\Exports\RoomsPdfExport;
 use App\Exports\ServicesExcelExport;
 use App\Exports\ServicesPdfExport;
+use App\Exports\DishesExcelExport;
+use App\Exports\DishesPdfExport;
+use App\Exports\DishesMenuPdfExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -324,5 +327,27 @@ Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
 });
 
 Route::get('/comprobante-service/preview/{ordenId}', [\App\Livewire\OrderServices\Pay::class, 'vistaComprobantePreview'])->name('comprobante-servicio.preview');
+
+
+Route::middleware(['auth', EnsureUserIsActive::class])->group(function () {
+    // Ruta para exportar Excel de productos
+    Route::get('/dishes/exportar-excel', function (Request $request) {
+        return Excel::download(new DishesExcelExport($request), 'platillos.xlsx');
+    })->middleware('can:exportar productos')->name('dishes.exportar.excel');
+
+    // Ruta para exportar PDF de categorías
+    Route::get('/dishes/exportar-pdf', function (Request $request) {
+        return (new DishesPdfExport($request))->download('platillos.pdf');
+    })->middleware('can:exportar productos')->name('dishes.exportar.pdf');
+
+    Route::get('/dishes/exportar-menu-pdf', function (Request $request) {
+        return (new DishesMenuPdfExport($request))->download('catalogo-productos.pdf');
+    })->middleware('can:descargar catalogo productos')->name('dishes.carta-menu.pdf');
+
+    // Rutas existentes
+    Volt::route('dishes', 'dishes.lista')->middleware('can:ver productos')->name('dishes');
+});
+
+
 
 require __DIR__.'/auth.php';

@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('restaurant_orders', function (Blueprint $table) {
+            $table->id()->comment('Identificador único del pedido');
+            $table->string('codigo')->unique()->nullable()->comment('Código único del pedido');
+            $table->unsignedBigInteger('customer_id')->nullable()->comment('ID del cliente que realizó el pedido');
+            $table->unsignedBigInteger('estado_id')->default(1)->comment("Estado: pendiente, en_preparacion, listo, entregado, cancelado");
+            $table->unsignedBigInteger('tipo_entrega_id')->default(1)->comment("Tipo entrega: Delivery, Mesa y para llevar");
+            $table->boolean('pagado')->default(false)->comment('Indica si ha sido pagada');
+            $table->unsignedBigInteger('modo_pago_id')->default(1)->comment('Indica el modo de pago: completo o en partes');
+            $table->dateTime('fecha')->comment('Fecha de la orden')->nullable();
+            $table->decimal('descuento', 10, 2)->default(0)->comment('Total de la orden');
+            $table->decimal('total', 10, 2)->default(0)->comment('Total de la orden');
+            $table->text('notas')->nullable()->comment('Notas adicionales para la orden');
+            // Usuario (mesero) que realizó la venta (relación lógica, sin clave foránea)
+            $table->unsignedBigInteger('usuario_id')->nullable();
+
+            // Auditoría
+            $table->dateTime('auditoriaFechaCreacion')->nullable()->comment('Fecha de creación del registro');
+            $table->unsignedBigInteger('auditoriaCreadoPor')->nullable()->comment('Usuario que creó el registro');
+            $table->dateTime('auditoriaFechaModificacion')->nullable()->comment('Fecha de la última modificación');
+            $table->unsignedBigInteger('auditoriaModificadoPor')->nullable()->comment('Usuario que modificó el registro');
+            $table->dateTime('auditoriaFechaEliminacion')->nullable()->comment('Fecha de eliminación lógica');
+            $table->unsignedBigInteger('auditoriaEliminadoPor')->nullable()->comment('Usuario que eliminó el registro');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('restaurant_orders');
+    }
+};

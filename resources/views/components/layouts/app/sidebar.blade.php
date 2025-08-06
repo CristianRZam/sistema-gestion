@@ -45,6 +45,11 @@
                             <i class="fa-solid fa-concierge-bell mr-2"></i> {{ __('Servicio') }}
                         </flux:navlist.item>
                     @endcan
+                    @can('ver servicios')
+                        <flux:navlist.item :href="route('dishes')" :current="request()->routeIs('dishes')" wire:navigate>
+                            <i class="fa-solid fa-utensils mr-2"></i> {{ __('Platillo') }}
+                        </flux:navlist.item>
+                    @endcan
                     @can('ver clientes')
                         <flux:navlist.item icon="user" :href="route('customers')" :current="request()->routeIs('customers')" wire:navigate>{{ __('Cliente') }}</flux:navlist.item>
                     @endcan

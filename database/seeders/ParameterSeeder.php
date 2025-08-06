@@ -916,5 +916,136 @@ class ParameterSeeder extends Seeder
         ]);
 
 
+        // Categorías de platillos
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'CATEGORIA_PLATILLO',
+                'nombre' => 'Entrada',
+                'nombreCorto' => 'Entrada',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'CATEGORIA_PLATILLO',
+                'nombre' => 'Plato de fondo',
+                'nombreCorto' => 'Fondo',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'CATEGORIA_PLATILLO',
+                'nombre' => 'Postre',
+                'nombreCorto' => 'Postre',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
+        // === ESTADOS DE PEDIDO (ESTADO_PEDIDO) ===
+        Parameter::insert([
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PEDIDO_RESTAURANTE',
+                'nombre' => 'Pendiente',
+                'nombreCorto' => 'Pendiente',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PEDIDO_RESTAURANTE',
+                'nombre' => 'En preparación',
+                'nombreCorto' => 'Preparación',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PEDIDO_RESTAURANTE',
+                'nombre' => 'Listo',
+                'nombreCorto' => 'Listo',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 4,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PEDIDO_RESTAURANTE',
+                'nombre' => 'Entregado',
+                'nombreCorto' => 'Entregado',
+                'orden' => 4,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 5,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'ESTADO_PEDIDO_RESTAURANTE',
+                'nombre' => 'Cancelado',
+                'nombreCorto' => 'Cancelado',
+                'orden' => 5,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+
+            // === TIPOS DE ENTREGA (TIPO_ENTREGA) ===
+            [
+                'idParametro' => 1,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_ENTREGA_RESTAURANTE',
+                'nombre' => 'Mesa',
+                'nombreCorto' => 'Mesa',
+                'orden' => 2,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 2,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_ENTREGA_RESTAURANTE',
+                'nombre' => 'Delivery',
+                'nombreCorto' => 'Delivery',
+                'orden' => 1,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+            [
+                'idParametro' => 3,
+                'idParametroPadre' => null,
+                'tipo' => 3,
+                'codigoParametro' => 'TIPO_ENTREGA_RESTAURANTE',
+                'nombre' => 'Para llevar',
+                'nombreCorto' => 'Para llevar',
+                'orden' => 3,
+                'auditoriaFechaCreacion' => $now,
+                'auditoriaCreadoPor' => $userId,
+            ],
+        ]);
+
     }
 }

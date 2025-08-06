@@ -498,7 +498,6 @@ class Pay extends Component
                 'pagado' => false,
                 'estado_venta_id' => 3, // Cancelada
                 'descuento' => 0,
-                'fecha_venta' => now(),
                 'auditoriaFechaModificacion' => now(),
                 'auditoriaModificadoPor' => auth()->id(),
             ]);
